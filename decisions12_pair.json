@@ -1,0 +1,548 @@
+{
+ "_stamp": {
+  "git": "987342c",
+  "tag": "v12.5b",
+  "dirty": true,
+  "sales_logic_sha256_12": "e5737c7707f7"
+ },
+ "data": [
+  {
+   "id": "E1-P1",
+   "業界": "学校法人",
+   "セグメント": "私立大学（合議・非単調な座席列）",
+   "商材": "広告・募集支援",
+   "generate": true,
+   "sigma": [
+    "②",
+    "③",
+    "④",
+    "⑤",
+    "⑥"
+   ],
+   "j_star": "学部長会",
+   "kappa_n": [
+    "財源"
+   ],
+   "form_n": [
+    "予算科目",
+    "学生生徒等納付金",
+    "帰属収支差額"
+   ],
+   "tau_ok": [
+    [
+     "Ec",
+     "2027-06-30",
+     "契約",
+     "未知"
+    ]
+   ],
+   "delta": [
+    [
+     "職員を増やして内製する",
+     "内製",
+     [
+      "D5"
+     ],
+     {
+      "D5": "法人事務局"
+     }
+    ],
+    [
+     "現在の広告代理店に追加発注する",
+     "既存外注",
+     [
+      "D2"
+     ],
+     {}
+    ],
+    [
+     "他社の広告会社",
+     "競合",
+     [
+      "D7a",
+      "D7d"
+     ],
+     {}
+    ]
+   ],
+   "five_mentions": [
+    "現在の広告代理店に追加発注する",
+    "職員を増やして内製する"
+   ],
+   "d7_basis": [],
+   "blocks": [
+    "B_what_is_it",
+    "B_form_mapping",
+    "B_mechanism",
+    "B_certification",
+    "B_trial",
+    "B_why_now",
+    "B_scope_of_date",
+    "B_prohibition",
+    "B_liability_matrix",
+    "B_opportunity_cost",
+    "B_intra_category",
+    "B_kappa_quantity",
+    "B_realize",
+    "B_self_check",
+    "B_own_check",
+    "B_chain_form",
+    "B_decision_date",
+    "B_seat_quantities",
+    "B_coverage_table",
+    "B_draft_reason",
+    "B_summary_sheet",
+    "B_human_slot",
+    "B_downward"
+   ],
+   "rules": [
+    "R1_OK",
+    "R2",
+    "R5c",
+    "A2",
+    "N2_WRITE_CONCLUSION",
+    "GAMMA_COLLEGIAL",
+    "B2",
+    "B3",
+    "DOWNWARD",
+    "A5_KAPPA_QUANTITY",
+    "R13_REALIZE",
+    "R14_TYPE",
+    "R10a_NO_REPRODUCE",
+    "R16_SELF_APPLY",
+    "R17_NOT_INSULT",
+    "A16_CHAIN",
+    "R18_INSTITUTIONAL",
+    "A23_PER_SEAT",
+    "A21_WILLING",
+    "R11_FORM_MAPPING",
+    "R10c_COVERAGE"
+   ],
+   "executors": [
+    [
+     "入試広報課長",
+     [
+      "媒体費",
+      "広報外注費"
+     ]
+    ],
+    [
+     "法人事務局",
+     [
+      "人件費（専任）",
+      "業務委託費"
+     ]
+    ]
+   ],
+   "start_deadline": null,
+   "chain": [
+    [
+     "入試広報課長",
+     [
+      "実務性"
+     ],
+     [
+      "オープンキャンパス動員",
+      "出願件数",
+      "広報予算執行"
+     ],
+     "組織"
+    ],
+    [
+     "学部長会",
+     [
+      "説明可能性"
+     ],
+     [
+      "アドミッションポリシー",
+      "定員充足率",
+      "教育の質保証"
+     ],
+     "制度"
+    ]
+   ],
+   "talk_guide": [],
+   "findings": [
+    {
+     "code": "A22_SCOPE_UNSOURCED",
+     "level": "demote",
+     "ref": "A:2027-05-31",
+     "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+    },
+    {
+     "code": "A8_BINDER_NOT_ABOVE",
+     "level": "reject",
+     "ref": "A:2027-05-31 学内の入試委員会",
+     "msg": "棄却：その拘束者は買い手の上位にいない"
+    },
+    {
+     "code": "A22_SCOPE_UNSOURCED",
+     "level": "demote",
+     "ref": "Ec:2027-06-30",
+     "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+    },
+    {
+     "code": "M0_EXCLUDED",
+     "level": "info",
+     "ref": "現状のまま自前の広報でしのぐ",
+     "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+    },
+    {
+     "code": "A2_NOT_REQUIRED",
+     "level": "info",
+     "ref": "",
+     "msg": "カテゴリ内比較は問われない局面"
+    }
+   ],
+   "needs_judgment": [
+    {
+     "code": "A21_WILLING_UNKNOWN",
+     "ref": "入試広報課長",
+     "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+    },
+    {
+     "code": "A21_WILLING_UNKNOWN",
+     "ref": "法人事務局",
+     "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+    }
+   ],
+   "seats": [
+    {
+     "name": "入試広報課長",
+     "kappa": [
+      "実務性"
+     ],
+     "chi": "現場で回るか",
+     "gamma": "単独",
+     "reads": true,
+     "form": [
+      "オープンキャンパス動員",
+      "出願件数",
+      "広報予算執行"
+     ],
+     "origin": "組織"
+    },
+    {
+     "name": "学部長会",
+     "kappa": [
+      "説明可能性"
+     ],
+     "chi": "教学の理念と整合するか",
+     "gamma": "合議",
+     "reads": true,
+     "form": [
+      "アドミッションポリシー",
+      "定員充足率",
+      "教育の質保証"
+     ],
+     "origin": "制度"
+    },
+    {
+     "name": "理事会",
+     "kappa": [
+      "財源"
+     ],
+     "chi": "帰属収支差額",
+     "gamma": "合議",
+     "reads": false,
+     "form": [
+      "予算科目",
+      "学生生徒等納付金",
+      "帰属収支差額"
+     ],
+     "origin": "制度"
+    }
+   ],
+   "veto": [],
+   "gamma_own": {
+    "①": "訪問時のヒアリングで、現在の体制・件数・工数は既に双方で確認済み"
+   },
+   "prod": {
+    "nu": "使っても分からない",
+    "theta": "段階分割",
+    "sigma_p": "低",
+    "omega": 3,
+    "alpha_m": "低",
+    "alpha_c": "低",
+    "beta1_cap": "費用処理",
+    "beta1_hard": "変動",
+    "beta2": "予算計上済"
+   }
+  },
+  {
+   "id": "E1-P1R",
+   "業界": "学校法人",
+   "セグメント": "私立大学（合議・非単調な座席列）／理事会も資料を読む",
+   "商材": "広告・募集支援",
+   "generate": true,
+   "sigma": [
+    "②",
+    "③",
+    "④",
+    "⑤",
+    "⑥"
+   ],
+   "j_star": "理事会",
+   "kappa_n": [
+    "財源"
+   ],
+   "form_n": [
+    "予算科目",
+    "学生生徒等納付金",
+    "帰属収支差額"
+   ],
+   "tau_ok": [
+    [
+     "Ec",
+     "2027-06-30",
+     "契約",
+     "未知"
+    ]
+   ],
+   "delta": [
+    [
+     "職員を増やして内製する",
+     "内製",
+     [
+      "D5"
+     ],
+     {
+      "D5": "法人事務局"
+     }
+    ],
+    [
+     "現在の広告代理店に追加発注する",
+     "既存外注",
+     [
+      "D2"
+     ],
+     {}
+    ],
+    [
+     "他社の広告会社",
+     "競合",
+     [
+      "D7a",
+      "D7d"
+     ],
+     {}
+    ]
+   ],
+   "five_mentions": [
+    "現在の広告代理店に追加発注する",
+    "職員を増やして内製する"
+   ],
+   "d7_basis": [],
+   "blocks": [
+    "B_what_is_it",
+    "B_form_mapping",
+    "B_mechanism",
+    "B_certification",
+    "B_trial",
+    "B_why_now",
+    "B_scope_of_date",
+    "B_prohibition",
+    "B_liability_matrix",
+    "B_opportunity_cost",
+    "B_intra_category",
+    "B_kappa_quantity",
+    "B_realize",
+    "B_self_check",
+    "B_own_check",
+    "B_chain_form",
+    "B_decision_date",
+    "B_seat_quantities",
+    "B_coverage_table",
+    "B_draft_reason",
+    "B_summary_sheet",
+    "B_human_slot",
+    "B_downward"
+   ],
+   "rules": [
+    "R1_OK",
+    "R2",
+    "R5c",
+    "A2",
+    "N2_WRITE_CONCLUSION",
+    "GAMMA_COLLEGIAL",
+    "B2",
+    "B3",
+    "DOWNWARD",
+    "A5_KAPPA_QUANTITY",
+    "R13_REALIZE",
+    "R14_TYPE",
+    "R10a_NO_REPRODUCE",
+    "R16_SELF_APPLY",
+    "R17_NOT_INSULT",
+    "A16_CHAIN",
+    "R18_INSTITUTIONAL",
+    "A23_PER_SEAT",
+    "A21_WILLING",
+    "R11_FORM_MAPPING",
+    "R10c_COVERAGE"
+   ],
+   "executors": [
+    [
+     "入試広報課長",
+     [
+      "媒体費",
+      "広報外注費"
+     ]
+    ],
+    [
+     "法人事務局",
+     [
+      "人件費（専任）",
+      "業務委託費"
+     ]
+    ]
+   ],
+   "start_deadline": null,
+   "chain": [
+    [
+     "入試広報課長",
+     [
+      "実務性"
+     ],
+     [
+      "オープンキャンパス動員",
+      "出願件数",
+      "広報予算執行"
+     ],
+     "組織"
+    ],
+    [
+     "学部長会",
+     [
+      "説明可能性"
+     ],
+     [
+      "アドミッションポリシー",
+      "定員充足率",
+      "教育の質保証"
+     ],
+     "制度"
+    ],
+    [
+     "理事会",
+     [
+      "財源"
+     ],
+     [
+      "予算科目",
+      "学生生徒等納付金",
+      "帰属収支差額"
+     ],
+     "制度"
+    ]
+   ],
+   "talk_guide": [],
+   "findings": [
+    {
+     "code": "A22_SCOPE_UNSOURCED",
+     "level": "demote",
+     "ref": "A:2027-05-31",
+     "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+    },
+    {
+     "code": "A8_BINDER_NOT_ABOVE",
+     "level": "reject",
+     "ref": "A:2027-05-31 学内の入試委員会",
+     "msg": "棄却：その拘束者は買い手の上位にいない"
+    },
+    {
+     "code": "A22_SCOPE_UNSOURCED",
+     "level": "demote",
+     "ref": "Ec:2027-06-30",
+     "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+    },
+    {
+     "code": "M0_EXCLUDED",
+     "level": "info",
+     "ref": "現状のまま自前の広報でしのぐ",
+     "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+    },
+    {
+     "code": "A2_NOT_REQUIRED",
+     "level": "info",
+     "ref": "",
+     "msg": "カテゴリ内比較は問われない局面"
+    }
+   ],
+   "needs_judgment": [
+    {
+     "code": "A21_WILLING_UNKNOWN",
+     "ref": "入試広報課長",
+     "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+    },
+    {
+     "code": "A21_WILLING_UNKNOWN",
+     "ref": "法人事務局",
+     "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+    }
+   ],
+   "seats": [
+    {
+     "name": "入試広報課長",
+     "kappa": [
+      "実務性"
+     ],
+     "chi": "現場で回るか",
+     "gamma": "単独",
+     "reads": true,
+     "form": [
+      "オープンキャンパス動員",
+      "出願件数",
+      "広報予算執行"
+     ],
+     "origin": "組織"
+    },
+    {
+     "name": "学部長会",
+     "kappa": [
+      "説明可能性"
+     ],
+     "chi": "教学の理念と整合するか",
+     "gamma": "合議",
+     "reads": true,
+     "form": [
+      "アドミッションポリシー",
+      "定員充足率",
+      "教育の質保証"
+     ],
+     "origin": "制度"
+    },
+    {
+     "name": "理事会",
+     "kappa": [
+      "財源"
+     ],
+     "chi": "帰属収支差額",
+     "gamma": "合議",
+     "reads": true,
+     "form": [
+      "予算科目",
+      "学生生徒等納付金",
+      "帰属収支差額"
+     ],
+     "origin": "制度"
+    }
+   ],
+   "veto": [],
+   "gamma_own": {
+    "①": "訪問時のヒアリングで、現在の体制・件数・工数は既に双方で確認済み"
+   },
+   "prod": {
+    "nu": "使っても分からない",
+    "theta": "段階分割",
+    "sigma_p": "低",
+    "omega": 3,
+    "alpha_m": "低",
+    "alpha_c": "低",
+    "beta1_cap": "費用処理",
+    "beta1_hard": "変動",
+    "beta2": "予算計上済"
+   }
+  }
+ ]
+}
