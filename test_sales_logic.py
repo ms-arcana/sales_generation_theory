@@ -617,4 +617,95 @@ check("A25c 英数字に埋もれた D5 は誤検出しない",
 check("A25c 従来どおり空白区切りでも検出される",
       any(_re.search(p, "これは D7a です") for p in V0_RE))
 
+print("\n── 第12.1版 G4：ν の二重の真実（旧 A と商材座標）")
+from sales_logic import (nu_of, check_axis_values, iso_norm, iso_date, blocks_on,
+                         check_insult, check_dates_v7, expr_ok_of)
+_p_use = Product(nu="使えば分かる")
+_n_conf = Nu(A="使っても分からない", I="", S1="1000万〜", S2="単発", S3=False, C_move="すぐ試せる",
+             J=[Seat("社長", frozenset({"価格"}), "手元")], prod=_p_use)
+check("G4 座標があるならそちらが正（SPEC §12.2 ν は旧 A そのもの）",
+      nu_of(_n_conf) == "使えば分かる", nu_of(_n_conf))
+check("G4 食い違いは申し送りに出る",
+      any(x.code == "NU_AXIS_CONFLICT" for x in check_axis_values(_n_conf)),
+      [x.code for x in check_axis_values(_n_conf)])
+_b = blocks_on(_n_conf, ["⑤", "⑥"], [], set())
+check("G4 点灯するのは『数字入りの導入事例』であって『仕組みの開示』ではない",
+      "B_case_numbers" in _b and "B_mechanism" not in _b, _b)
+check("G4 座標が無ければ従来どおり旧 A を引く（後方互換）",
+      nu_of(Nu(A="使っても分からない", I="", S1="", S2="", S3=False, C_move="大仕事", J=[]))
+      == "使っても分からない")
+
+print("\n── 第12.1版 N₂ を表引きへ：定義域の外は黙って既定値に落とさない")
+_n_typo = Nu(A="使えば分かる", I="", S1="1000万〜", S2="単発", S3=False, C_move="すぐ試せる",
+             J=[Seat("社長", frozenset({"価格"}), "手元")], E_judge="比較検討中 ")
+check("N₂ 誤字の E_judge は申し送りに出る（従来は Σ が黙って①〜⑥に変わっていた）",
+      any(x.code == "AXIS_VALUE_UNKNOWN" for x in check_axis_values(_n_typo)),
+      [x.ref for x in check_axis_values(_n_typo)])
+check("N₂ 正しい値なら何も出ない",
+      not check_axis_values(Nu(A="使えば分かる", I="", S1="", S2="", S3=False,
+                               C_move="大仕事", J=[], E_judge="比較検討中")))
+
+print("\n── 第12.1版 iso_cases：表記ゆれで事例を黙って落とさない")
+_CTX = {"拘束の所在": "上位者", "執行座席の同型": "本部が販促費と人時を分けて持つ", "暦の同型": "卸との商談"}
+_n_iso = Nu(A="a", I="", S1="", S2="", S3=False, C_move="すぐ試せる",
+            J=[Seat("社長", frozenset({"価格"}), "手元")], buyer_context=_CTX)
+_case = dict(_CTX, 実名="○○ストア")
+check("iso 句読点1つの違いは正規化で吸収する",
+      len(iso_cases(_n_iso, Seller(named_cases=[dict(_case, 執行座席の同型="本部が販促費と人時を分けて持つ。")]))[0]) == 1)
+check("iso 空白の混入も吸収する",
+      len(iso_cases(_n_iso, Seller(named_cases=[dict(_case, 暦の同型="卸との商談 ")]))[0]) == 1)
+_k, _j = iso_cases(_n_iso, Seller(named_cases=[dict(_case, 執行座席の同型="本部が販促費と人時を分けて持っている")]))
+check("iso それでも全滅したら黙らず申し送る",
+      not _k and any(x.code == "ISO_ALL_CASES_DROPPED" for x in _j), [x.code for x in _j])
+check("iso 本当に同型なら従来どおり残る", len(iso_cases(_n_iso, Seller(named_cases=[_case]))[0]) == 1)
+
+print("\n── 第12.1版 G3：R17 は ∃χ∈Γ^own を検査する")
+_f, _j = check_insult(Declared(s5_denies_own="現在の人材派遣会社は3年前に自分で選定した"), OWN)
+check("G3 Γ^own の要素を否定していれば従来どおり停止",
+      "R17_DENIES_OWN" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_insult(Declared(s5_denies_own="現在の体制では成果が出ていない"), {})
+check("G3 Γ^own が空なら侮辱は成立しない（停止ではなく要判断）",
+      not _f and [x.code for x in _j] == ["R17_DENIES_UNMATCHED"], ([x.code for x in _f], [x.code for x in _j]))
+_f, _j = check_insult(Declared(s5_denies_own="どれとも照合できない文字列"), OWN)
+check("G3 Γ^own のどれとも照合できなければ要判断",
+      not _f and [x.code for x in _j] == ["R17_DENIES_UNMATCHED"], [x.code for x in _j])
+
+print("\n── 第12.1版 日付：文字列のまま比べない／〈いつ〉を検査する")
+check("日付 ゼロ詰めなしを暦順で比べる（辞書順なら誤判定した）",
+      iso_date("2027-4-1") is None and iso_date("2027-04-01") is not None)
+_f, _j = check_dates_v7(Declared(s6_start_date="2027-4-1", s6_self_check=True), "2027-12-28")
+check("日付 読めない書式は比較せず要判断へ",
+      not [x for x in _f if x.code == "R12b_START_AFTER_DEADLINE"]
+      and any(x.code == "R12b_DATE_UNPARSED" for x in _j), ([x.code for x in _f], [x.code for x in _j]))
+_f, _j = check_dates_v7(Declared(s6_start_date="2027-01-20", s6_self_check=True), "2026-12-28")
+check("日付 読める書式なら従来どおり停止",
+      "R12b_START_AFTER_DEADLINE" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_realize(Declared(s6_realize=(("入試広報課長", "来期", "媒体費"),)), EX2)
+check("N₃ 〈いつ〉が日付として読めなければ申し送る（従来は素通りしていた）",
+      any(x.code == "R13_REALIZE_DATE_UNPARSED" for x in _j), [x.code for x in _j])
+_f, _j = check_realize(Declared(s6_realize=(("入試広報課長", "2027-04-01", "媒体費"),)), EX2)
+check("N₃ ISO なら何も出ない", not [x for x in _j if x.code == "R13_REALIZE_DATE_UNPARSED"])
+
+print("\n── 第12.1版 G2：生成後検査に商材座標が届く")
+_CH = [("店舗運営部", ["実務性"], ["人時売上高"], "組織"),
+       ("商品本部バイヤー", ["価格"], ["原価率"], "組織")]
+_D = Declared(s6_kappa="実務性", s2_unit=None, s3_form_mapping="x",
+              s6_kappa_by_seat={"店舗運営部": "実務性", "商品本部バイヤー": "実務性"})
+_f_cal, _ = check_chain(_D, _CH, kept_unit=False)
+_f_prd, _ = check_chain(_D, _CH, kept_unit=False,
+                        expr=expr_ok_of(Product(alpha_m="高", alpha_c="高", beta1_hard="変動")))
+check("G2 較正表では実務性が孤立し、価格の座席に届かない",
+      "A16_NOT_CONV_AT_SEAT" in [x.code for x in _f_cal], [x.code for x in _f_cal])
+check("G2 α=(高,高)×変動 の商材座標なら 実務性→価格 が開いて届く",
+      not _f_prd, [x.code for x in _f_prd])
+_v = validate_copy(COPY, Declared(**BASE7), kappa_final=["価格", "財源"],
+                   stages=["②", "③", "④", "⑤", "⑥"], n_seats=2, executors=EXEC,
+                   deadline="2026-12-28", industry="SaaS・スタートアップ")
+check("G2 未較正の業界では生成後の較正由来の判定も降格になる",
+      not any(f.level == "stop" and f.code in ("A5_NOT_EXPRESSIBLE", "A16_NOT_CONV_AT_SEAT")
+              for f in _v["findings"]))
+check("G2 Σ の申し送りは生成後には付けない（生成前の話だから）",
+      not any(j.code == "SIGMA_UNCALIBRATED" for j in _v["needs_judgment"]),
+      [j.code for j in _v["needs_judgment"]])
+
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")

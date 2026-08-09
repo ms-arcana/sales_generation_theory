@@ -11,7 +11,7 @@ import re
 import sys
 from collections import Counter
 
-from sales_logic import Declared, validate_copy
+from sales_logic import Declared, Product, validate_copy
 
 STAGES = ("①", "②", "③", "④", "⑤", "⑥")
 NORM = {"1": "①", "2": "②", "3": "③", "4": "④", "5": "⑤", "6": "⑥",
@@ -97,7 +97,11 @@ def main(runfile):
                           deadline=d.get("start_deadline"),
                           gamma_own=d.get("gamma_own") or {},
                           chain=[tuple(x) for x in (d.get("chain") or [])],
-                          unwilling=d.get("unwilling") or [])
+                          unwilling=d.get("unwilling") or [],
+                          # 第12.1版：生成後検査にも商材座標を渡す（第10版の生成子が
+                          # 生成前にしか届いていなかった）。業界は決定表が持っていれば渡す。
+                          prod=Product(**d["prod"]) if d.get("prod") else None,
+                          industry=d.get("industry"))
         out.append({
             "arm": cell["arm"], "id": cell["id"],
             "業界": d["業界"], "セグメント": d["セグメント"], "商材": d["商材"],

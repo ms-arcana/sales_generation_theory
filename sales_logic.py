@@ -434,7 +434,8 @@ CALIBRATED_CODES: Dict[str, str] = {
 
 
 def apply_calibration(findings: List[Finding], judgments: List[Judgment],
-                      industry: Optional[str]) -> Tuple[List[Finding], List[Judgment]]:
+                      industry: Optional[str],
+                      sigma_note: bool = True) -> Tuple[List[Finding], List[Judgment]]:
     """未較正の業界では、較正定数に依存する判定を **停止から降格へ落とす**。
 
     原理由来の判定はそのまま止める。較正由来の判定は「この業界では確かめていない」
@@ -450,8 +451,74 @@ def apply_calibration(findings: List[Finding], judgments: List[Judgment],
             judgments = judgments + [Judgment("UNCALIBRATED", f"{f.code}<-{t}@{industry}")]
         else:
             out.append(f)
-    judgments = judgments + [Judgment("SIGMA_UNCALIBRATED", industry)]
+    if sigma_note:            # Σ の縮退は生成前の話。生成後検査から呼ぶときは付けない
+        judgments = judgments + [Judgment("SIGMA_UNCALIBRATED", industry)]
     return out, judgments
+
+
+def nu_of(n: Nu) -> str:
+    """検証時点 ν。SPEC §12.2 は「ν は旧 A そのものである」と言っている（Nelson / Darby-Karni）。
+
+    ところが第10版は `Product.nu` を足しただけで `Nu.A` を残し、照合をどこにも置かなかった。
+    R1-P1・R2-P1 では現に食い違っており（A=使っても分からない／prod.nu=使えば分かる）、
+    `blocks_on` が古い側を引くので「数字入りの導入事例」が落ち、
+    「仕組みの開示」「認証・お墨付き」が立っていた。**座標があるほうを正とする。**
+    """
+    return n.prod.nu if n.prod else n.A
+
+
+# 表引きの定義域。N2 は「⊥ は X のいかなる値とも比較できない」と言っているのに、
+# 表引きだけが `.get(key, 既定値)` で **未定義を黙って値に変えていた**。
+# START.get("比較検討中 ") は 0（＝Σ が①〜⑥に変わる）、
+# ACQUIRE.get("買い手のデータ") は 0（＝実効LTが縮み R6b が緩む）。誤字が判定を変える。
+AXIS_DOMAIN: Dict[str, Set[str]] = {
+    "E_judge": set(START), "E_reader": set(START),
+    "q_source": set(ACQUIRE_CALIBRATED),
+    "nu": {"買う前に分かる", "使えば分かる", "使っても分からない"},
+    "theta": {"不可分", "段階分割", "完全分割"},
+    "sigma_p": {"低", "中", "高"},
+    "alpha": {"低", "高"},
+    "beta1_hard": {"固定", "変動"},
+    "beta1_cap": {"資産計上", "費用処理"},
+    "origin": {"制度", "組織", "個人"},
+    "mtype": set(ALLOWED),
+    "form": set(M0_KILL),
+    "src": {"法令", "公的暦", "自然・需要", "契約", "売り手都合"},
+}
+
+
+def check_axis_values(n: Nu) -> List[Judgment]:
+    """入力 ν の列挙値が、表の定義域に入っているか（N2 を表引きへ適用する）。
+
+    値が定義域の外なら、既定値へ黙って落ちる前に申し送る。
+    加えて、`Nu.A` と `prod.nu` の二重の真実もここで捕まえる。
+    """
+    j: List[Judgment] = []
+
+    def chk(axis: str, val, where: str):
+        if val is None:
+            return
+        if val not in AXIS_DOMAIN[axis]:
+            j.append(Judgment("AXIS_VALUE_UNKNOWN", f"{where}={val!r}"))
+
+    chk("E_judge", n.E_judge, "E_judge"); chk("E_reader", n.E_reader, "E_reader")
+    for t in n.tau:
+        chk("q_source", t.q_source, f"{t.form}:{t.d} q_source")
+        chk("form", t.form, f"τ.form"); chk("src", t.src, f"{t.form}:{t.d} src")
+    for s in n.J:
+        chk("origin", s.origin, f"座席 {s.name} origin")
+    for m in n.M:
+        chk("mtype", m.mtype, f"手段 {m.name} mtype")
+    p = n.prod
+    if p:
+        chk("nu", p.nu, "prod.nu"); chk("theta", p.theta, "prod.theta")
+        chk("sigma_p", p.sigma_p, "prod.sigma_p")
+        chk("alpha", p.alpha_m, "prod.alpha_m"); chk("alpha", p.alpha_c, "prod.alpha_c")
+        chk("beta1_hard", p.beta1_hard, "prod.beta1_hard")
+        chk("beta1_cap", p.beta1_cap, "prod.beta1_cap")
+        if p.nu != n.A:
+            j.append(Judgment("NU_AXIS_CONFLICT", f"Nu.A={n.A!r} prod.nu={p.nu!r}"))
+    return j
 
 
 def check_seats(n: Nu) -> List[Finding]:
@@ -516,17 +583,18 @@ def check_gamma_pre(n: Nu, S: List[str]) -> List[Finding]:
 def blocks_on(n: Nu, S: List[str], live: List[Mi], forms: Set[str]) -> List[str]:
     dims = {d for m in live for d in m.dims}
     E = n.E_judge
+    A = nu_of(n)                       # 第12.1版：商材座標があるならそちらが正（SPEC §12.2）
     cand = [
         ("B_visualize", E == "困っていない", "①"),
         ("B_what_is_it", E in ("困っていない", "手段を知らない"), "③"),
         ("B_form_mapping", len(n.J) >= 2, "③"),                     # A11
         ("B_compare_current", E in ("比較検討中", "うちも知っている"), "⑤"),
-        ("B_spec_table", n.A == "買う前に分かる", "⑤"),
-        ("B_case_numbers", n.A == "使えば分かる", "⑤"),
+        ("B_spec_table", A == "買う前に分かる", "⑤"),
+        ("B_case_numbers", A == "使えば分かる", "⑤"),
         ("B_precedent", "D4" in dims, "⑤"),
-        ("B_mechanism", n.A == "使っても分からない", "⑤"),
-        ("B_certification", n.A == "使っても分からない", "⑤"),
-        ("B_trial", n.A == "使えば分かる" or n.C_move == "すぐ試せる", "⑥"),
+        ("B_mechanism", A == "使っても分からない", "⑤"),
+        ("B_certification", A == "使っても分からない", "⑤"),
+        ("B_trial", A == "使えば分かる" or n.C_move == "すぐ試せる", "⑥"),
         ("B_migration", n.C_move == "大仕事", "⑥"),
         ("B_deadline", bool(forms & {"A", "B", "C", "D"}), "④"),
         ("B_why_now", bool(forms - {"D"}), "④"),
@@ -671,6 +739,16 @@ def check_tau(n: Nu, today: date, uncal: bool = False
     return ok, f, j
 
 
+def iso_date(s: Optional[str]) -> Optional[date]:
+    """ISO の日付として読めるなら date、読めなければ None（＝比較の定義域に入れない）"""
+    if not s or not isinstance(s, str):
+        return None
+    try:
+        return date.fromisoformat(s.strip())
+    except ValueError:
+        return None
+
+
 def sub_months(d: date, m: int) -> date:
     y, mo = d.year, d.month - m
     while mo <= 0:
@@ -776,19 +854,41 @@ def iso_cases(n: Nu, seller: Seller) -> Tuple[List[Dict[str, str]], List[Judgmen
 
     所轄庁・系列は λ（拘束の所在）の粗い代理変数であり、非規制の買い手では常に空になる。
     実際、第6〜8版の全16セルで ISO_CONTEXT_MISSING が発火し、同型性検査は一度も走っていない。
+
+    第12.1版：照合は **正規化してから** 行い、**全部落ちたことは黙らせない**。
+    構造キーの値は「本部が販促費と人時を分けて持つ」のような自由文である。それを完全一致で
+    比べているので、句読点1つ・空白1つで事例が消え、$D_{7a}$ が立たなくなる。
+    第10版の「16/16 → 0/8」が成立しているのは、`cells8_v10.py` が買い手側と事例側を
+    **同じファイルで同じ文字列に書いた**からであって、営業が入力すれば一致しない。
+    表記ゆれは正規化で吸収し、それでも全滅したときは申し送る（型2：照合できないことを「無い」と読まない）。
     """
     keep, j = [], []
     keys = ISO_KEYS if any(n.buyer_context.get(k) for k in ISO_KEYS) else ISO_KEYS_CALIBRATED
     missing = [k for k in keys if not n.buyer_context.get(k)]
     if missing and seller.named_cases:
         j.append(Judgment("ISO_CONTEXT_MISSING", ",".join(missing)))
+    dropped = []
     for c in seller.named_cases:
         if not c.get("実名"):
             continue
-        if any(n.buyer_context.get(k) and c.get(k) != n.buyer_context.get(k) for k in keys):
+        bad = [k for k in keys if n.buyer_context.get(k)
+               and iso_norm(c.get(k)) != iso_norm(n.buyer_context.get(k))]
+        if bad:
+            dropped.append(f"{c['実名']}:{','.join(bad)}")
             continue
         keep.append(c)
+    if not keep and dropped:
+        j.append(Judgment("ISO_ALL_CASES_DROPPED", " / ".join(dropped)))
     return keep, j
+
+
+def iso_norm(s: Optional[str]) -> str:
+    """構造キーの値の表記ゆれを落とす。空白・句読点・全半角のみ（意味判定はしない）"""
+    if not s:
+        return ""
+    import unicodedata
+    t = unicodedata.normalize("NFKC", s)
+    return re.sub(r"[\s。、,.，．・]+", "", t)
 
 
 def check_C_singleton(n: Nu, seller: Seller) -> Tuple[Finding, List[str]]:
@@ -902,7 +1002,7 @@ def compile_deal(n: Nu, seller: Seller, today: date,
     r7 = check_R7(live, seller) + check_R4(n, live, seller)
     _, ij = iso_cases(n, seller)
     findings = pre + tf + df + [cf] + r7 + check_cost(n, live) + check_D5_binder(n, live)
-    judgments = tj + ij + wj
+    judgments = tj + ij + wj + check_axis_values(n)     # 第12.1版：表引きの定義域と ν の二重の真実
     findings, judgments = apply_calibration(findings, judgments, industry)
     stop = [x for x in findings if x.level == "stop"]
     return {
@@ -1075,6 +1175,12 @@ def check_realize(dec: Declared, executors: Sequence[Tuple[str, Sequence[str]]],
     for a in acts:
         if len(a) != 3 or any(x is None or not str(x).strip() for x in a):
             f.append(Finding("R13_REALIZE_EMPTY", "stop")); return f, j
+    # 第12.1版：三つ組の〈いつ〉は一度も検査されていなかった。
+    # "昨年度中" "来期" "2027/4/1" がどれも通っていた（空文字だけが落ちる）。
+    # N3 は act⟨w,d,o⟩ を型として立てているのに、d だけ検査対象を持っていなかった。
+    for _a, d_, _c in acts:
+        if iso_date(d_) is None:
+            j.append(Judgment("R13_REALIZE_DATE_UNPARSED", str(d_)))
     if not executors:
         j.append(Judgment("R13_W_UNKNOWN")); return f, j
     names = {a for a, _ in executors}
@@ -1111,14 +1217,24 @@ def check_insult(dec: Declared, gamma_own: Dict[str, str]) -> Tuple[List[Finding
     d = dec.s5_denies_own.strip()
     if not d:
         return [Finding("R17_NO_INSULT", "info")], j
+    # 第12.1版：∃χ∈Γ^own を実際に検査する。
+    # 従来は hit を計算して **捨てて** いたので、Γ^own に無い文字列でも、Γ^own が空でも停止した。
+    # SPEC §1.1.1 は insult(φ) ⟺ ∃χ ∈ Γ^own. Γ∪{φ} ⊢ ¬χ である。Γ^own = ∅ なら侮辱は成立しない。
+    # 照合できないときに停止させるのは、A25 で最も高くついた誤りと同じ型なので、要判断へ回す。
     hit = [k for k, v in gamma_own.items() if d in v or v in d] if gamma_own else []
-    f.append(Finding("R17_DENIES_OWN", "stop", f"{d}{'@' + ','.join(hit) if hit else ''}"))
+    if hit:
+        f.append(Finding("R17_DENIES_OWN", "stop", f"{d}@{','.join(hit)}"))
+    else:
+        j.append(Judgment("R17_DENIES_UNMATCHED",
+                          f"{d} / Γ^own={'空' if not gamma_own else ','.join(gamma_own)}"))
     return f, j
 
 
 def check_chain(dec: Declared,
                 chain: Sequence[Tuple[str, Sequence[Kappa], Sequence[str], str]],
-                kept_unit: bool = False) -> Tuple[List[Finding], List[Judgment]]:
+                kept_unit: bool = False,
+                expr: Optional[Dict[Kappa, Set[Kappa]]] = None
+                ) -> Tuple[List[Finding], List[Judgment]]:
     """A16（第9版）：Π2 は「各リンクで濾す」と言っている。終端の座席だけ見てはならない。
 
     資料を読む座席すべてについて
@@ -1126,6 +1242,7 @@ def check_chain(dec: Declared,
       ・制度由来の座席については、③の対応語がその座席の様式語を含むこと
     """
     f, j = [], []
+    ex = expr if expr is not None else EXPR_OK       # 第12.1版：商材座標の表を受け取れる
     if not chain:
         return f, j
     if dec.s6_kappa is None:
@@ -1142,7 +1259,7 @@ def check_chain(dec: Declared,
     for name, kappa, form, origin in chain:
         own = by_seat.get(name)
         cand = bases | kappa_tokens(own)
-        ok = any(b in EXPR_OK and (EXPR_OK[b] & set(kappa)) for b in cand)
+        ok = any(b in ex and (ex[b] & set(kappa)) for b in cand)
         if not ok:
             f.append(Finding("A16_NOT_CONV_AT_SEAT", "stop",
                              f"{name}:{sorted(cand)}->{sorted(kappa)}"))
@@ -1160,7 +1277,12 @@ def check_dates_v7(dec: Declared, deadline: Optional[str]) -> Tuple[List[Finding
     """R12b / R16（A14）：⑤で他手段に課した期限は、自社案にも当たる"""
     f, j = [], []
     if deadline and dec.s6_start_date:
-        if dec.s6_start_date > deadline:
+        # 第12.1版：文字列のまま比べていた。"2027-4-1"（ゼロ詰めなし）や "2027/4/1" で
+        # 辞書順が暦順と食い違う。日付として読めないなら、比較せず要判断へ（N2）。
+        a, b = iso_date(dec.s6_start_date), iso_date(deadline)
+        if a is None or b is None:
+            j.append(Judgment("R12b_DATE_UNPARSED", f"⑥{dec.s6_start_date} / ④{deadline}"))
+        elif a > b:
             f.append(Finding("R12b_START_AFTER_DEADLINE", "stop",
                              f"⑥{dec.s6_start_date}>④{deadline}"))
     elif deadline and dec.s6_start_date is None:
@@ -1173,9 +1295,12 @@ def check_dates_v7(dec: Declared, deadline: Optional[str]) -> Tuple[List[Finding
 
 
 def check_declared(dec: Declared, kn: Set[Kappa], kept_unit: bool,
-                   stages: Sequence[str], n_seats: int) -> Tuple[List[Finding], List[Judgment]]:
+                   stages: Sequence[str], n_seats: int,
+                   expr: Optional[Dict[Kappa, Set[Kappa]]] = None
+                   ) -> Tuple[List[Finding], List[Judgment]]:
     """宣言された値の比較のみ。意味判定はしない。None は未定義（A10）"""
     f, j = [], []
+    EXPR = expr if expr is not None else EXPR_OK      # 第12.1版：商材座標の表を受け取れる
     has4, has2, has3 = "④" in stages, "②" in stages, "③" in stages
 
     # R10a 反復の再生産（0 は「反復しない」。比較の定義域に入れない）
@@ -1209,10 +1334,10 @@ def check_declared(dec: Declared, kn: Set[Kappa], kept_unit: bool,
         if len(ks) > 1 or (ks and dec.s6_kappa.strip() not in ks):
             f.append(Finding("A25_KAPPA_MERGED", "info",
                              f"{dec.s6_kappa}->{sorted(ks)}"))
-        known = {x for x in ks if x in EXPR_OK}
+        known = {x for x in ks if x in EXPR}
         if not known:
             j.append(Judgment("EXPR_TABLE_MISS", f"⑥ k={dec.s6_kappa}"))
-        elif not any(EXPR_OK[x] & set(kn) for x in known):
+        elif not any(EXPR[x] & set(kn) for x in known):
             f.append(Finding("A5_NOT_EXPRESSIBLE", "stop",
                              f"{sorted(known)}->{sorted(kn)}"))
 
@@ -1267,15 +1392,26 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
                   deadline: Optional[str] = None,
                   gamma_own: Optional[Dict[str, str]] = None,
                   chain: Sequence[Tuple[str, Sequence[Kappa], Sequence[str], str]] = (),
-                  unwilling: Sequence[str] = ()) -> dict:
+                  unwilling: Sequence[str] = (),
+                  prod: Optional[Product] = None,
+                  industry: Optional[str] = None) -> dict:
+    """第12.1版：商材座標と業界を受け取れるようにした。
+
+    第10版は「較正表は業界の関数ではなく商材座標の関数である」と言い、`expr_ok_of` を入れたが、
+    それが使われていたのは `check_tau`（生成前）だけだった。生成後検査はグローバルの
+    `EXPR_OK`（＝較正表）を引き、`apply_calibration` も一度も掛からない状態にあった。
+    R1-P1・R2-P1 は α=(高,高)・費目が変動なので、座標では 実務性↔価格 が開く。表が現に食い違っていた。
+    """
+    ex = expr_ok_of(prod)
     uf, kept, uj = check_unit_presence(copy, dec, stages)
     f = check_v0(copy) + uf
-    f2, j = check_declared(dec, set(kappa_final), kept, stages, n_seats)
+    f2, j = check_declared(dec, set(kappa_final), kept, stages, n_seats, ex)
     f += f2; j += uj
     f3, j3 = check_realize(dec, executors, unwilling); f += f3; j += j3
     f4, j4 = check_dates_v7(dec, deadline); f += f4; j += j4
     f5, j5 = check_insult(dec, gamma_own or {}); f += f5; j += j5
-    f6, j6 = check_chain(dec, chain, kept); f += f6; j += j6
+    f6, j6 = check_chain(dec, chain, kept, ex); f += f6; j += j6
     f += check_seat_words(copy, dec, chain)      # A23 の紙側（申告だけで通さない）
+    f, j = apply_calibration(f, j, industry, sigma_note=False)
     stop = [x for x in f if x.level == "stop"]
     return {"findings": f, "needs_judgment": j, "pass": not stop and not j}
