@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第12.4版）</title>
+<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第12.5版）</title>
 <style>
 :root{
   --ink:#1a1c22; --sub:#5d6470; --line:#d8dbe2; --bg:#fbfbfc;
@@ -158,7 +158,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
 <div class="wrap">
 
 <h1>公理から営業メッセージまで、何がどう決まっているか</h1>
-<p class="sub">営業資料生成モデル 第12.4版 ／ 流れの図解 ／ 2026-08-09 更新（tag v12.4 ／ A26・A27・A28 実装済み・<b>効果は未測定</b>）</p>
+<p class="sub">営業資料生成モデル 第12.5版 ／ 流れの図解 ／ 2026-08-09 更新（tag v12.5 ／ <b>モデル層の残余4件を閉じた</b>＋配管の刻み漏れ ／ A26・A27・A28 は実装済み・<b>効果は未測定</b>）</p>
 
 <p class="sub" style="margin:-32px 0 40px">
 <b>近道</b> → <a href="#method" style="color:var(--gen)">METHOD 方法の出典</a>（なぜこの形なのか）／<a href="#now" style="color:var(--model)">NOW 現在地</a>／<a href="#open" style="color:var(--chk)">OPEN いま開いている問題</a>
@@ -1220,6 +1220,7 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <p>第12.1版で <code>sales_logic.py</code> の比較演算を機械的に全数走査し（178箇所）、文字列で照合している箇所を一つずつ実データに当てました。<b>「汚れた物差しで測る前に、物差しを検める」</b>という手順です。出てきたものを、上の五つの所在に割り当てて並べます。</p>
 
 <p>並びは<b>一枚図と同じ順</b>（入力 → モデル → 決定表の受け渡し → 指示 → 生成 → 検査）です。各層の箱は手順ではなく、<b>その層に座っている問題</b>です。</p>
+<p><b>第12.5版で、モデル層に残っていた4件と、決定表の受け渡しの1件を閉じました。</b>モデル層が開いたまま下流を盲検しても、何を測っているのか分からなくなるからです。4件のうち<b>2件は、問いのほうが間違っていました</b>——<code>C_move</code> は合成規則が要らず（合成された値を使う場所が無い）、cost 単調性は<b>探していた対象がそもそも存在しませんでした</b>（第2式は第1式の系）。残る2件は<b>較正台帳が Σ に掛かっていなかった</b>という一つの穴の二つの顔でした。</p>
 
 <div class="map probs">
 
@@ -1237,10 +1238,10 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="nodes">
 <div class="node n-done"><b>ν の二重の真実</b><code>Nu.A</code> と <code>prod.nu</code> の照合が無く、2セルで食い違い、<b>点灯ブロックが逆</b>だった<em>G4</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
 <div class="node n-done"><b>商材座標が生成後に届かない</b><code>expr_ok_of</code> が生成前にしか使われていなかった<em>G2</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
-<div class="node n-open"><b><code>C_move</code> と ⟨θ, σ<sub>p</sub>⟩</b>ν と同じ二重の真実。<b>SPEC が合成規則を与えていない</b>ので機械的に直せない<div class="stwrap"><span class="st st-open">開いている</span></div></div>
-<div class="node n-open"><b><code>S1</code>/<code>S2</code>/<code>S3</code> が残っている</b>SPEC §12.2 は「削除した」と書いたのに <code>sigma_prod</code> がまだ引いている<div class="stwrap"><span class="st st-open">開いている</span></div></div>
-<div class="node n-open"><b>cost 単調性（Π₁ 第2式）</b>第10版で <code>σ_p + τ</code> に対象を得たが、⑥の検査には入っていない<div class="stwrap"><span class="st st-open">開いている</span></div></div>
-<div class="node n-open"><b>較正台帳の <code>START</code></b>唯一残る業界依存表（＋下の G1）<div class="stwrap"><span class="st st-open">開いている</span></div></div>
+<div class="node n-done"><b><code>C_move</code> と ⟨θ, σ<sub>p</sub>⟩</b>ν と同じ二重の真実。SPEC が合成規則を与えていないので直せない、とされていた。<b>合成規則は要らなかった</b>——<code>C_move</code> が駆動するブロックは <code>B_trial</code> と <code>B_migration</code> の2つで、<b>その2つがちょうど半分ずつに対応している</b>。合成された値を使う場所が無いのだから、合成規則も要らない。8セルの点灯は不変<em>第12.5版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-done"><b><code>S1</code>/<code>S2</code>/<code>S3</code> が残っている</b>SPEC §12.2 は「削除した」と書いたのに <code>sigma_prod</code> がまだ引いていた。参照が1箇所で8セルでは発火しないので<b>消えたように見えていただけ</b>。根拠の無い表は捨てずに<b>較正台帳へ載せる</b>のが規律なので、較正表として登録し、未較正の業界では縮退させない<em>第12.5版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-done"><b>cost 単調性（Π₁ 第2式）</b><b>探していた対象が存在しなかった。</b>第2式は第1式の系である（Γ が単調に積むなら上限は自動的に非減少）。第10版が対象を与えたのは <code>cost(M<sub>i</sub>)</code>＝対抗手段の費用であって、Π₁ の <code>cost(φ)</code>＝承認の値段ではない——<b>同名の別関数を二版にわたって取り違えていた</b>。実質は〈<b>Σ は段の接尾辞である</b>〉。これは検査でき、<b>唯一引っかかるのが <code>sigma_prod</code> の {①,④,⑥}</b><em>第12.5版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-done"><b>較正台帳の <code>START</code></b>唯一残る業界依存表（＋下の G1）。<b>台帳が Σ に掛かっていなかった</b>——<code>apply_calibration</code> は判定を降格するが、Σ の縮退は素通りで <code>SIGMA_UNCALIBRATED</code> の申し送りが出るだけだった。縮退は「その段は資料の外で承認済み」という<b>断定</b>なので、未較正の業界ではしない<em>第12.5版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
 </div>
 </div>
 <div class="vsep">▾</div>
@@ -1249,7 +1250,7 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="bandlab">配管<span>決定表の受け渡し</span></div>
 <div class="nodes">
 <div class="node n-done"><b>R10a が指示文に届いていなかった</b>決定表が第11版のまま固定され、第12版で足した規則が <b>0/8</b> で欠落。第12.2版で一行を入れて再走行し、<b>4件→2件</b>。<b>提示の問題だった</b><div class="stwrap"><span class="st st-done">測り直した</span></div></div>
-<div class="node n-open"><b>決定表に版が刻まれるのは一経路だけ</b><code>regen_v12.py</code> 経由なら刻む（<code>decisions8_v12.json</code>）。<b><code>cells8_v10.run()</code> を直接叩くと刻まない</b>ので、同じ罠がもう一度踏める<div class="stwrap"><span class="st st-open">半分だけ閉じた</span></div></div>
+<div class="node n-done"><b>決定表に版が刻まれるのは一経路だけ</b><code>cells8_v10.run()</code> を直接叩くと刻まないので、同じ罠がもう一度踏めた。<b>刻むのを呼び出し側の作法に任せると、作法を知らない経路が必ず一つ残る。</b>書き出す側で刻み（<code>dump_stamped</code>）、読む側は <code>stamp.load()</code> で受ける。そして<b>刻んでも照合しなければ気づけない</b>ので、指示文を組む前に <code>assert_fresh()</code> で決定表とコードの版を突き合わせる<em>第12.5版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
 </div>
 </div>
 <div class="vsep">▾</div>
@@ -1295,7 +1296,7 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="legend">
 <span><span class="st st-open">開いている</span> 未解決</span>
 <span><span class="st st-hold">据え置き</span> 直せるが、直すと結論が変わるので判断待ち</span>
-<span><span class="st st-done">閉じた</span> 第12.1版で修正・回帰済み</span>
+<span><span class="st st-done">閉じた</span> 修正して回帰に入れた（第12.1〜12.5版）</span>
 <span><span class="st st-wait">効果は未測定</span> コードには入ったが、走行で確かめていない</span>
 <span><span class="st st-lat">潜在</span> 実データでは未発生</span>
 </div>
@@ -1335,6 +1336,8 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <tr style="background:#e9f5ee"><td>済</td><td><b>A26 を実装した</b><br><small>第12.3版・<code>s6_residual_period_months</code>／R10a の比較対象を差し替え／⑥の枚仕様に一行</small></td><td>指示文は変えていない——ずれていた二つのうち<b>正しかったのは指示のほう</b>だった。回帰は偽陰性側・偽陽性側の両方</td></tr>
 <tr style="background:#e9f5ee"><td>済</td><td><b>A27 を決めて実装した</b><br><small>第12.3版・優先順位の明記＋<code>s6_omitted_blocks</code></small></td><td><b>導出 &gt; 較正</b>で決着（較正台帳の規律の適用）。字数は⑥の採点根拠から外した</td></tr>
 <tr style="background:#e9f5ee"><td>済</td><td><b>A28 を実装した</b><br><small>第12.4版・<code>s6_quantity_sources</code>＋<code>s6_to_sales</code></small></td><td>試算は禁じない。<b>分からないものを営業へ回す出口</b>を作った。生成器には要判断の出口が無かった</td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><b>モデル層の残余4件を閉じた</b><br><small>第12.5版・<code>C_move</code>／<code>S1,S2,S3</code>／cost 単調性／<code>START</code>。回帰 173項目・8セルの決定表は不変</small></td><td><b>下流を盲検しても意味が無いので先に片づけた。</b>4件のうち2件は<b>問いのほうが間違っていた</b>——合成規則は要らず、cost 単調性は探していた対象が存在しなかった</td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><b>刻みを書き出し側へ移した</b><br><small>第12.5版・<code>dump_stamped</code>／<code>stamp.load</code>／<code>assert_fresh</code></small></td><td>刻むのを呼び出し側の作法に任せると、<b>作法を知らない経路が必ず一つ残る</b>。そして刻んでも<b>照合しなければ気づけない</b>ので、指示文を組む前に版を突き合わせる</td></tr>
 <tr style="background:#fbf2e2"><td><b>1</b></td><td><b>Arm 1 の8体を走らせて A26・A27・A28 を測る</b><br><small>予測は <code>predict_v12_3.md</code> と 第12.4版の設計書に先置き済み。届いていることも走行前に確認済み（8/8×3）</small></td><td><b>いま最大の未知。</b>3つとも別々の診断コードを持つので採点上は分離できる。約37分・50万トークン</td></tr>
 <tr><td>2</td><td><b>結果を見て A27 の次の手を決める</b><br><small>⑥を〈本文〉と〈運搬の道具〉に分けるか</small></td><td><code>A27_BLOCK_OMITTED</code> が複数出たら分離へ進む根拠になる。出なければ優先順位の規定だけで足りた</td></tr>
 <tr><td>3</td><td><b>Arm 1 を確定させる</b> → <code>prompts8_v12.py</code><br><small>あわせて<b>⑥の申告欄を割る</b>（型1 の処置）</small></td><td>基準の連結は照合側で吸収したが、<b>本筋は欄を割ること</b>。A24 と同じ</td></tr>
@@ -1361,7 +1364,7 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 
 <div class="foot">
 <p>営業資料生成モデル 第12.1版 ／ 数値はすべて <code>decisions8_v10.json</code>（as-run）・<code>run8_v11.json</code>・<code>verified8_v11.json</code>・<code>sales_logic.py</code> の実測値から。<br>
-関連文書：<code>claude/引き継ぎ書-第12.2版.md</code>（<b>新しいスレッドはここから</b>）、<code>claude/第12.4版-A28設計.md</code>・<code>claude/第12.3版-A26A27実装.md</code>（直近の実装）、<code>claude/第12.2版-R10a再測定.md</code>（§4-2 の走行）、<code>claude/第12.1版-物差しの検分.md</code>（§4-1 の全結果と根拠）、<code>claude/abductive-analysis組み込み.md</code>（<b>方法の出典。METHOD 節の全文</b>）、<code>claude/モデルv11-仕様.md</code>（形式系の本体）、<code>claude/第12版-アーム実験レポート.md</code>（アーム実験の詳細・<b>stop の数字は訂正前</b>）、<code>claude/統合検討-既存理論と本モデル.md</code>（既存研究との対応）。</p>
+関連文書：<code>claude/引き継ぎ書-第12.2版.md</code>（<b>新しいスレッドはここから</b>）、<code>claude/第12.5版-モデル残余.md</code>（<b>直近</b>）・<code>claude/第12.4版-A28設計.md</code>・<code>claude/第12.3版-A26A27実装.md</code>（直近の実装）、<code>claude/第12.2版-R10a再測定.md</code>（§4-2 の走行）、<code>claude/第12.1版-物差しの検分.md</code>（§4-1 の全結果と根拠）、<code>claude/abductive-analysis組み込み.md</code>（<b>方法の出典。METHOD 節の全文</b>）、<code>claude/モデルv11-仕様.md</code>（形式系の本体）、<code>claude/第12版-アーム実験レポート.md</code>（アーム実験の詳細・<b>stop の数字は訂正前</b>）、<code>claude/統合検討-既存理論と本モデル.md</code>（既存研究との対応）。</p>
 <p style="margin-top:10px;color:var(--sub);font-size:12.5px">この文書で<b>取り消した記述</b>：「R10a は提示の問題ではない」（<b>提示の問題だった</b>。第12.2版で測り直し 4→2）／「この商材では R10a は充足不能かもしれない」（道は2本あった）／「Arm 1 が A16 を消した」（A16 は物差しの誤りだった）／Arm 0 の stop 10・A16 2・R10b 2（正しくは 6・0・0）／「Arm 1 は必要な3セルだけが自分で上限を破った」（再走行では6セル。<b>⑥の字数は同じ指示で 450〜1506 に振れる</b>）／<b>⑥の字数をアームの差の根拠に使っていたこと自体</b>（検査対象ですらなかった。第12.3版で採点根拠から外した）。</p>
 </div>
 
