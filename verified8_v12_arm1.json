@@ -92,6 +92,11 @@
     "code": "A27_OMISSION_UNDECLARED",
     "ref": "必須要素23個",
     "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
+   },
+   {
+    "code": "A28_SOURCE_UNDECLARED",
+    "ref": "入試広報課長,学部長会",
+    "msg": "⑥に置いた量の出所を、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -175,6 +180,11 @@
     "code": "A27_OMISSION_UNDECLARED",
     "ref": "必須要素16個",
     "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
+   },
+   {
+    "code": "A28_SOURCE_UNDECLARED",
+    "ref": "入試広報課長,学部長会",
+    "msg": "⑥に置いた量の出所を、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -270,6 +280,11 @@
     "code": "A27_OMISSION_UNDECLARED",
     "ref": "必須要素21個",
     "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
+   },
+   {
+    "code": "A28_SOURCE_UNDECLARED",
+    "ref": "教務主任,理事長",
+    "msg": "⑥に置いた量の出所を、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -362,6 +377,11 @@
     "code": "A27_OMISSION_UNDECLARED",
     "ref": "必須要素20個",
     "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
+   },
+   {
+    "code": "A28_SOURCE_UNDECLARED",
+    "ref": "教務主任,理事長",
+    "msg": "⑥に置いた量の出所を、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -460,6 +480,11 @@
     "code": "A27_OMISSION_UNDECLARED",
     "ref": "必須要素21個",
     "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
+   },
+   {
+    "code": "A28_SOURCE_UNDECLARED",
+    "ref": "店舗運営部,商品本部バイヤー",
+    "msg": "⑥に置いた量の出所を、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -538,6 +563,11 @@
     "code": "A27_OMISSION_UNDECLARED",
     "ref": "必須要素16個",
     "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
+   },
+   {
+    "code": "A28_SOURCE_UNDECLARED",
+    "ref": "店舗運営部,商品本部バイヤー",
+    "msg": "⑥に置いた量の出所を、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -633,6 +663,11 @@
     "code": "A27_OMISSION_UNDECLARED",
     "ref": "必須要素20個",
     "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
+   },
+   {
+    "code": "A28_SOURCE_UNDECLARED",
+    "ref": "店長,社長",
+    "msg": "⑥に置いた量の出所を、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -725,6 +760,11 @@
     "code": "A27_OMISSION_UNDECLARED",
     "ref": "必須要素20個",
     "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
+   },
+   {
+    "code": "A28_SOURCE_UNDECLARED",
+    "ref": "店長,社長",
+    "msg": "⑥に置いた量の出所を、生成器が申告していない"
    }
   ],
   "post_pass": false

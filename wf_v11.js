@@ -75,6 +75,24 @@ const GEN_SCHEMA = {
         s6_start_date: { type: ['string', 'null'], description: '⑥が示す着手日（YYYY-MM-DD）' },
         s6_self_check: { type: ['boolean', 'null'], description: '⑤で他手段を落とした条件を、自社の提案にも当てて確かめたか' },
         s5_denies_own: { type: ['string', 'null'], description: '⑤が否定してしまっている「買い手が自分で決めてきたこと」。無ければ空文字' },
+        s6_quantity_sources: {
+          type: ['array', 'null'],
+          description: '⑥に置いた量それぞれの出所を、座席ごとに申告する',
+          items: {
+            type: 'object',
+            required: ['seat', 'source'],
+            properties: {
+              seat: { type: 'string', description: '座席名。渡された一覧の表記をそのまま使う' },
+              source: { type: 'string', enum: ['買い手データ', '公開統計', '売り手の実績', '試算', '営業記入'],
+                        description: '裏づけが無い見込みなら「試算」。数字を確定できず営業に埋めてもらうなら「営業記入」' },
+            },
+          },
+        },
+        s6_to_sales: {
+          type: ['array', 'null'],
+          description: '営業に算出・判断を仰ぐ項目。自分では確定できなかった数字や判断を、そのまま言葉で書く。無ければ空の配列 []',
+          items: { type: 'string' },
+        },
         s6_omitted_blocks: {
           type: ['array', 'null'],
           description: '【必ず入れる要素】のうち書けなかったものの名前。全部書けたなら空の配列 []。字数に収めるために落とした場合もここに出す（落とすこと自体が仕様違反なので隠さない）',

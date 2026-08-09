@@ -700,6 +700,62 @@ _p11 = open("prompts8_v11.py", encoding="utf-8").read()
 check("A27 提示仕様に優先順位が明記されている（字数は目安・要素は必須）",
       "字数は目安" in _p11 and "要素を落としてはならない" in _p11)
 
+print("\n── 第12.4版 A28：⑥に置く量の出所（試算は禁じない。分からないものは営業へ回す）")
+from sales_logic import check_quantity_sources
+CH28 = [("店長", ["実務性"], ["作業時間"], "個人"), ("社長", ["価格"], ["仕入原価"], "個人")]
+BY28 = {"店長": "実務性", "社長": "価格"}
+
+
+def q28(sources, to_sales=(), body="店長には作業時間で年420時間、社長には仕入原価で年54万円"):
+    return check_quantity_sources({"⑥": body},
+                                  Declared(s6_kappa_by_seat=BY28, s6_quantity_sources=sources,
+                                           s6_to_sales=to_sales), CH28)
+
+
+f28, j28 = q28({"店長": "買い手データ", "社長": "売り手の実績"})
+check("A28 裏づけのある量なら通り、どの座席が裏づけを持つかが残る",
+      [x.code for x in f28] == ["A28_GROUNDED"] and not j28, [x.code for x in f28])
+
+f28, j28 = q28({"店長": "買い手データ", "社長": "試算"})
+check("A28 試算だと申告したのに、本文に試算と分かる書き方がなければ停止",
+      "A28_ESTIMATE_UNMARKED" in [x.code for x in f28], [x.code for x in f28])
+
+f28, j28 = q28({"店長": "買い手データ", "社長": "試算"}, to_sales=("仕入原価の圧縮幅の確定",),
+               body="店長には作業時間で年420時間、社長には仕入原価で年54万円（当社の試算）")
+check("A28 試算と明記してあれば通る（試算そのものは禁じない）",
+      "A28_ESTIMATE_UNMARKED" not in [x.code for x in f28], [x.code for x in f28])
+
+f28, j28 = q28({"店長": "買い手データ", "社長": "営業記入"}, to_sales=("社長向けの金額を営業が算出",))
+check("A28 営業が埋めると申告したのに、本文に記入欄がなければ停止",
+      "A28_SLOT_ABSENT" in [x.code for x in f28], [x.code for x in f28])
+
+f28, j28 = q28({"店長": "買い手データ", "社長": "営業記入"}, to_sales=("社長向けの金額を営業が算出",),
+               body="店長には作業時間で年420時間、社長には仕入原価で年【　　　】万円")
+check("A28 記入欄が在れば通る（分からないまま渡してよい）",
+      not [x for x in f28 if x.level == "stop"], [x.code for x in f28])
+check("A28 営業への申し送りが採点に残る（営業が読む）",
+      "A28_TO_SALES" in [x.code for x in f28], [x.code for x in f28])
+
+f28, j28 = q28({"店長": "買い手データ", "社長": "試算"}, to_sales=(),
+               body="店長には作業時間で年420時間、社長には仕入原価で年54万円（試算）")
+check("A28 裏づけの無い量を置きながら営業へ何も回していなければ要判断",
+      "A28_TO_SALES_EMPTY" in [x.code for x in j28], [x.code for x in j28])
+
+f28, j28 = q28(None)
+check("A28 出所そのものが未申告なら要判断（黙って通さない）",
+      not f28 and "A28_SOURCE_UNDECLARED" in [x.code for x in j28], [x.code for x in j28])
+
+f28, j28 = q28({"店長": "勘"})
+check("A28 定義域の外の出所は要判断（N₂ を出所にも適用する）",
+      "A28_SOURCE_UNKNOWN" in [x.code for x in j28], [x.code for x in j28])
+
+check("A28 座席の申告そのものが無ければ検査しない（A23 側の要判断に回る）",
+      check_quantity_sources({"⑥": "x"}, Declared(), CH28) == ([], []))
+
+_p11 = open("prompts8_v11.py", encoding="utf-8").read()
+check("A28 提示仕様が『分からないまま渡してよい』と言っている",
+      "分からないものを分からないまま渡すのは" in _p11)
+
 print("\n── 第12.1版 G4：ν の二重の真実（旧 A と商材座標）")
 from sales_logic import (nu_of, check_axis_values, iso_norm, iso_date, blocks_on,
                          check_insult, check_dates_v7, expr_ok_of)

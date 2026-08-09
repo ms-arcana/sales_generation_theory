@@ -64,6 +64,13 @@ def to_declared(dd):
         rev = {v: k for k, v in MSG_BLOCKS.items()}
         omitted = tuple(rev.get(str(x).strip(), str(x).strip())
                         for x in dd["s6_omitted_blocks"] if str(x).strip())
+    qsrc = None
+    if dd.get("s6_quantity_sources"):
+        qsrc = {x["seat"]: x["source"] for x in dd["s6_quantity_sources"]
+                if isinstance(x, dict) and x.get("seat")}
+    to_sales = None
+    if dd.get("s6_to_sales") is not None:
+        to_sales = tuple(str(x).strip() for x in dd["s6_to_sales"] if str(x).strip())
     return Declared(
         s2_unit=(dd.get("s2_unit") or None),
         s2_from_unit=(dd.get("s2_from_unit") or None),
@@ -87,6 +94,8 @@ def to_declared(dd):
         s6_kappa_by_seat=by_seat,
         s6_realize=realize,
         s6_omitted_blocks=omitted,
+        s6_quantity_sources=qsrc,
+        s6_to_sales=to_sales,
     )
 
 
