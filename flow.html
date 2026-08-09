@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第12.5版）</title>
+<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第12.5b版）</title>
 <style>
 :root{
   --ink:#1a1c22; --sub:#5d6470; --line:#d8dbe2; --bg:#fbfbfc;
@@ -158,7 +158,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
 <div class="wrap">
 
 <h1>公理から営業メッセージまで、何がどう決まっているか</h1>
-<p class="sub">営業資料生成モデル 第12.5版 ／ 流れの図解 ／ 2026-08-09 更新（tag v12.5 ／ <b>モデル層の残余4件を閉じた</b>＋配管の刻み漏れ ／ A26・A27・A28 は実装済み・<b>効果は未測定</b>）</p>
+<p class="sub">営業資料生成モデル 第12.5b版 ／ 流れの図解 ／ 2026-08-09 更新（tag v12.5b ／ <b>モデル層の残余4件＋配管＋生成指示の2件を閉じた</b> ／ A26・A27・A28 は実装済み・<b>効果は未測定</b>）</p>
 
 <p class="sub" style="margin:-32px 0 40px">
 <b>近道</b> → <a href="#method" style="color:var(--gen)">METHOD 方法の出典</a>（なぜこの形なのか）／<a href="#now" style="color:var(--model)">NOW 現在地</a>／<a href="#open" style="color:var(--chk)">OPEN いま開いている問題</a>
@@ -1258,10 +1258,10 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="band b-instr">
 <div class="bandlab">生成の指示<span>prompts*.py</span></div>
 <div class="nodes">
-<div class="node n-open"><b>指示が複数形を誘うのに欄が単数</b>κ_n を「価格・財源」と連結表示したまま、欄は単数。第12.2版の再走行では<b>再発しなかった</b>（8体とも単一で申告）が、指示文は直っていない<b>型1 の未処置分</b><div class="stwrap"><span class="st st-open">開いている</span> <span class="st st-lat">1走行では出ず</span></div></div>
-<div class="node n-open"><b><code>BAN</code> と <code>V0</code> のずれ</b>検査する語のうち4つを生成器に渡していない<div class="stwrap"><span class="st st-open">開いている</span></div></div>
+<div class="node n-done"><b>指示が複数形を誘うのに欄が単数</b>κ_n を「価格・財源」と連結表示したまま、欄は単数だった（型1 の未処置分）。<b>指示の側と欄の側を両方直した</b> ―― 連結表示6箇所を〈鉤括弧で割り個数を明示〉へ（座席一覧と連鎖行も同じ処置）、そのうえで <code>s6_kappa</code> を<b>配列</b>で申告させる。連結は<code>kappa_merged</code>で「一要素の中の連結」だけを捕まえる<em>第12.5b版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-done"><b><code>BAN</code> と <code>V0</code> のずれ</b>検査する語のうち4つ（<code>warrant</code>・承認を積・資本として・消去対象）を生成器に渡していなかった。<b>渡していない語で落とすのは仕様のほうの不備である</b>（A27・A28 と同じ形）。手書きの表を二つ持つのをやめ、<b><code>BAN</code> を <code>V0</code> ∪ <code>V0_RE</code> から導出</b>した ―― 配管の刻みと同じ処置で、離れようがなくなる<em>第12.5b版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
 <div class="node n-wait"><b>必須要素と字数上限が両立していなかった</b>優先順位を規定した——<b>要素は必須、字数は目安</b>（導出 &gt; 較正）。落ちを隠させない欄も作った<em>A27 実装済み</em><div class="stwrap"><span class="st st-wait">効果は未測定</span></div></div>
-<div class="node n-open"><b>⑥は〈本文〉と〈運搬の道具〉が混ざっている</b>必須要素13個は 説得の本文8 ＋ 起案理由文・上申用サマリ・記入スロット・層A・下向き資料5。上限を本文だけに掛ければ 41字/要素 → 56〜64字。<b>採らずに残した</b><div class="stwrap"><span class="st st-open">A27 の次の手</span></div></div>
+<div class="node n-wait"><b>⑥は〈本文〉と〈運搬の道具〉が混ざっている</b>必須要素13個は 説得の本文8 ＋ 起案理由文・上申用サマリ・記入スロット・層A・下向き資料5。上限を本文だけに掛ければ 41字/要素 → 56〜64字。<b>採らずに残した。</b>いま分離すると、要素が落ちたのが「多すぎるから」か「優先順位が無かったから」か<b>切り分けられなくなる</b>ので、走行の後に回す<div class="stwrap"><span class="st st-wait">走行の結果待ち</span></div></div>
 <div class="node n-hold"><b>Arm 1 の確定が未了</b><code>prompts8_v12.py</code> はまだ無い<div class="stwrap"><span class="st st-hold">§4-3</span></div></div>
 </div>
 </div>
@@ -1338,6 +1338,7 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <tr style="background:#e9f5ee"><td>済</td><td><b>A28 を実装した</b><br><small>第12.4版・<code>s6_quantity_sources</code>＋<code>s6_to_sales</code></small></td><td>試算は禁じない。<b>分からないものを営業へ回す出口</b>を作った。生成器には要判断の出口が無かった</td></tr>
 <tr style="background:#e9f5ee"><td>済</td><td><b>モデル層の残余4件を閉じた</b><br><small>第12.5版・<code>C_move</code>／<code>S1,S2,S3</code>／cost 単調性／<code>START</code>。回帰 173項目・8セルの決定表は不変</small></td><td><b>下流を盲検しても意味が無いので先に片づけた。</b>4件のうち2件は<b>問いのほうが間違っていた</b>——合成規則は要らず、cost 単調性は探していた対象が存在しなかった</td></tr>
 <tr style="background:#e9f5ee"><td>済</td><td><b>刻みを書き出し側へ移した</b><br><small>第12.5版・<code>dump_stamped</code>／<code>stamp.load</code>／<code>assert_fresh</code></small></td><td>刻むのを呼び出し側の作法に任せると、<b>作法を知らない経路が必ず一つ残る</b>。そして刻んでも<b>照合しなければ気づけない</b>ので、指示文を組む前に版を突き合わせる</td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><b>生成指示の2件を閉じた</b><br><small>第12.5b版・κ_n の連結表示と <code>s6_kappa</code> の欄割り／<code>BAN</code> を <code>V0</code> から導出。回帰 186項目</small></td><td><b>走行の前に直すべきものだけを直した。</b>⑥の分離は、要素が落ちる原因を切り分けられなくなるので走行の後に回す</td></tr>
 <tr style="background:#fbf2e2"><td><b>1</b></td><td><b>Arm 1 の8体を走らせて A26・A27・A28 を測る</b><br><small>予測は <code>predict_v12_3.md</code> と 第12.4版の設計書に先置き済み。届いていることも走行前に確認済み（8/8×3）</small></td><td><b>いま最大の未知。</b>3つとも別々の診断コードを持つので採点上は分離できる。約37分・50万トークン</td></tr>
 <tr><td>2</td><td><b>結果を見て A27 の次の手を決める</b><br><small>⑥を〈本文〉と〈運搬の道具〉に分けるか</small></td><td><code>A27_BLOCK_OMITTED</code> が複数出たら分離へ進む根拠になる。出なければ優先順位の規定だけで足りた</td></tr>
 <tr><td>3</td><td><b>Arm 1 を確定させる</b> → <code>prompts8_v12.py</code><br><small>あわせて<b>⑥の申告欄を割る</b>（型1 の処置）</small></td><td>基準の連結は照合側で吸収したが、<b>本筋は欄を割ること</b>。A24 と同じ</td></tr>
