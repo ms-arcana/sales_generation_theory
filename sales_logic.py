@@ -292,7 +292,13 @@ U, U_ASK = 1.0, 0.3
 V0 = ["消去対象", "残余", "カテゴリC", "様相", "必然化", "問題化", "内在的否定",
       "措定", "実然", "warrant", "前提化", "承認を積", "資本として", "共著者",
       "蝶番", "縮退", "拘束の所在", "エンテュメーメ", "省略三段論法", "外延", "被覆率"]
-V0_RE = [r"(?<!法)消去(?!法)", r"M_[0-9i]|Mᵢ", r"\bD[1-7][a-d]?\b", r"T-[A-E]"]
+# A25c（第12.1版）：`\b` は **日本語の隣で境界にならない**。Python の \w は日本語も含むので、
+# 「御社のD5について」は \bD[1-7]\b に一致しない。設計語の記号は日本語の地の文に埋めて
+# 書かれるのだから、この書き方では **一度も検査していなかった**（R9 の 0/36 の一部が空振り）。
+# 実本文への漏洩は 24枚を緩い正規表現で走査しても 0件だったので、実害は出ていない。
+# 境界は ASCII で取る。
+V0_RE = [r"(?<!法)消去(?!法)", r"M_[0-9i]|Mᵢ",
+         r"(?<![0-9A-Za-z])D[1-7][a-d]?(?![0-9A-Za-z])", r"T-[A-E]"]
 
 
 # ══════════════════════════════════════════════════════════════════ 層1
@@ -945,7 +951,8 @@ def check_v0(copy: Dict[str, str]) -> List[Finding]:
 
 
 def check_unit_presence(copy: Dict[str, str], dec: Declared,
-                       stages: Sequence[str] = STAGES) -> Tuple[List[Finding], bool]:
+                       stages: Sequence[str] = STAGES
+                       ) -> Tuple[List[Finding], bool, List[Judgment]]:
     """②で導入した単位が⑥に出現するか。A6：出現していれば『併記』であって置換ではない。
     ②が Σ にないときは s2_unit は未定義であって、検査対象ではない（A10）
 
@@ -954,19 +961,41 @@ def check_unit_presence(copy: Dict[str, str], dec: Declared,
     「作業時間（時間）」のように単位に説明句を付けて申告してくる。第12版の走行では
     R10b_UNIT_ABSENT 15件のうち **14件が、本文に単位が在るのに完全一致で外した誤検出**
     だった。宣言の型が緩いなら、照合の側が正規化する（A24 と同じ型の混同）。
+
+    A25b（第12.1版）：A25 の正規化はまだ浅かった。
+    ・宣言が**文**になると照合語が取れない。E2-P2 は「担任1人あたりが年間に募集へ充てる
+      日数（担任工数の日数）」と申告し、⑥に「担任工数」も「日数」も在るのに外していた。
+      → 助詞「の」でも区切る。
+    ・候補が**空集合**になる場合（単位語が1文字：件・人・日・円…）、現行は必ず停止する。
+      日本語の単位は1文字が普通なので、25業界へ広げれば確実に踏む。
+      照合できないことは「無い」ことではない。N2 に従い、停止でも通過でもなく**要判断**へ。
+    ・⑥が Σ に無ければ、そもそも照合対象がない（A10 の未定義）。
+    ・R10b_UNIT_REPLACED は同じ一つの事実の二度目の呼び名だった（ABSENT と必ず同時に立つ）。
+      停止は ABSENT 一本に寄せ、REPLACED は註記（info）へ落とす。
     """
-    if "②" not in stages or not dec.s2_unit:
-        return [], True
-    kept = any(c in copy.get("⑥", "") for c in unit_tokens(dec.s2_unit))
-    return ([] if kept else [Finding("R10b_UNIT_ABSENT", "stop", dec.s2_unit)]), kept
+    if "②" not in stages or "⑥" not in stages or not dec.s2_unit:
+        return [], True, []
+    cand = unit_tokens(dec.s2_unit)
+    if not cand:
+        return [], True, [Judgment("R10b_UNIT_UNCHECKABLE", dec.s2_unit)]
+    kept = any(c in copy.get("⑥", "") for c in cand)
+    if kept:
+        return [], True, []
+    f = [Finding("R10b_UNIT_ABSENT", "stop", dec.s2_unit)]
+    if dec.s6_recasts_unit:
+        f.append(Finding("R10b_UNIT_REPLACED", "info", f"{dec.s2_from_unit}->{dec.s2_unit}"))
+    return f, False, []
 
 
 def unit_tokens(u: str) -> Set[str]:
-    """宣言された単位文字列から、照合に使える単位語の候補を取り出す（A25）。
+    """宣言された単位文字列から、照合に使える単位語の候補を取り出す（A25 / A25b）。
 
     「作業時間（時間）」→ {作業時間（時間）, 作業時間, 時間}
     「時間（売場に張り付くパート人時）」→ {…, 時間, 売場に張り付くパート人時}
+    「担任1人あたりが年間に募集へ充てる日数（担任工数の日数）」→ {…, 担任工数, 日数}
     1文字の候補は落とす（「日」「件」単独では地の文に埋もれて照合にならない）。
+    **全部落ちて空集合になったら、それは「単位が無い」ではなく「照合できない」である**
+    ―― 判定は呼び側が要判断へ回す。
     """
     out = {u.strip()}
     m = re.match(r"^(.*?)[（(](.*?)[)）]\s*$", u.strip())
@@ -975,7 +1004,29 @@ def unit_tokens(u: str) -> Set[str]:
     for part in re.split(r"[（()）／・、,/]", u):
         if part.strip():
             out.add(part.strip())
+    for part in list(out):                    # A25b：助詞「の」でも区切る
+        if "の" in part:
+            out |= {x.strip() for x in part.split("の") if x.strip()}
     return {c for c in out if len(c) >= 2}
+
+
+def kappa_tokens(k: Optional[str]) -> Set[Kappa]:
+    """宣言された基準（κ）の文字列から、照合に使える基準語を取り出す。
+
+    A24（費目の連結）・A25（単位の説明句）と**まったく同じ型の第3例**である。
+    κ_n が2つある座席（理事長＝価格・財源、社長＝価格・財源）では、指示文が
+    「価格・財源」という連結形で4回書いているのに、申告欄は単数の文字列だった。
+    生成器は指示の見せ方をそのまま写して `s6_kappa="価格・財源"` と申告し、
+    機械は「そんな基準は無い」と読んで A16 を出していた（第12版 arm0 の A16 2件の正体）。
+
+    宣言の型が緩いなら、照合の側が正規化する。既知の基準名に割れなければ元の文字列を返す
+    （割れない＝本当に未知の基準なので、従来どおり EXPR_TABLE_MISS へ落ちる）。
+    """
+    if not k:
+        return set()
+    ks = {x.strip() for x in re.split(r"[・、,／/＋+]|と", k) if x.strip()}
+    known = {x for x in ks if x in RK}
+    return known if known else {k.strip()}
 
 
 def check_seat_words(copy: Dict[str, str], dec: Declared,
@@ -1085,12 +1136,12 @@ def check_chain(dec: Declared,
     if chain and not by_seat:
         j.append(Judgment("A23_PER_SEAT_UNDECLARED", ",".join(c[0] for c in chain)))
     # ⑥に既に在る基準（②の単位を保持していれば実務性も在る＝A6 の併記）
-    bases = {dec.s6_kappa}
+    bases = kappa_tokens(dec.s6_kappa)
     if kept_unit and dec.s2_unit:
         bases.add("実務性")
     for name, kappa, form, origin in chain:
         own = by_seat.get(name)
-        cand = bases | ({own} if own else set())
+        cand = bases | kappa_tokens(own)
         ok = any(b in EXPR_OK and (EXPR_OK[b] & set(kappa)) for b in cand)
         if not ok:
             f.append(Finding("A16_NOT_CONV_AT_SEAT", "stop",
@@ -1142,23 +1193,28 @@ def check_declared(dec: Declared, kn: Set[Kappa], kept_unit: bool,
                                  f"s4={dec.s4_period_months}m s6={dec.s6_period_months}m"))
 
     # R10b 単位。A6：禁じるのは置換であって併記ではない
+    # A25b：「⑥に単位が無い」の停止は check_unit_presence 側の ABSENT 一本に寄せた。
+    # ここは併記（正しい両替）の註記だけを残す。二つのコードで同じ事実を二度数えない。
     if has2 and dec.s2_unit:
         if dec.s6_recasts_unit is None:
             j.append(Judgment("S6_UNIT_RECAST_UNDECLARED", dec.s2_unit))
-        elif dec.s6_recasts_unit and not kept_unit:
-            f.append(Finding("R10b_UNIT_REPLACED", "stop",
-                             f"{dec.s2_from_unit}->{dec.s2_unit}"))
         elif dec.s6_recasts_unit and kept_unit:
             f.append(Finding("R10b_UNIT_JUXTAPOSED", "info", dec.s2_unit))
 
-    # A5 ⑥が κ_n で読めるか
+    # A5 ⑥が κ_n で読めるか（A25c：連結された基準名は正規化してから引く）
     if dec.s6_kappa is None:
         j.append(Judgment("A5_KAPPA_UNDECLARED"))
-    elif dec.s6_kappa not in EXPR_OK:
-        j.append(Judgment("EXPR_TABLE_MISS", f"⑥ k={dec.s6_kappa}"))
-    elif not (EXPR_OK[dec.s6_kappa] & set(kn)):
-        f.append(Finding("A5_NOT_EXPRESSIBLE", "stop",
-                         f"{dec.s6_kappa}->{sorted(kn)}"))
+    else:
+        ks = kappa_tokens(dec.s6_kappa)
+        if len(ks) > 1 or (ks and dec.s6_kappa.strip() not in ks):
+            f.append(Finding("A25_KAPPA_MERGED", "info",
+                             f"{dec.s6_kappa}->{sorted(ks)}"))
+        known = {x for x in ks if x in EXPR_OK}
+        if not known:
+            j.append(Judgment("EXPR_TABLE_MISS", f"⑥ k={dec.s6_kappa}"))
+        elif not any(EXPR_OK[x] & set(kn) for x in known):
+            f.append(Finding("A5_NOT_EXPRESSIBLE", "stop",
+                             f"{sorted(known)}->{sorted(kn)}"))
 
     # R14 量の型（A13）。単発の④に flow 型の量は立たない
     if dec.s6_kappa_type is None:
@@ -1212,10 +1268,10 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
                   gamma_own: Optional[Dict[str, str]] = None,
                   chain: Sequence[Tuple[str, Sequence[Kappa], Sequence[str], str]] = (),
                   unwilling: Sequence[str] = ()) -> dict:
-    uf, kept = check_unit_presence(copy, dec, stages)
+    uf, kept, uj = check_unit_presence(copy, dec, stages)
     f = check_v0(copy) + uf
     f2, j = check_declared(dec, set(kappa_final), kept, stages, n_seats)
-    f += f2
+    f += f2; j += uj
     f3, j3 = check_realize(dec, executors, unwilling); f += f3; j += j3
     f4, j4 = check_dates_v7(dec, deadline); f += f4; j += j4
     f5, j5 = check_insult(dec, gamma_own or {}); f += f5; j += j5

@@ -548,12 +548,73 @@ from sales_logic import unit_tokens, check_unit_presence
 check("A25 括弧つきの宣言から単位語を取り出す",
       {"作業時間", "時間"} <= unit_tokens("作業時間（時間）"), unit_tokens("作業時間（時間）"))
 check("A25 1文字の候補は落とす", "日" not in unit_tokens("担任工数（人日）"))
-f_u, kept = check_unit_presence({"⑥": "作業時間で年420時間、手元資金で年54万円"},
-                                Declared(s2_unit="作業時間（時間）"), ["②", "⑥"])
+f_u, kept, _ = check_unit_presence({"⑥": "作業時間で年420時間、手元資金で年54万円"},
+                                   Declared(s2_unit="作業時間（時間）"), ["②", "⑥"])
 check("A25 説明句つきで宣言しても、本文に単位が在れば通る", kept and not f_u, [x.code for x in f_u])
-f_u2, kept2 = check_unit_presence({"⑥": "手元資金で年54万円"},
-                                  Declared(s2_unit="作業時間（時間）"), ["②", "⑥"])
+f_u2, kept2, _ = check_unit_presence({"⑥": "手元資金で年54万円"},
+                                     Declared(s2_unit="作業時間（時間）"), ["②", "⑥"])
 check("A25 本当に無ければ従来どおり停止",
       (not kept2) and [x.code for x in f_u2] == ["R10b_UNIT_ABSENT"], [x.code for x in f_u2])
+
+
+# ══════════════════════════════════════════════ 第12.1版（§4-1 物差しを検める）
+print("\n── 第12.1版 A25b：単位語の正規化がまだ浅かった")
+from sales_logic import kappa_tokens, V0_RE, check_chain as _cc
+import re as _re
+
+U_SENT = "担任1人あたりが年間に募集へ充てる日数（担任工数の日数）"
+check("A25b 宣言が文でも、助詞『の』で区切って単位語を取り出す",
+      {"担任工数", "日数"} <= unit_tokens(U_SENT), sorted(unit_tokens(U_SENT)))
+f_s, kept_s, _ = check_unit_presence(
+    {"⑥": "教務主任＝試行中の担任工数は1人あたり約3日（日数のまま）"},
+    Declared(s2_unit=U_SENT, s6_recasts_unit=True), ["②", "⑥"])
+check("A25b 本文に『担任工数』が在るのに停止していた誤検出が消える",
+      kept_s and not f_s, [x.code for x in f_s])
+
+check("A25b 単位語が1文字だけなら候補は空になる", unit_tokens("件") == set(), unit_tokens("件"))
+f_1, kept_1, j_1 = check_unit_presence({"⑥": "年420件を削減"},
+                                       Declared(s2_unit="件"), ["②", "⑥"])
+check("A25b 照合できない単位は、停止でも通過でもなく要判断へ（N2）",
+      kept_1 and not f_1 and [x.code for x in j_1] == ["R10b_UNIT_UNCHECKABLE"],
+      ([x.code for x in f_1], [x.code for x in j_1]))
+
+f_n6, kept_n6, _ = check_unit_presence({"②": "人日で数え直します"},
+                                       Declared(s2_unit="人日"), ["②", "④"])
+check("A25b ⑥が Σ に無ければ R10b は検査対象を持たない（A10）",
+      kept_n6 and not f_n6, [x.code for x in f_n6])
+
+f_d, kept_d, _ = check_unit_presence({"⑥": "手元資金で年54万円"},
+                                     Declared(s2_unit="作業時間", s2_from_unit="人",
+                                              s6_recasts_unit=True), ["②", "⑥"])
+check("A25b 同じ一つの事実を ABSENT と REPLACED で二度数えない",
+      [x.code for x in f_d if x.level == "stop"] == ["R10b_UNIT_ABSENT"],
+      [(x.code, x.level) for x in f_d])
+
+print("\n── 第12.1版 A25c：連結された基準名と、日本語隣接の設計語")
+check("A25c 連結された基準は既知の基準語へ割る",
+      kappa_tokens("価格・財源") == {"価格", "財源"}, kappa_tokens("価格・財源"))
+check("A25c 割れない基準は元のまま返す（EXPR_TABLE_MISS へ落ちる）",
+      kappa_tokens("現場の肌感") == {"現場の肌感"}, kappa_tokens("現場の肌感"))
+
+CH121 = [("教務主任", ["実務性"], ["担任工数"], "個人"),
+         ("理事長", ["価格", "財源"], ["手元資金"], "個人")]
+f_k, _j_k = _cc(Declared(s6_kappa="価格・財源", s2_unit="担任工数",
+                         s3_form_mapping="x",
+                         s6_kappa_by_seat={"教務主任": "実務性", "理事長": "価格・財源"}),
+                CH121, kept_unit=True)
+check("A25c 『価格・財源』で申告しても、座席の基準で読めれば通る（A16 の誤検出）",
+      not [x for x in f_k if x.code == "A16_NOT_CONV_AT_SEAT"], [x.code for x in f_k])
+f_k2, _ = _cc(Declared(s6_kappa="実務性", s2_unit=None, s3_form_mapping="x",
+                       s6_kappa_by_seat={"教務主任": "実務性", "理事長": "実務性"}),
+              CH121, kept_unit=False)
+check("A25c 正規化しても、本当に読めない基準は従来どおり停止",
+      "A16_NOT_CONV_AT_SEAT" in [x.code for x in f_k2], [x.code for x in f_k2])
+
+check("A25c 設計語の記号は日本語の地の文でも検出される（\\b は効かなかった）",
+      any(_re.search(p, "御社のD5について") for p in V0_RE))
+check("A25c 英数字に埋もれた D5 は誤検出しない",
+      not any(_re.search(p, "型番 SD500 の話") for p in V0_RE))
+check("A25c 従来どおり空白区切りでも検出される",
+      any(_re.search(p, "これは D7a です") for p in V0_RE))
 
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
