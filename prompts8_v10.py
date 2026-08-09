@@ -37,9 +37,29 @@ STAGE_SPEC = {
           "命令法（〜してください／ご決断を）で締めない。約束法（必ず〜します／保証します）を使わない。"),
 }
 
-BAN = ["消去", "残余", "カテゴリC", "様相", "必然化", "問題化", "内在的否定", "措定", "実然",
-       "前提化", "共著者", "蝶番", "縮退", "拘束の所在", "エンテュメーメ", "省略三段論法",
-       "外延", "被覆率", "M_0", "M_i", "D1〜D7 のような記号", "T-A〜T-E のような記号"]
+# 第12.5b版：手書きの表を二つ持つのをやめ、検査側（sales_logic.V0 ∪ V0_RE）から導出する。
+# 従来は検査する語のうち4つ（warrant・承認を積・資本として・消去対象）が生成器に渡っていなかった。
+from sales_logic import ban_words
+BAN = ban_words()
+
+
+# ── κ_n の見せ方（第12.5b版・型1 の未処置分）
+# 「価格・財源」と連結して4回書いていたので、生成器は指示の見せ方をそのまま写して
+# s6_kappa="価格・財源" と申告し、機械は「そんな基準は無い」と読んだ（第12版 arm0 の A16 2件）。
+# A25c で照合側は正規化したが、**指示の側は直っていなかった**。鉤括弧で割り、個数を明示する。
+
+def kn_show(kn) -> str:
+    """κ_n を、一語に見えない形で並べる（文中に埋める位置で使う）"""
+    kn = list(kn)
+    return "".join(f"「{k}」" for k in kn) if kn else "（未登録）"
+
+
+def kn_all(kn) -> str:
+    """κ_n を並べ、**個数を明示する**（③・A23 と同じ形。単数なら個数は付けない）"""
+    kn = list(kn)
+    if len(kn) <= 1:
+        return kn_show(kn)
+    return kn_show(kn) + f" の{len(kn)}つ**すべて**"
 
 DIM_PLAIN = {
     "D5": "その打ち手を採ると、いま別の仕事に使っている人手・枠・資金がそこへ移る。何が止まるかを、期限つきで書く",
@@ -127,17 +147,18 @@ def build(rec, cell):
     lines.append(f"【買い手】{rec['業界']} ／ {rec['セグメント']}")
     lines.append("【読み手と裁定者】")
     for s in rec["seats"]:
-        lines.append(f"  ・{s['name']}（見るもの：{'・'.join(s['kappa'])} ／ 通し方：{s['chi']} ／ "
+        lines.append(f"  ・{s['name']}（見るもの：{kn_show(s['kappa'])} ／ 通し方：{s['chi']} ／ "
                      f"{s['gamma']} ／ {'資料を読む' if s['reads'] else '資料は読まない'}）")
     if rec["veto"]:
         lines.append(f"  ・{rec['veto'][0]}（決裁権はないが、この人物が拒めば事業は止まる）")
     last = rec["seats"][-1]
-    lines.append(f"  ※ 最後に決めるのは【{last['name']}】。この人物は {'・'.join(rec['kappa_n'])} でしか物を見ない。")
+    lines.append(f"  ※ 最後に決めるのは【{last['name']}】。"
+                 f"この人物は {kn_all(rec['kappa_n'])} でしか物を見ない。")
     lines.append(f"  ※ この座席の文書様式に載っている語は次のものだけ：{'／'.join(rec['form_n']) or '（未登録）'}")
     lines.append("  ※ **資料は途中の座席を全部通る。**終端だけに合わせて書くと、手前で止まる。")
     for nm, kp, fm, og in rec.get("chain", []):
         mark = "（制度が置いた座席。飛ばせない）" if og == "制度" else ""
-        lines.append(f"     ・{nm} は {'・'.join(kp)} でしか読まない／様式の語：{'／'.join(fm) or '（未登録）'}{mark}")
+        lines.append(f"     ・{nm} は {kn_show(kp)} でしか読まない／様式の語：{'／'.join(fm) or '（未登録）'}{mark}")
     lines.append(f"  ※ 資料を最後まで読む人のうち、最も遠い座席は【{rec['j_star']}】。\n")
 
     if rec["gamma_own"]:
@@ -178,8 +199,8 @@ def build(rec, cell):
             rng = f"{t.q_low}〜{t.q_high}" if t.q_low is not None else "（幅は自分で推定して明示）"
             lines.append(f"      添える量：{t.q}  概算 {rng}  出所：{t.q_source}")
             if t.q_recast:
-                lines.append(f"      ※ この量は {'・'.join(rec['kappa_n'])} では直接読めない。"
-                             f"同じ枚の中で、誰の何が {'・'.join(rec['kappa_n'])} の側で動くのかを書き添えること。")
+                lines.append(f"      ※ この量は {kn_show(rec['kappa_n'])} では直接読めない。"
+                             f"同じ枚の中で、誰の何が {kn_show(rec['kappa_n'])} の側で動くのかを書き添えること。")
     lines.append("")
     lines.append("【⑤で扱う打ち手（これ以外は⑤に出さない）】")
     for name, mtype, dims, binder in rec["delta"]:
@@ -209,7 +230,7 @@ def build(rec, cell):
             base = "②" if "②" in stages else "④"
             spec += (f"\n      さらに⑥では次の三つを必ず満たすこと。"
                      f"\n      (1) {base}で使った単位を**そのまま残したうえで**、"
-                     f"{'・'.join(rec['kappa_n'])} の側で読める量（金額・回収年数・利益の変動など）を"
+                     f"{kn_all(rec['kappa_n'])} の側で読める量（金額・回収年数・利益の変動など）を"
                      f"**併記**する。単位を置き換えて消してはならない。両方を並べる。"
                      f"\n      (2) ④で数えた量のうち、本提案が実際に消すのはどの部分かを示す。"
                      f"全部でないなら、どこまでかを数で書く。"
@@ -228,6 +249,7 @@ def build(rec, cell):
     lines.append("【出力】各枚 200〜450字の日本語本文。見出し語だけの箇条書きにしない。"
                  "そのままスライドに貼れる文章にすること。"
                  "加えて declared の各項目を正直に申告すること（書いていない段の項目は null にする）。"
+                 "\n  ・**s6_kappa** は、**最後に決める座席が見る基準**を**配列**で申告する。上の【最後に決めるのは…】に挙がっている基準を、**その数だけ**並べること。**一つの文字列に連結してはならない**（2つなら [\"価格\", \"財源\"]。\"価格・財源\" と書かない）。"
                  "**買い手がどう反応するかの予測は書かない。**"
                  "self_report には、仕様のうち書ききれなかった点と、規定がなくて困った点だけを書く。")
     return "\n".join(lines)

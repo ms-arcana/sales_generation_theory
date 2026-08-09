@@ -26,7 +26,7 @@ from stamp import load as _load, assert_fresh as _assert_fresh   # 第12.5版：
 import sys
 from cells8_v10 import CELLS, SELLERS, TODAY
 from prompts8_v10 import (STAGE_SPEC, BAN, DIM_PLAIN, FORM_KIND,
-                          SELLER_DESC, PERSONA)
+                          SELLER_DESC, PERSONA, kn_show, kn_all)
 
 # 第12.5版：これは as-run（アーム実験に実際に使われた表）なので古くて当然。
 # 組み直すときは regen_v12.py が `P.DEC` を差し替え、そこで assert_fresh が掛かる。
@@ -70,7 +70,7 @@ A28_LINE = (
 
 def spec_s6(rec, stages, arm):
     """⑥の書き方。Arm 1 以降は③と同じ形――座席をその場に列挙して、個数を明示する。"""
-    kn = "・".join(rec["kappa_n"])
+    kn = kn_all(rec["kappa_n"])
     base = "②" if "②" in stages else "④"
     reading = rec.get("chain") or []
     s = STAGE_SPEC["⑥"]
@@ -138,13 +138,16 @@ def spec_out(rec, arm):
                 "本文だけで書ききれるならそれでもよい。" + PRIORITY + "\n  ")
     tail = ("見出し語だけの箇条書きにしない。そのままスライドに貼れる文章にすること。"
             "加えて declared の各項目を正直に申告すること（書いていない段の項目は null にする）。"
+            "\n  ・**s6_kappa** は、**最後に決める座席が見る基準**を**配列**で申告する。上の【最後に決めるのは…】に挙がっている基準を、**その数だけ**並べること。**一つの文字列に連結してはならない**（2つなら [\"価格\", \"財源\"]。\"価格・財源\" と書かない）。"
             "\n  ・**s6_realize** は〈誰が・いつ・どの費目〉の**組の配列**で申告する。"
             "費目が2つなら組も2つ。一つの文字列に連結してはならない。")
     if arm >= 1:
         seats = "／".join(n for n, _k, _f, _o in reading) or rec["j_star"]
         tail += (f"\n  ・**s6_kappa_by_seat** は〈座席名・基準〉の**組の配列**で申告する。"
                  f"座席は {seats} の**すべて**を挙げる。基準はその座席に向けて⑥に置いた量の側"
-                 f"（実務性／価格／財源／説明可能性／政治的可視性 のいずれか）。")
+                 f"（実務性／価格／財源／説明可能性／政治的可視性 のいずれか）。"
+                 f"座席が複数の基準を見ていても、**その座席に向けて置いた量の基準を一つだけ**書く。"
+                 f"**連結してはならない**（「価格・財源」と書かない）。")
     tail += ("\n  ・**s6_quantity_sources** は〈座席名・出所〉の**組の配列**で申告する。"
              "出所は 買い手データ／公開統計／売り手の実績／試算／営業記入 のいずれか。"
              "**裏づけが無いのに『売り手の実績』と書かないこと。**"
@@ -174,17 +177,18 @@ def build(rec, cell, arm):
     lines.append(f"【買い手】{rec['業界']} ／ {rec['セグメント']}")
     lines.append("【読み手と裁定者】")
     for s in rec["seats"]:
-        lines.append(f"  ・{s['name']}（見るもの：{'・'.join(s['kappa'])} ／ 通し方：{s['chi']} ／ "
+        lines.append(f"  ・{s['name']}（見るもの：{kn_show(s['kappa'])} ／ 通し方：{s['chi']} ／ "
                      f"{s['gamma']} ／ {'資料を読む' if s['reads'] else '資料は読まない'}）")
     if rec["veto"]:
         lines.append(f"  ・{rec['veto'][0]}（決裁権はないが、この人物が拒めば事業は止まる）")
     last = rec["seats"][-1]
-    lines.append(f"  ※ 最後に決めるのは【{last['name']}】。この人物は {'・'.join(rec['kappa_n'])} でしか物を見ない。")
+    lines.append(f"  ※ 最後に決めるのは【{last['name']}】。"
+                 f"この人物は {kn_all(rec['kappa_n'])} でしか物を見ない。")
     lines.append(f"  ※ この座席の文書様式に載っている語は次のものだけ：{'／'.join(rec['form_n']) or '（未登録）'}")
     lines.append("  ※ **資料は途中の座席を全部通る。**終端だけに合わせて書くと、手前で止まる。")
     for nm, kp, fm, og in rec.get("chain", []):
         mark = "（制度が置いた座席。飛ばせない）" if og == "制度" else ""
-        lines.append(f"     ・{nm} は {'・'.join(kp)} でしか読まない／様式の語：{'／'.join(fm) or '（未登録）'}{mark}")
+        lines.append(f"     ・{nm} は {kn_show(kp)} でしか読まない／様式の語：{'／'.join(fm) or '（未登録）'}{mark}")
     lines.append(f"  ※ 資料を最後まで読む人のうち、最も遠い座席は【{rec['j_star']}】。\n")
 
     if rec["gamma_own"]:
@@ -227,8 +231,8 @@ def build(rec, cell, arm):
             rng = f"{t.q_low}〜{t.q_high}" if t.q_low is not None else "（幅は自分で推定して明示）"
             lines.append(f"      添える量：{t.q}  概算 {rng}  出所：{t.q_source}")
             if t.q_recast:
-                lines.append(f"      ※ この量は {'・'.join(rec['kappa_n'])} では直接読めない。"
-                             f"同じ枚の中で、誰の何が {'・'.join(rec['kappa_n'])} の側で動くのかを書き添えること。")
+                lines.append(f"      ※ この量は {kn_show(rec['kappa_n'])} では直接読めない。"
+                             f"同じ枚の中で、誰の何が {kn_show(rec['kappa_n'])} の側で動くのかを書き添えること。")
     # 伝達漏れの修正（全アーム共通）：着手期限は決定表にあり、生成後にも検査しているのに、
     # 第10版までは指示文に一度も出していなかった（R12b が 1 件、教えていない期限で落ちた）。
     if rec.get("start_deadline"):

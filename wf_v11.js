@@ -42,7 +42,14 @@ const GEN_SCHEMA = {
         s6_ends_imperative: { type: 'boolean' },
         s6_contains_promise: { type: 'boolean' },
         s6_recasts_unit: { type: ['boolean', 'null'], description: '⑥で②の単位を別単位へ換算したか（併記でも true）' },
-        s6_kappa: { type: 'string', description: '⑥に置いた量のうち、最終裁定点に向けたものの基準' },
+        // 第12.5b版：欄を割った。最終裁定点の κ_n は2つありうるのに欄が単数で、
+        // 指示文が「価格・財源」と連結表示していた（型1・A24/A25/A25c と同じ形の4例目）。
+        s6_kappa: {
+          type: 'array',
+          description: '⑥に置いた量のうち、最終裁定点に向けたものの基準。'
+            + '指示に挙がっている基準をその数だけ並べる。一つの文字列に連結しないこと',
+          items: { type: 'string', description: '実務性／価格／財源／説明可能性／政治的可視性 のいずれか' },
+        },
         s6_coverage_full: { type: ['boolean', 'null'], description: '提案が④で数えた量を全部消すか' },
         s6_coverage_disclosed: { type: ['boolean', 'null'], description: '全部でない場合、どこまで消すかを数で書いたか' },
         s6_coverage_subset: { type: ['boolean', 'null'], description: '提案が消す集合は、④で数えた集合に含まれるか' },

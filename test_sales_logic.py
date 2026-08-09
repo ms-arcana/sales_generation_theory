@@ -909,4 +909,63 @@ check("残余4 縮退しないので、落ちた段の Γ^pre 不足で止まる
       not any(f.code == "R8_PRE_MISSING" for f in _du["findings"]))
 check("残余4 未較正でも接尾辞であることは保たれる", is_suffix(_du["sigma"]))
 
+
+print("\n── 第12.5b版 生成指示の2件（型1 の未処置分／BAN と V0 のずれ）")
+from sales_logic import kappa_tokens, kappa_merged, ban_words, V0, V0_RE, V0_RE_PLAIN
+import prompts8_v10 as P10
+import re as _re
+
+# ── BAN は V0 から導く（手書きの表を二つ持たない）
+check("指示2 検査する語はすべて生成器に渡っている（V0 ⊆ BAN）",
+      set(V0) <= set(ban_words()), sorted(set(V0) - set(ban_words())))
+check("指示2 正規表現の分も人間語で渡している",
+      all(_re.search(rx, plain) for rx, plain in zip(V0_RE, V0_RE_PLAIN)))
+check("指示2 prompts の BAN は導出された同じもの", P10.BAN == ban_words())
+
+# ── κ_n の見せ方：連結しない
+check("指示1 κ_n が2つなら、鉤括弧で割って個数を明示する",
+      P10.kn_all(["価格", "財源"]) == "「価格」「財源」 の2つ**すべて**",
+      P10.kn_all(["価格", "財源"]))
+check("指示1 κ_n が1つなら個数は付けない", P10.kn_all(["財源"]) == "「財源」")
+check("指示1 「価格・財源」という連結形は指示文に出ない",
+      "価格・財源" not in P10.kn_all(["価格", "財源"]) + P10.kn_show(["価格", "財源"]))
+
+# ── 欄を割った：s6_kappa は配列で受ける
+check("指示1 配列で申告されたら、そのまま基準として読める",
+      kappa_tokens(["価格", "財源"]) == {"価格", "財源"})
+check("指示1 配列なら連結の註記は出ない", not kappa_merged(["価格", "財源"]))
+check("指示1 一要素の中で連結したら連結として捕まえる",
+      kappa_merged("価格・財源") and kappa_merged(["価格・財源"])
+      and kappa_tokens("価格・財源") == {"価格", "財源"})
+check("指示1 未知の基準は割らずに残す（EXPR_TABLE_MISS へ落とすため）",
+      kappa_tokens("独自スコア") == {"独自スコア"} and not kappa_merged("独自スコア"))
+_v = validate_copy(COPY, Declared(**{**BASE7, "s6_kappa": ["価格", "財源"]}),
+                   kappa_final=["価格", "財源"], stages=["②", "③", "④", "⑤", "⑥"],
+                   n_seats=2, executors=EXEC, deadline="2026-12-28")
+check("指示1 配列申告でも A5 は従来どおり通る",
+      not any(f.code in ("A5_NOT_EXPRESSIBLE", "A25_KAPPA_MERGED") for f in _v["findings"]),
+      [f.code for f in _v["findings"]])
+# 「価格」は表の上で 価格→{価格,財源} なので、κ_n=[価格,財源] は一語で覆える（＝申し送りは出ない）。
+# 覆えないのは 実務性 が混じる場合。
+_v1 = validate_copy(COPY, Declared(**{**BASE7, "s6_kappa": ["価格"]}),
+                    kappa_final=["実務性", "価格"], stages=["②", "③", "④", "⑤", "⑥"],
+                    n_seats=2, executors=EXEC, deadline="2026-12-28")
+check("指示1 基準が2つあるのに片方しか届いていなければ申し送る（止めない）",
+      any(j.code == "A5_KAPPA_PARTIAL" for j in _v1["needs_judgment"])
+      and not any(f.code == "A5_NOT_EXPRESSIBLE" and f.level == "stop" for f in _v1["findings"]),
+      [j.code for j in _v1["needs_judgment"]])
+# 指示文の全生成物に、基準の連結表示が残っていないこと（型1 の再発防止）
+try:
+    from stamp import load as _load_p
+    import collections as _c
+    _stray = _c.Counter()
+    for _arm in (0, 1, 2):
+        for _p in _load_p(f"prompts8_v12_arm{_arm}.json"):
+            for _ln in _p["prompt"].split("\n"):
+                if "価格・財源" in _ln and "書かない" not in _ln:
+                    _stray[_ln.strip()[:40]] += 1
+    check("指示1 生成された指示文に基準の連結表示が残っていない", not _stray, dict(_stray))
+except FileNotFoundError:
+    print("--  指示1 指示文ファイルが無いので走査は省略（regen_v12.py で作れる）")
+
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
