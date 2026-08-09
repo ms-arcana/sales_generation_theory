@@ -87,6 +87,11 @@
     "code": "R10a_RESIDUAL_UNDECLARED",
     "ref": "s4=12m",
     "msg": "④で立てた問題が本提案の実施後も再発する周期を、生成器が宣言していない（課金周期では代用しない）"
+   },
+   {
+    "code": "A27_OMISSION_UNDECLARED",
+    "ref": "必須要素23個",
+    "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -165,6 +170,11 @@
     "code": "A16_MAPPING_UNDECLARED",
     "ref": "学部長会",
     "msg": "制度由来の中間座席の様式語との対応を生成器が宣言していない"
+   },
+   {
+    "code": "A27_OMISSION_UNDECLARED",
+    "ref": "必須要素16個",
+    "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -255,6 +265,11 @@
     "code": "R10a_RESIDUAL_UNDECLARED",
     "ref": "s4=12m",
     "msg": "④で立てた問題が本提案の実施後も再発する周期を、生成器が宣言していない（課金周期では代用しない）"
+   },
+   {
+    "code": "A27_OMISSION_UNDECLARED",
+    "ref": "必須要素21個",
+    "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -342,6 +357,11 @@
     "code": "R10a_RESIDUAL_UNDECLARED",
     "ref": "s4=12m",
     "msg": "④で立てた問題が本提案の実施後も再発する周期を、生成器が宣言していない（課金周期では代用しない）"
+   },
+   {
+    "code": "A27_OMISSION_UNDECLARED",
+    "ref": "必須要素20個",
+    "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -435,6 +455,11 @@
     "code": "R10a_RESIDUAL_UNDECLARED",
     "ref": "s4=12m",
     "msg": "④で立てた問題が本提案の実施後も再発する周期を、生成器が宣言していない（課金周期では代用しない）"
+   },
+   {
+    "code": "A27_OMISSION_UNDECLARED",
+    "ref": "必須要素21個",
+    "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -508,8 +533,14 @@
     "msg": "買い手の既承認を否定していない"
    }
   ],
-  "post_judgments": [],
-  "post_pass": true
+  "post_judgments": [
+   {
+    "code": "A27_OMISSION_UNDECLARED",
+    "ref": "必須要素16個",
+    "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
+   }
+  ],
+  "post_pass": false
  },
  {
   "arm": 1,
@@ -597,6 +628,11 @@
     "code": "R10a_RESIDUAL_UNDECLARED",
     "ref": "s4=6m",
     "msg": "④で立てた問題が本提案の実施後も再発する周期を、生成器が宣言していない（課金周期では代用しない）"
+   },
+   {
+    "code": "A27_OMISSION_UNDECLARED",
+    "ref": "必須要素20個",
+    "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
    }
   ],
   "post_pass": false
@@ -684,6 +720,11 @@
     "code": "R10a_RESIDUAL_UNDECLARED",
     "ref": "s4=12m",
     "msg": "④で立てた問題が本提案の実施後も再発する周期を、生成器が宣言していない（課金周期では代用しない）"
+   },
+   {
+    "code": "A27_OMISSION_UNDECLARED",
+    "ref": "必須要素20個",
+    "msg": "必須要素のうち書けなかったものがあるかを、生成器が申告していない"
    }
   ],
   "post_pass": false

@@ -664,6 +664,42 @@ check("A26 ④が反復を問題化していなければ、そもそも検査し
 check("A26 R10a の指示文が『何が残るからか』を求めている（指示と検査の文言を揃えた）",
       "残る" in _msg["rules"]["R10a_NO_REPRODUCE"], _msg["rules"]["R10a_NO_REPRODUCE"])
 
+print("\n── 第12.3版 A27：必須要素は導出、字数上限は較正。衝突したら較正が譲る")
+from sales_logic import check_blocks
+BL = ["B_kappa_quantity", "B_realize", "B_seat_quantities", "B_summary_sheet", "B_human_slot"]
+
+f_b, j_b = check_blocks(Declared(s6_omitted_blocks=()), BL)
+check("A27 必須要素をすべて書いたなら通り、その旨が残る",
+      [x.code for x in f_b] == ["A27_NO_OMISSION"] and not j_b, [x.code for x in f_b])
+
+f_b, j_b = check_blocks(Declared(s6_omitted_blocks=("B_summary_sheet", "B_human_slot")), BL)
+check("A27 字数のために要素を落としたら停止（落とすことは仕様違反）",
+      [x.code for x in f_b] == ["A27_BLOCK_OMITTED"] and "B_summary_sheet" in f_b[0].ref,
+      [(x.code, x.ref) for x in f_b])
+
+f_b, j_b = check_blocks(Declared(s6_omitted_blocks=None), BL)
+check("A27 落ちの有無が未申告なら要判断（黙って通さない）",
+      not f_b and [x.code for x in j_b] == ["A27_OMISSION_UNDECLARED"], [x.code for x in j_b])
+
+f_b, j_b = check_blocks(Declared(s6_omitted_blocks=("B_precedent",)), BL)
+check("A27 点灯していない要素を落としたと申告したら、申告と決定表のずれとして要判断",
+      not f_b and [x.code for x in j_b] == ["A27_OMISSION_UNMATCHED"],
+      ([x.code for x in f_b], [x.code for x in j_b]))
+
+check("A27 必須要素が渡されていなければ検査しない（後方互換）",
+      check_blocks(Declared(s6_omitted_blocks=None), []) == ([], []))
+
+_vb = validate_copy(COPY, Declared(**BASE7), kappa_final=["価格", "財源"],
+                    stages=["②", "③", "④", "⑤", "⑥"], n_seats=2, executors=EXEC,
+                    deadline="2026-12-28", blocks=BL)
+check("A27 validate_copy から検査が届いている",
+      any(x.code.startswith("A27") for x in _vb["findings"] + _vb["needs_judgment"]),
+      [x.code for x in _vb["needs_judgment"]])
+
+_p11 = open("prompts8_v11.py", encoding="utf-8").read()
+check("A27 提示仕様に優先順位が明記されている（字数は目安・要素は必須）",
+      "字数は目安" in _p11 and "要素を落としてはならない" in _p11)
+
 print("\n── 第12.1版 G4：ν の二重の真実（旧 A と商材座標）")
 from sales_logic import (nu_of, check_axis_values, iso_norm, iso_date, blocks_on,
                          check_insult, check_dates_v7, expr_ok_of)

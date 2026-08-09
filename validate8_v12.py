@@ -53,6 +53,9 @@ def norm_stage(s, sigma, idx):
     return sigma[idx] if idx < len(sigma) else "?"
 
 
+MSG_BLOCKS = json.load(open("messages.json", encoding="utf-8"))["blocks"]
+
+
 def to_declared(dd):
     by_seat = None
     if dd.get("s6_kappa_by_seat"):
@@ -62,6 +65,13 @@ def to_declared(dd):
     if dd.get("s6_realize"):
         realize = tuple((x.get("actor"), x.get("date"), x.get("account"))
                         for x in dd["s6_realize"] if isinstance(x, dict))
+    omitted = None
+    if dd.get("s6_omitted_blocks") is not None:
+        # 生成器は日本語の要素名で答える（コードは渡していない）。ここでコードへ戻す。
+        # sales_logic は記号しか扱わない設計なので、翻訳はこの層でやる。
+        rev = {v: k for k, v in MSG_BLOCKS.items()}
+        omitted = tuple(rev.get(str(x).strip(), str(x).strip())
+                        for x in dd["s6_omitted_blocks"] if str(x).strip())
     return Declared(
         s2_unit=(dd.get("s2_unit") or None),
         s2_from_unit=(dd.get("s2_from_unit") or None),
@@ -84,6 +94,7 @@ def to_declared(dd):
         s5_denies_own=dd.get("s5_denies_own"),
         s6_kappa_by_seat=by_seat,
         s6_realize=realize,
+        s6_omitted_blocks=omitted,
     )
 
 
@@ -101,7 +112,8 @@ def score(d, g):
                       chain=[tuple(x) for x in (d.get("chain") or [])],
                       unwilling=d.get("unwilling") or [],
                       prod=Product(**d["prod"]) if d.get("prod") else None,
-                      industry=d.get("industry"))
+                      industry=d.get("industry"),
+                          blocks=d.get("blocks") or [])
     return copy, D, v
 
 

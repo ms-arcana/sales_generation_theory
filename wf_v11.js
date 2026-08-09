@@ -75,6 +75,11 @@ const GEN_SCHEMA = {
         s6_start_date: { type: ['string', 'null'], description: '⑥が示す着手日（YYYY-MM-DD）' },
         s6_self_check: { type: ['boolean', 'null'], description: '⑤で他手段を落とした条件を、自社の提案にも当てて確かめたか' },
         s5_denies_own: { type: ['string', 'null'], description: '⑤が否定してしまっている「買い手が自分で決めてきたこと」。無ければ空文字' },
+        s6_omitted_blocks: {
+          type: ['array', 'null'],
+          description: '【必ず入れる要素】のうち書けなかったものの名前。全部書けたなら空の配列 []。字数に収めるために落とした場合もここに出す（落とすこと自体が仕様違反なので隠さない）',
+          items: { type: 'string', description: '渡された【必ず入れる要素】の表記をそのまま使う' },
+        },
       },
     },
     self_report: { type: 'string', description: '書ききれなかった点と、規定がなくて困った点。無ければ「なし」' },

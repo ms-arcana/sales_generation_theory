@@ -240,6 +240,14 @@ class Declared:
     s6_self_check: Optional[bool] = None          # A14：⑤の根拠を自社案にも当てたか
     s5_denies_own: Optional[str] = None           # R17：⑤が否定している買い手の既承認（無ければ空文字）
     s6_kappa_by_seat: Optional[Dict[str, str]] = None   # A23：座席名 → その座席で読める量の基準
+    # A27（第12.3版）：提示仕様は両立しない二つの要求を持っていた。
+    #   必須要素の集合（⑥に10〜11個）は **導出**（Π と規則から blocks_on が出す）
+    #   字数上限 200〜450字は **較正**（「そのままスライドに貼れる」という、観測されていない前提）
+    # 優先順位が書かれていないので、生成器が毎回自分で決めていた。第12.2版の実測では
+    # 8体中5体が「収まらない」と訴え、3体が「どちらを優先するかの規定がない」と名指しした。
+    # 較正台帳の規律（導出表と較正表を分け、較正の側が譲る）に従い、**要素を優先し字数を破る**を規定する。
+    # そのうえで、それでも落とした要素は隠さず出させる ―― 落とすこと自体が仕様違反だから。
+    s6_omitted_blocks: Optional[Tuple[str, ...]] = None   # 書けなかった必須要素（ブロックのコード）
 
 
 @dataclass(frozen=True)
@@ -1159,6 +1167,38 @@ def check_seat_words(copy: Dict[str, str], dec: Declared,
     return f
 
 
+def check_blocks(dec: Declared, blocks: Sequence[str]) -> Tuple[List[Finding], List[Judgment]]:
+    """A27（第12.3版）：必須要素は導出、字数上限は較正。衝突したら較正の側が譲る。
+
+    第12.2版まで、⑥の必須要素が本文に在るかは**一度も検査していなかった**。
+    ⑥には10〜11個の要素が点灯するのに上限は450字（1要素あたり41字）で、
+    生成器は毎回どちらかを破っていた——上限を守った2セルは自己申告で
+    「別紙とするにとどめた」「量を落とした」と書いている。**落ちは self_report にしか出ていなかった。**
+
+    処置は A23 の紙側・A24 と同じ型：**欄を作る**（Arm 0 の実測で、欄そのものが指示として働く）。
+    落とした要素を申告させ、非空なら停止する。字数を破ることは仕様違反ではないが、
+    要素を落とすことは仕様違反である——この非対称が、規定されていなかった優先順位そのものである。
+    """
+    f, j = [], []
+    if not blocks:
+        return f, j
+    if dec.s6_omitted_blocks is None:
+        j.append(Judgment("A27_OMISSION_UNDECLARED", f"必須要素{len(blocks)}個"))
+        return f, j
+    omitted = [b for b in dec.s6_omitted_blocks if b]
+    if not omitted:
+        f.append(Finding("A27_NO_OMISSION", "info", f"必須要素{len(blocks)}個すべて記載"))
+        return f, j
+    known = [b for b in omitted if b in set(blocks)]
+    unknown = [b for b in omitted if b not in set(blocks)]
+    if known:
+        f.append(Finding("A27_BLOCK_OMITTED", "stop", ",".join(known)))
+    if unknown:
+        # 点灯していない要素を「落とした」と申告している＝申告と決定表がずれている
+        j.append(Judgment("A27_OMISSION_UNMATCHED", ",".join(unknown)))
+    return f, j
+
+
 def check_realize(dec: Declared, executors: Sequence[Tuple[str, Sequence[str]]],
                   unwilling: Sequence[str] = ()) -> Tuple[List[Finding], List[Judgment]]:
     """R13（A12）：〈誰が・いつ・どの費目を〉の三つ組。両替は写像ではなく行為である。
@@ -1417,7 +1457,8 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
                   chain: Sequence[Tuple[str, Sequence[Kappa], Sequence[str], str]] = (),
                   unwilling: Sequence[str] = (),
                   prod: Optional[Product] = None,
-                  industry: Optional[str] = None) -> dict:
+                  industry: Optional[str] = None,
+                  blocks: Sequence[str] = ()) -> dict:
     """第12.1版：商材座標と業界を受け取れるようにした。
 
     第10版は「較正表は業界の関数ではなく商材座標の関数である」と言い、`expr_ok_of` を入れたが、
@@ -1435,6 +1476,7 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
     f5, j5 = check_insult(dec, gamma_own or {}); f += f5; j += j5
     f6, j6 = check_chain(dec, chain, kept, ex); f += f6; j += j6
     f += check_seat_words(copy, dec, chain)      # A23 の紙側（申告だけで通さない）
+    f7, j7 = check_blocks(dec, blocks); f += f7; j += j7   # A27：要素の落ちを隠させない
     f, j = apply_calibration(f, j, industry, sigma_note=False)
     stop = [x for x in f if x.level == "stop"]
     return {"findings": f, "needs_judgment": j, "pass": not stop and not j}
