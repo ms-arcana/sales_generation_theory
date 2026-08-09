@@ -1,0 +1,15 @@
+# 展開して push するまで
+
+cd ~/projects
+mkdir -p sales-model && tar xzf model-workspace-v12.tar.gz -C sales-model
+cd sales-model
+
+git log --oneline          # b57bd5e 第12版 基準点 (tag: v12) / 6988e47 stamp.py
+git status                 # clean のはず
+python3 test_sales_logic.py | tail -3        # 97項目 すべて通過
+
+# GitHub へ（リポジトリは先に空で作っておく）
+git remote add origin git@github.com:<あなた>/sales-model.git
+git push -u origin main --tags
+# HTTPS なら
+# git remote add origin https://github.com/<あなた>/sales-model.git
