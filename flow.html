@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第11版）</title>
+<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第12.1版）</title>
 <style>
 :root{
   --ink:#1a1c22; --sub:#5d6470; --line:#d8dbe2; --bg:#fbfbfc;
@@ -88,6 +88,22 @@ td code{font-size:.85em}
 .tg-gen{background:var(--genbg);color:var(--gen)}
 .tg-chk{background:var(--chkbg);color:var(--chk)}
 
+/* ── 問題の状態チップ（第12.1版） ── */
+.st{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:3px;white-space:nowrap;letter-spacing:.03em}
+.st-open{background:#fbecec;color:#a33a3a;border:1px solid #e8bcbc}
+.st-hold{background:#fbf2e2;color:#a8690e;border:1px solid #e6cf9c}
+.st-done{background:#e9f5ee;color:#2f7a4d;border:1px solid #b6d9c4}
+.st-lat{background:#f1f3f6;color:#5d6470;border:1px solid #d8dbe2}
+.b-pipe .bandlab{background:#f1f3f6;color:#4a4f59;border:1px solid #c9cdd6}
+.b-pipe .node{border-color:#c9cdd6}
+.node.n-open{background:#fffbfb;border-color:#e8bcbc}
+.node.n-hold{background:#fffdf7;border-color:#e6cf9c}
+.node.n-done{background:#fafdfb;border-color:#b6d9c4}
+.node .stwrap{margin-top:5px}
+.map.probs .node::after{content:none}   /* 問題は手順ではないので ▸ を出さない */
+.map.probs .node{min-width:150px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin:10px 0 0;padding-left:2px}
+
 .callout{border-left:3px solid var(--ink);background:#fff;border:1px solid var(--line);border-left-width:3px;padding:16px 20px;border-radius:4px;margin:20px 0}
 .callout.warn{border-left-color:var(--chk)}
 .callout.ok{border-left-color:var(--gen)}
@@ -140,7 +156,11 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
 <div class="wrap">
 
 <h1>公理から営業メッセージまで、何がどう決まっているか</h1>
-<p class="sub">営業資料生成モデル 第11版 ／ 流れの図解 ／ 2026-08-07</p>
+<p class="sub">営業資料生成モデル 第12.1版 ／ 流れの図解 ／ 2026-08-09 更新（git <code>ec8a218</code> ・ tag v12.1）</p>
+
+<p class="sub" style="margin:-32px 0 40px">
+<b>いま開いている問題だけ見たい場合は</b> → <a href="#now" style="color:var(--model)">NOW 現在地</a>／<a href="#open" style="color:var(--chk)">OPEN いま開いている問題</a>
+</p>
 
 <div class="lede">
 <p><b>この文書が答えること。</b>「原理を3つ立てた」「軸を座標にした」「Pythonで検査する」と言ってきたものが、最終的に1枚の営業スライドの日本語になるまでに、<b>どこで何が決まっているのか</b>。</p>
@@ -157,7 +177,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
     <div class="nodes">
       <div class="node"><b>① 公理</b>3原理。守るべき形<em>SPEC §1</em></div>
       <div class="node"><b>② 軸</b>買い手を座標に<em>SPEC §3–4</em></div>
-      <div class="node"><b>③ 形式論理</b>検査できる形へ<em>R1–R19／A1–A23</em></div>
+      <div class="node"><b>③ 形式論理</b>検査できる形へ<em>R1–R19／A1–A25</em></div>
       <div class="node"><b>④ Python</b>機械的に実行<em>compile_deal()</em></div>
     </div>
   </div>
@@ -167,7 +187,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
     <div class="bandlab">生成の指示<span>どう見せるか</span></div>
     <div class="nodes">
       <div class="node" style="flex:0 1 260px"><b>⑤ プロンプト組み立て</b>決定表を日本語の作業指示に翻訳する。字数・枚割り・申告欄もここ<em>prompts.py</em></div>
-      <div class="node" style="flex:1"><b>ここには論理が一行も無い</b>判定は④で終わっている。⑤がやるのは並べ替えと言い換えだけ<em>247行／判定 0</em></div>
+      <div class="node" style="flex:1"><b>ここには論理が一行も無い</b>判定は④で終わっている。⑤がやるのは並べ替えと言い換えだけ<em>238行／判定 0</em></div>
     </div>
   </div>
   <div class="vsep">▼ 指示文（1セルあたり約3,600字）</div>
@@ -187,13 +207,13 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
       <div class="node"><b>⑦ 生成後検査</b>同じ論理式で出来上がりを測る<em>validate_copy()</em></div>
       <div class="node"><b>合否と理由コード</b>stop／要判断／info<em>79 + 27 コード</em></div>
       <div class="node"><b>盲検買い手</b>実際に落ちるか<em>マルチエージェント検証</em></div>
-      <div class="node"><b>ずれ＝アノマリー</b>次版の修正対象<em>A1–A23</em></div>
+      <div class="node"><b>ずれ＝アノマリー</b>次版の修正対象<em>A1–A25</em></div>
     </div>
   </div>
 </div>
 
 <div class="callout">
-<p><b>読み方のコツ。</b>①〜④は<b>買い手ごとに一度だけ回る計算</b>で、答えは一意に決まります（同じ入力なら必ず同じ決定表。1セル80マイクロ秒）。⑤〜⑥は<b>作文</b>で、同じ指示でも出てくる文章は毎回違います。⑦はその作文を①〜④の物差しで測り直す工程です。<br>
+<p><b>読み方のコツ。</b>①〜④は<b>買い手ごとに一度だけ回る計算</b>で、答えは一意に決まります（同じ入力なら必ず同じ決定表。1セル140マイクロ秒）。⑤〜⑥は<b>作文</b>で、同じ指示でも出てくる文章は毎回違います。⑦はその作文を①〜④の物差しで測り直す工程です。<br>
 <b>つまりこの体系は、作文の自由度を「どうしても人間の言葉が要る最後の一段」だけに閉じ込めるための装置です。</b></p>
 </div>
 
@@ -235,7 +255,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
 </table>
 
 <h2><span class="n">LAYER 3</span>形式論理 ― 検査できる形にする</h2>
-<p>公理（形）と軸（座標）が揃うと、<b>「この買い手のこの状況では、こう書かねばならない／こう書いてはならない」</b>が式として書けます。これが規則 R1–R19 とアノマリー由来条件 A1–A23 です。ここではその形式系そのものを図にします。</p>
+<p>公理（形）と軸（座標）が揃うと、<b>「この買い手のこの状況では、こう書かねばならない／こう書いてはならない」</b>が式として書けます。これが規則 R1–R19 とアノマリー由来条件 A1–A25 です。ここではその形式系そのものを図にします。</p>
 
 <h3>3-1. 記法 ― 何が書けて、何が書けないか</h3>
 <p>第7版の内部検査で見つかった不具合12件のうち9件は、命題の間違いではなく<b>型・束縛・定義域の間違い</b>でした。同じ誤りが4回出たものは、規則を足しても再発します。<b>書けなくするのが正しい</b>——そこで記法を5つ固定しました。</p>
@@ -602,7 +622,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
 <div class="step"><span class="k">7</span><span><b>生成後。</b>⑥の申告 <code>s6_period_months = 12</code>。④で「毎年来る」と宣言した周期と一致 ⟹ <code>R10a_REPRODUCES_PROBLEM</code>（<b>停止</b>）<span class="why">→ Π₁：自分で問題だと言ったものを、提案が同じ周期で再生産している。承認が Γ 内で矛盾する</span></span></div>
 <div class="step"><span class="k">8</span><span><b>買い手（盲検）の逐語：</b>「どの契約書の何条か書いていない」＝ステップ4–5。「毎年来るなら、取り返しはつく」＝ステップ7。<span class="why">→ 後者は<b>走行時に機械が先に当てていた</b>。前者は<b>走行時には述語が無く、機械は黙っていた</b>——ここから A22 が生まれた</span></span></div>
 </div>
-<p class="figcap">この8行が、この体系の全体像の縮図です。<b>入力 ν → 軸への分解 → 公理の各連言の照合 → 停止／降格／要判断の割当 → 生成後の再検査 → 買い手による答え合わせ。</b>ステップ1〜6は生成前（80マイクロ秒）、ステップ7は生成後、ステップ8が次版のアノマリーを生む場所です。<br>
+<p class="figcap">この8行が、この体系の全体像の縮図です。<b>入力 ν → 軸への分解 → 公理の各連言の照合 → 停止／降格／要判断の割当 → 生成後の再検査 → 買い手による答え合わせ。</b>ステップ1〜6は生成前（140マイクロ秒）、ステップ7は生成後、ステップ8が次版のアノマリーを生む場所です。<br>
 <b>ひとつ断り書き。</b>ステップ4–5（A22）は<b>この走行の結果として第11版で新設された検査</b>で、走行時には存在しませんでした。上に書いたのは「いま同じ入力を通すとどうなるか」です。<b>第10版の走行では、ここは機械が黙っていて買い手だけが落とした</b>——それがアノマリーの定義そのものです。</p>
 </div>
 
@@ -628,7 +648,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
   <div class="lbody">
     <div class="lleft">
       <p class="io"><b>入力</b> ν＝買い手の聞き取り（座席・日付・他の打ち手・費目・商材座標）＋ 売り手が実際に持っている物<br><b>出力</b> 決定表 <code>decisions.json</code></p>
-      <p>この関数は<b>推論をしません</b>。論理式から導かれることだけを、順番に照合していきます。<code>sales_logic.py</code> は 1,153行、標準ライブラリのみ、検査関数 21本。1セル 80マイクロ秒。</p>
+      <p>この関数は<b>推論をしません</b>。論理式から導かれることだけを、順番に照合していきます。<code>sales_logic.py</code> は <b>1,417行</b>、標準ライブラリのみ、<code>check_*</code> 関数 <b>23本</b>。1セル 140マイクロ秒。</p>
       <p>出すのは次のようなものです。</p>
       <ul>
         <li><b>枚割り σ</b>：①〜⑥のどれを作るか（すでに合意済みの段は落とす）</li>
@@ -673,9 +693,9 @@ generate   True</pre>
   <div class="lbody">
     <div class="lleft">
       <p class="io"><b>入力</b> 決定表 <code>decisions.json</code><br><b>出力</b> 生成器に渡す指示文（1セル 約3,600字）</p>
-      <p><b>ここには判定が一行もありません。</b>247行のうち、やっているのは決定表の項目を日本語の見出しに並べ替えることだけです。</p>
+      <p><b>ここには判定が一行もありません。</b>238行のうち、やっているのは決定表の項目を日本語の見出しに並べ替えることだけです。</p>
       <p>指示文に入るもの：読み手と裁定者の一覧／すでに合意済みで<b>資料に書いてはならない</b>こと／売り手が実際に持っている物／使ってよい日付とその適用範囲／⑤で扱う打ち手とその論拠／必ず入れる要素／各枚の書き方／<b>本文に出してはならない語</b>／字数。</p>
-      <p><b>形式系の言葉は生成器に渡しません。</b>「消去」「様相」「必然化」「被覆率」といった設計語は禁止語リストに入っていて、5走行連続で漏洩ゼロ（0/36枚）です。生成器は自分が何の理論で動かされているかを知りません。</p>
+      <p><b>形式系の言葉は生成器に渡しません。</b>「消去」「様相」「必然化」「被覆率」といった設計語は禁止語リストに入っていて、6走行連続で漏洩ゼロ（0/36枚）です（ただし D1〜D7 の記号は <code>\b</code> が日本語隣接で効かず、第12.1版まで検査自体が走っていませんでした。修正後に再走査しても漏洩は 0件）。生成器は自分が何の理論で動かされているかを知りません。</p>
       <div class="callout warn" style="margin:16px 0 0;padding:12px 16px">
         <p style="font-size:12.5px;margin:0"><b>この層が今いちばん怪しい。</b>拡張子は <code>.py</code> ですが、書き換わるのは<b>LLMに渡す日本語の散文と字数配分</b>で、論理ではありません。だから直しても検査の物差しは変わらない。<b>後半の「現在地」で戻ってきます。</b></p>
       </div>
@@ -728,7 +748,7 @@ generate   True</pre>
 <tr><td>【使える日付】と適用範囲</td><td><code>tau_ok</code>（棄却された D 型は載らない）</td><td>T軸4座標、Π₃ scope</td></tr>
 <tr><td>【⑤で扱う打ち手】</td><td><code>delta</code>／<code>five_mentions</code>／<code>d7_basis</code></td><td>λ×ε、PRIMARY</td></tr>
 <tr><td>【必ず入れる要素】20項目</td><td><code>blocks</code>（33種から選択）</td><td>被覆グリッドの各セル</td></tr>
-<tr><td>【書き方の制約】13項目</td><td><code>rules</code>（29種から選択）</td><td>R1–R19／A1–A23</td></tr>
+<tr><td>【書き方の制約】13項目</td><td><code>rules</code>（29種から選択）</td><td>R1–R19／A1–A25</td></tr>
 <tr><td>【作る枚】と各枚の仕様</td><td><code>sigma</code> ＋ 固定の <code>STAGE_SPEC</code></td><td>Π₁ の階段</td></tr>
 <tr><td>【本文に出してはならない語】</td><td>固定リスト（<code>BAN</code>）</td><td>R9：形式系の語彙を生成器に渡さない</td></tr>
 </table>
@@ -915,7 +935,7 @@ s6_contains_promise false</pre>
   <div class="lhead"><span class="lnum">LAYER 7</span><span class="ltitle">validate_copy() ＋ 盲検買い手</span><span class="lwho">責任：検査</span></div>
   <div class="lbody">
     <div class="lleft">
-      <p class="io"><b>入力</b> 本文6枚 ＋ declared ＋ 決定表<br><b>出力</b> 合否 ＋ 理由コード（stop 79種／要判断 27種）</p>
+      <p class="io"><b>入力</b> 本文6枚 ＋ declared ＋ 決定表<br><b>出力</b> 合否 ＋ 理由コード（stop 91種／要判断 34種）</p>
       <p>生成前と<b>同じ論理式</b>で、出来上がった文章を測り直します。生成前に測れなかったもの（実際に何を書いたか）だけがここに来ます。</p>
       <p>それとは別に、<b>買い手を演じる独立のエージェント</b>に資料を読ませ、枚ごとに「通過／揺らぐ／棄却」を出させます。買い手役はモデルのことも規則のことも知りません。さらに<b>予測役</b>を別に立て、買い手に見せる前に「どこで落ちるか」を予測させておきます。</p>
       <p><b>この3役を分けている理由</b>：予測を先に置くと、「モデルが外した」のか「買い手がたまたま厳しかった」のかを分離できます。ずれの中身が次版の修正対象＝<b>アノマリー</b>です。</p>
@@ -972,23 +992,37 @@ s6_contains_promise false</pre>
 <table>
 <tr><th style="width:150px">層</th><th style="width:190px">決めていること</th><th style="width:150px">実体</th><th>そこが間違っていると</th></tr>
 <tr><td><span class="tag tg-model">入力 ν</span> 営業の聞き取り</td><td>買い手の事実。誰が決裁し、誰が金を減らせ、どの日付が効くか</td><td><code>cells*.py</code>／将来はDjangoの入力フォーム</td><td>正しい理論で正しく計算しても、答えが現実と合わない。<b>機械には検出できない</b></td></tr>
-<tr><td><span class="tag tg-model">モデル</span> 公理・軸・論理式・Python</td><td><b>何が正しいか</b>。何を書けば通り、何を書くと落ちるか</td><td><code>SPEC.md</code> 624行<br><code>sales_logic.py</code> 1,153行</td><td>失敗を<b>名指す言葉がない</b>。買い手が落としても機械は「問題なし」と言う</td></tr>
-<tr><td><span class="tag tg-instr">生成の指示</span> プロンプト</td><td><b>どう見せるか</b>。どの順で、どの欄に、何字で書かせるか</td><td><code>prompts*.py</code> 247行<br>（判定 0行）</td><td>規則は正しく、機械も正しく検出するのに、<b>出来上がった文章が仕様を満たさない</b></td></tr>
+<tr><td><span class="tag tg-model">モデル</span> 公理・軸・論理式・Python</td><td><b>何が正しいか</b>。何を書けば通り、何を書くと落ちるか</td><td><code>SPEC8.md</code> 624行<br><code>sales_logic.py</code> 1,417行</td><td>失敗を<b>名指す言葉がない</b>。買い手が落としても機械は「問題なし」と言う</td></tr>
+<tr><td><span class="tag tg-instr">生成の指示</span> プロンプト</td><td><b>どう見せるか</b>。どの順で、どの欄に、何字で書かせるか</td><td><code>prompts8_v11.py</code> 238行<br>（判定 0行）</td><td>規則は正しく、機械も正しく検出するのに、<b>出来上がった文章が仕様を満たさない</b></td></tr>
 <tr><td><span class="tag tg-gen">LLM</span> 生成器</td><td>日本語の言い回しだけ</td><td>1セル＝1エージェント</td><td>読みにくい。ただし<b>内容が外れることは構造上ほぼ起きない</b>（材料を全部与えているため）</td></tr>
 <tr><td><span class="tag tg-chk">検査</span></td><td>出来上がりが仕様を満たすか／実際に買い手が通すか</td><td><code>validate_copy()</code>＋盲検エージェント</td><td>ずれが見えなくなる。改善の駆動源が消える</td></tr>
 </table>
 
-<h2><span class="n">NOW</span>現在地 ― 失敗の所在は四つある</h2>
+<h2 id="now"><span class="n">NOW</span>現在地 ― 失敗の所在は五つある</h2>
 
-<p>第5版から第9版まで、見つかった不具合はすべて<b>モデル層</b>にありました。買い手が落とした場所で、機械は黙っていた。だから直し方は毎回「述語を足す／型を直す」でした。第10版でそれが変わり、第12版でもう一つ増えました。<b>いまは四つに分かれます。</b></p>
+<p>第5版から第9版まで、見つかった不具合はすべて<b>モデル層</b>にありました。買い手が落とした場所で、機械は黙っていた。だから直し方は毎回「述語を足す／型を直す」でした。第10版でそれが変わり、第12版で四つ目（検査）、<b>第12.1版で五つ目（配管）</b>が増えました。</p>
 
 <table>
-<tr><th style="width:120px">所在</th><th style="width:260px">症状</th><th>直し方</th></tr>
-<tr><td><span class="tag tg-model">入力 ν</span></td><td>正しく計算しても現実と合わない</td><td>聞き取りを直す。<b>機械には検出できない</b></td></tr>
-<tr><td><span class="tag tg-model">モデル</span></td><td>買い手が落としたのに機械が黙っている</td><td>述語・型を足す（A1〜A24 のほとんど）</td></tr>
-<tr><td><span class="tag tg-instr">生成の指示</span></td><td>規則も型も正しく、機械も検出するのに、生成物が満たさない</td><td>提示仕様を書き換える（第12版のアーム実験）</td></tr>
-<tr><td><span class="tag tg-chk">検査</span></td><td><b>落ちていないのに、落ちたと言う</b></td><td>照合の実装を直す（<b>A25</b>）</td></tr>
+<tr><th style="width:120px">所在</th><th style="width:260px">症状</th><th style="width:150px">見つかった版</th><th>直し方</th></tr>
+<tr><td><span class="tag tg-model">入力 ν</span></td><td>正しく計算しても現実と合わない</td><td>―</td><td>聞き取りを直す。<b>機械には検出できない</b></td></tr>
+<tr><td><span class="tag tg-model">モデル</span></td><td>買い手が落としたのに機械が黙っている</td><td>第5〜9版</td><td>述語・型を足す（A1〜A24 のほとんど）</td></tr>
+<tr><td><span class="tag tg-instr">生成の指示</span></td><td>規則も型も正しく、機械も検出するのに、生成物が満たさない</td><td>第10版</td><td>提示仕様を書き換える（アーム実験）</td></tr>
+<tr><td><span class="tag tg-chk">検査</span></td><td><b>落ちていないのに、落ちたと言う</b></td><td>第12版</td><td>照合の実装を直す（<b>A25・A25b・A25c</b>）</td></tr>
+<tr style="background:#fbecec"><td><span class="tag" style="background:var(--neutralbg);color:var(--ink)">配管</span></td><td><b>規則は正しく、検査も正しく、指示文にも書いたのに、生成器に届いていない</b></td><td><b>第12.1版</b></td><td>決定表に版を刻む（<code>stamp.py</code> を実際に使う）</td></tr>
 </table>
+
+<div class="callout warn">
+<p><b>五つ目は、いちばん見つけにくい形をしていました。</b></p>
+<p>第12版は <code>fire_rules</code> に <code>R10a_NO_REPRODUCE</code> を足し、レポートには「伝達漏れの修正」と書いてあります。ところが <code>prompts8_v11.py</code> は <code>decisions8_v10.json</code> を読んで指示文を組み、その決定表は<b>第11版で再計算されたまま</b>でした。</p>
+<pre class="tight" style="margin:10px 0">messages.json rules["R10a_NO_REPRODUCE"]
+  「④で反復を宣言するなら、⑥の提案が同じ周期で同じ問題を作り直さないようにする」
+
+arm0 のプロンプト8本に この一行が入っている数 … 0/8
+arm1                                     … 0/8
+arm2                                     … 0/8</pre>
+<p>つまり<b>「R10a は指示文に載せても減らない ＝ 提示の問題ではない」という第12版の結論は、根拠を持っていません。</b>載っていなかったからです。同じ経路にあった着手期限（R12b）は <code>build()</code> が <code>rec["start_deadline"]</code> を直接読むので 6/8 で渡っており、そちらは効いています。<b>落ちたのは rules 経由の一本だけ</b>でした。</p>
+<p>この形の失敗は、四つの所在のどれでもありません。規則も検査も指示文の生成器も正しい。<b>版がずれていただけ</b>です。<code>stamp.py</code> はまさにこれを防ぐために作られていたのに、<code>decisions8_v10.json</code> には刻まれていませんでした。</p>
+</div>
 
 <div class="callout warn">
 <p><b>四つ目は第12版で見つかりました。そして、それまでの数字を汚していました。</b></p>
@@ -1021,10 +1055,19 @@ s6_contains_promise false</pre>
 <table>
 <tr><th style="width:150px"></th><th>stop</th><th>A16</th><th>R10b</th><th>R10a</th><th>A23紙側</th><th>pass</th><th>⑥字数</th></tr>
 <tr><td>第10版</td><td>13</td><td>3</td><td>2</td><td>5</td><td>―</td><td>0/8</td><td>474</td></tr>
-<tr><td><b>Arm 0</b><br><small>共通修正のみ</small></td><td>10</td><td>2</td><td>2</td><td>4</td><td>2</td><td>2/8</td><td>449</td></tr>
+<tr><td><b>Arm 0</b><br><small>共通修正のみ</small></td><td><b>6</b> <small style="color:var(--chk)">(第12版の報告 10)</small></td><td><b>0</b> <small style="color:var(--chk)">(2)</small></td><td><b>0</b> <small style="color:var(--chk)">(2)</small></td><td>4</td><td>2</td><td>2/8</td><td>449</td></tr>
 <tr style="background:#e9f5ee"><td><b>Arm 1</b><br><small>＋⑥の枚仕様に座席の列挙</small></td><td><b>4</b></td><td><b>0</b></td><td><b>0</b></td><td>4</td><td><b>0</b></td><td><b>3/8</b></td><td>560</td></tr>
 <tr><td><b>Arm 2</b><br><small>＋⑥の字数 700〜900字</small></td><td>7</td><td>0</td><td>0</td><td>5</td><td>2</td><td>1/8</td><td>898</td></tr>
 </table>
+
+<div class="callout warn">
+<p><b>Arm 0 の数字は、第12.1版でもう一度動きました。</b>物差しの側にまだ誤りが残っていたためです（→ <a href="#open" style="color:var(--chk)">OPEN</a>）。</p>
+<ul style="margin:.5em 0;padding-left:1.25em">
+<li><b>A16 の残り2件は、座席の通関の失敗ではありませんでした。</b>生成器が <code>s6_kappa="価格・財源"</code> と<b>基準名を連結</b>して申告し、機械が「そんな基準は無い」と読んでいた。κ_n が2つのセルでだけ起きています。</li>
+<li><b>R10b の2件は、1件の誤検出を2回数えたもの</b>でした（<code>ABSENT</code> と <code>REPLACED</code> が必ず同時に立つ）。しかもその1件自体が A25 の取りこぼしです。</li>
+</ul>
+<p><b>したがって「Arm 1 が A16 を消した」という読みは成り立ちません。A16 は物差しの誤りでした。</b>アーム差に残るのは <code>A23_SEAT_WORD_ABSENT</code>（申告はするが本文に書かない）ただ一つで、下の「欄だけ／欄＋枚仕様」の対照は<b>生き残り、いまはそれが唯一の根拠</b>です。ただし幅は「10→4」ではなく<b>「6→4」</b>。</p>
+</div>
 
 <p><b>字数の仮説は棄却されました。</b>⑥の字数分布が答えを出しています。</p>
 
@@ -1043,26 +1086,149 @@ Arm 2（上限900）  885 889 894 895 903 905 908 911   ← 全部が新しい�
 
 <p><b>R10a はどのアームでも動きません</b>（4／4／5）。内訳は s4=12か月・s6=12か月 が4件、s4=12か月・s6=1か月 が5件。後者は指示文（「同じ周期で作り直さない」）では許されるのに、検査（<code>s6 ≤ s4</code>＝「同じ頻度以上」）で落ちています。より根本的に、扱っている商材は3〜12か月契約と SaaS なので <code>s6_period = 0</code>（単発）以外に満たす道がない。<b>比べるべきは課金周期ではなく〈提案後に④の問題が残る周期〉ではないか</b>——これが次のアノマリー候補（A26）です。</p>
 
-<p><b>まだ一度も測っていないこと。</b>ここまでは「仕様を満たすか」しか測っていません。<b>満たした資料が実際に買い手を通るかは、第12版でも測っていない</b>（アーム実験では買い手を使わなかったため）。次は Arm 1 の生成物に予測者と盲検買い手を付けます。</p>
+<div class="callout warn">
+<p><b>ただし、この段落の前半は第12.1版で取り消されました。</b>R10a の一行は<b>24体すべてに一度も渡っていません</b>（上の NOW ＝ 配管の項）。「指示文に載せても減らない」とは言えないので、<b>A26 を立てる前に測り直しが要ります</b>。指示と検査の文言のずれ（指示「同じ周期で」／検査「同じ頻度以上」）は、渡したうえで再現したら直す、が順序です。</p>
+</div>
+
+<p><b>まだ一度も測っていないこと。</b>ここまでは「仕様を満たすか」しか測っていません。<b>満たした資料が実際に買い手を通るかは、第12.1版でもまだ測っていない</b>（アーム実験では買い手を使わなかったため）。次は Arm 1 の生成物に予測者と盲検買い手を付けます。</p>
+
+<h2 id="open"><span class="n">OPEN</span>いま開いている問題 ― どの層に座っているか</h2>
+
+<p>第12.1版で <code>sales_logic.py</code> の比較演算を機械的に全数走査し（178箇所）、文字列で照合している箇所を一つずつ実データに当てました。<b>「汚れた物差しで測る前に、物差しを検める」</b>という手順です。出てきたものを、上の五つの所在に割り当てて並べます。</p>
+
+<p>並びは<b>一枚図と同じ順</b>（入力 → モデル → 決定表の受け渡し → 指示 → 生成 → 検査）です。各層の箱は手順ではなく、<b>その層に座っている問題</b>です。</p>
+
+<div class="map probs">
+
+<div class="band b-model">
+<div class="bandlab" style="background:var(--neutralbg);color:var(--ink);border-color:#c9cdd6">入力 ν<span>営業の聞き取り</span></div>
+<div class="nodes">
+<div class="node n-done"><b>構造キーが自由文の完全一致</b>句読点1つで実名事例が全滅する。第10版の「16/16→0/8」は、買い手側と事例側を<b>同じファイルに同じ文字列で書いた</b>から成立していた<div class="stwrap"><span class="st st-done">正規化＋申し送りへ</span></div></div>
+<div class="node n-done"><b>表引きが黙って既定値に落ちる</b>誤字の <code>E_judge</code> で Σ が変わる／<code>q_source</code> の表記ゆれで実効LTが縮む<em>N₂</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+</div>
+</div>
+<div class="vsep">▾</div>
+
+<div class="band b-model">
+<div class="bandlab">モデル<span>公理・軸・Python</span></div>
+<div class="nodes">
+<div class="node n-done"><b>ν の二重の真実</b><code>Nu.A</code> と <code>prod.nu</code> の照合が無く、2セルで食い違い、<b>点灯ブロックが逆</b>だった<em>G4</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-done"><b>商材座標が生成後に届かない</b><code>expr_ok_of</code> が生成前にしか使われていなかった<em>G2</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-open"><b><code>C_move</code> と ⟨θ, σ<sub>p</sub>⟩</b>ν と同じ二重の真実。<b>SPEC が合成規則を与えていない</b>ので機械的に直せない<div class="stwrap"><span class="st st-open">開いている</span></div></div>
+<div class="node n-open"><b><code>S1</code>/<code>S2</code>/<code>S3</code> が残っている</b>SPEC §12.2 は「削除した」と書いたのに <code>sigma_prod</code> がまだ引いている<div class="stwrap"><span class="st st-open">開いている</span></div></div>
+<div class="node n-open"><b>cost 単調性（Π₁ 第2式）</b>第10版で <code>σ_p + τ</code> に対象を得たが、⑥の検査には入っていない<div class="stwrap"><span class="st st-open">開いている</span></div></div>
+<div class="node n-open"><b>較正台帳の <code>START</code></b>唯一残る業界依存表（＋下の G1）<div class="stwrap"><span class="st st-open">開いている</span></div></div>
+</div>
+</div>
+<div class="vsep">▾</div>
+
+<div class="band b-pipe">
+<div class="bandlab">配管<span>決定表の受け渡し</span></div>
+<div class="nodes">
+<div class="node n-open"><b>R10a が指示文に届いていない</b>決定表が第11版のまま固定され、第12版で足した規則が <b>0/8</b> で欠落。<b>「提示の問題ではない」という結論が無効</b><div class="stwrap"><span class="st st-open">開いている</span> <span class="st st-lat">実測 0/8</span></div></div>
+<div class="node n-open"><b>決定表に版が刻まれていない</b><code>stamp.py</code> はあるのに <code>decisions8_v10.json</code> に <code>_stamp</code> が無い。<b>仕組みはあって運用が無い</b><div class="stwrap"><span class="st st-open">開いている</span></div></div>
+</div>
+</div>
+<div class="vsep">▾</div>
+
+<div class="band b-instr">
+<div class="bandlab">生成の指示<span>prompts*.py</span></div>
+<div class="nodes">
+<div class="node n-open"><b>指示が複数形を誘うのに欄が単数</b>κ_n を「価格・財源」と連結表示（arm0 で4回）。欄は単数の列挙。<b>型1 の未処置分</b><div class="stwrap"><span class="st st-open">開いている</span></div></div>
+<div class="node n-open"><b><code>BAN</code> と <code>V0</code> のずれ</b>検査する語のうち4つを生成器に渡していない<div class="stwrap"><span class="st st-open">開いている</span></div></div>
+<div class="node n-hold"><b>Arm 1 の確定が未了</b><code>prompts8_v12.py</code> はまだ無い<div class="stwrap"><span class="st st-hold">§4-3</span></div></div>
+</div>
+</div>
+<div class="vsep">▾</div>
+
+<div class="band b-chk">
+<div class="bandlab">検査<span>validate_copy</span></div>
+<div class="nodes">
+<div class="node n-hold"><b>様式語の照合が全座席に掛かる</b>Form が閉じているのは制度由来だけ（SPEC §10.1）。<b>アーム差はこの1本だけに乗っている</b><em>G1</em><div class="stwrap"><span class="st st-hold">据え置き（判断済）</span></div></div>
+<div class="node n-open"><b>名前の完全一致</b>実行者名・費目名・座席名。24体では不一致 0件だが、生成器は現に単位へ説明句を付けてきた<div class="stwrap"><span class="st st-lat">潜在</span></div></div>
+<div class="node n-done"><b>単位語の正規化が浅い</b>宣言が文になると照合語が取れない／1文字の単位は必ず停止<em>A25b</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-done"><b>基準名の連結</b><code>s6_kappa="価格・財源"</code> を「無い基準」と読み <b>A16 を出していた</b><em>A25c</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-done"><b><code>\b</code> が日本語で効かない</b>設計語の記号 D1〜D7 は<b>一度も検査されていなかった</b><em>A25c</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-done"><b>R17 の ∃ が未実装</b><code>hit</code> を計算して捨てていた。Γ^own が空でも停止していた<em>G3</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-done"><b>日付を文字列で比べる／〈いつ〉が無検査</b>N₃ の第2成分に検査対象が無かった<div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+</div>
+</div>
+<div class="vsep">▾</div>
+
+<div class="band b-gen">
+<div class="bandlab">買い手<span>まだ測っていない</span></div>
+<div class="nodes">
+<div class="node n-open" style="flex:1 1 100%"><b>仕様を満たした資料が、実際に買い手を通るか</b>ここまで測ってきたのは <code>validate_copy</code> が「仕様を満たす」と言うかどうかだけ。<b>12版分のあいだ、一度も測っていない。</b>次は Arm 1 の生成物に予測者と盲検買い手を付ける（16体）<div class="stwrap"><span class="st st-open">最重要・未着手</span></div></div>
+</div>
+</div>
+
+</div>
+
+<div class="legend">
+<span><span class="st st-open">開いている</span> 未解決</span>
+<span><span class="st st-hold">据え置き</span> 直せるが、直すと結論が変わるので判断待ち</span>
+<span><span class="st st-done">閉じた</span> 第12.1版で修正・回帰済み</span>
+<span><span class="st st-lat">潜在</span> 実データでは未発生</span>
+</div>
+
+<h3>いちばん重い二つ</h3>
+
+<table>
+<tr><th style="width:170px"></th><th>何が起きたか</th><th style="width:230px">帰結</th></tr>
+<tr><td><b>R10a が届いていない</b><br><span class="tag" style="background:var(--neutralbg);color:var(--ink)">配管</span></td><td>第12版で <code>fire_rules</code> に足した規則が、第11版のまま固定された決定表に無く、指示文に <b>0/8</b> でしか載らなかった</td><td>「R10a は提示の問題ではない」が<b>無効</b>。A26 を立てる前に <b>Arm 1 を8体だけ測り直す</b></td></tr>
+<tr><td><b>A16 の残り2件の正体</b><br><span class="tag tg-chk">検査</span></td><td>座席の通関の失敗ではなく、<code>s6_kappa="価格・財源"</code> という<b>基準名の連結</b>。κ_n が2つのセルでだけ起きる</td><td>「Arm 1 が A16 を消した」が<b>無効</b>。アーム差は <code>A23_SEAT_WORD_ABSENT</code> 1本だけになった</td></tr>
+</table>
+
+<h3>型で見ると三つしかない</h3>
+
+<p>洗い出した穴は、独立した不具合が並んでいるのではなく、<b>三つの型が繰り返し現れている</b>だけでした。処置も型ごとに同じです。</p>
+
+<table>
+<tr><th style="width:210px">型</th><th>これまでの現れ方</th><th style="width:230px">処置</th></tr>
+<tr><td><b>型1 指示が複数形を誘うのに欄が単数</b></td><td><b>A24</b> 費目の連結「媒体費・広報外注費」→ <b>A25</b> 単位の説明句「作業時間（時間）」→ <b>A25c</b> 基準の連結「価格・財源」。<b>3回とも同じ形</b></td><td>宣言の型が緩いなら<b>照合の側が正規化</b>し、同時に<b>欄を割る</b></td></tr>
+<tr><td><b>型2 照合できないことを「無い」と読む</b></td><td>1文字の単位 → 必ず停止／自由文の完全一致 → 事例が消える／表引きの既定値 → 黙って別の値になる／読めない日付 → 辞書順で比べる</td><td><b>N₂</b> そのもの。⊥ は X のいかなる値とも比較できない。<b>未定義は要判断へ回す</b></td></tr>
+<tr><td><b>型3 規則と実装の適用範囲がずれる</b></td><td>Form の閉性が制度座席だけなのに全座席へ／<code>∃χ∈Γ^own</code> を検査していない／商材座標が生成後に届かない／<code>Nu.A</code> と <code>prod.nu</code> の二重の真実</td><td>規則の側の全称・存在・定義域を、実装に<b>そのまま写す</b></td></tr>
+</table>
+
+<div class="callout warn">
+<p><b>いま、アームの差は「原理から導けていない検査」1本に乗っています。</b></p>
+<p>物差しを検めた結果、Arm 0 と Arm 1 の差（6 対 4）は <code>A23_SEAT_WORD_ABSENT</code> だけになりました。そしてその検査は、<b>SPEC §10.1 が「Form が閉じているのは制度由来の座席だけ」と言っているのに、全座席へ掛かっている</b>ために立っています。発火した4件はすべて非制度座席で、中身は言い換えでした（「作業時間」と書くべきところを「人時」と書いた等）。</p>
+<pre class="tight" style="margin:10px 0">いまの実装（全座席）        arm0 6 ／ arm1 4 ／ arm2 7
+制度座席だけに畳んだ場合     arm0 4 ／ arm1 4 ／ arm2 5   ← アーム差が消える</pre>
+<p><b>判断：全座席のまま据え置き</b>（実測を優先）。ただし原理から導けないので、較正表と同じ「業界依存の疑いが残る」扱いにしてあります。<b>第2段（盲検買い手）は、Arm の選定と同時にこの検査の妥当性も測ることになります。</b></p>
+</div>
+
+<h3>次の一手（この順に）</h3>
+
+<table>
+<tr><th style="width:36px">#</th><th style="width:280px">やること</th><th>なぜその順か</th></tr>
+<tr><td>1</td><td><b>Arm 1 の8体だけ再走行して R10a を測り直す</b><br><small><code>prompts8_v12_arm1.json</code> は生成済み</small></td><td>指示文が渡っていなかったので、<b>いちばん安い未知</b>。ここが片づかないと A26 の要否が決まらない</td></tr>
+<tr><td>2</td><td><b>A26 を立てるか決める</b><br><small>〈提案後に問題が残る周期〉を宣言欄へ／指示と検査の文言を揃える</small></td><td>1 で再現したら直す。再現しなければ配管の問題で終わる</td></tr>
+<tr><td>3</td><td><b>Arm 1 を確定させる</b> → <code>prompts8_v12.py</code><br><small>あわせて<b>⑥の申告欄を割る</b>（型1 の処置）</small></td><td>基準の連結は照合側で吸収したが、<b>本筋は欄を割ること</b>。A24 と同じ</td></tr>
+<tr><td>4</td><td><b>第2段を走らせる</b><br><small>Arm 1 の生成物に予測者と盲検買い手（16体）</small></td><td><b>本丸。</b>同時に G1（様式語の照合を全座席に掛けてよいか）も測れる</td></tr>
+</table>
 
 <h2><span class="n">SCALE</span>規模と実測</h2>
 <table>
 <tr><th style="width:210px">項目</th><th>値</th></tr>
 <tr><td>中心命題</td><td>7本（第7版）→ <b>3原理＋5記法</b>（第8版以降）</td></tr>
-<tr><td>仕様書</td><td><code>SPEC.md</code> 624行／数式 461本</td></tr>
-<tr><td>決定的コア</td><td><code>sales_logic.py</code> 1,153行・標準ライブラリのみ・検査関数 21本</td></tr>
-<tr><td>理由コード</td><td>停止・降格など 79種／営業に聞き直す項目 27種／必須ブロック 33種</td></tr>
-<tr><td>回帰テスト</td><td>81項目 全通過（各アノマリーが買い手の逐語と対応づけられている）</td></tr>
-<tr><td>速度</td><td><b>80マイクロ秒/セル</b>（生成前の確定。LLM呼び出しゼロ）</td></tr>
-<tr><td>生成の指示</td><td><code>prompts*.py</code> 247行・判定 0行・指示文 約3,566字/セル（R2-P1 は 3,539字）</td></tr>
-<tr><td>1走行の規模</td><td>8セル × 3役（生成・独立予測・盲検買い手）＝ 24エージェント／約73〜90分</td></tr>
-<tr><td>アノマリー累計</td><td>A1–A23（5版〜11版）／依存規則 R1–R19</td></tr>
-<tr><td>設計語の漏洩</td><td><b>0/36枚（5走行連続）</b>。業界・商材・仕様を替えても保たれている</td></tr>
+<tr><td>仕様書</td><td><code>SPEC8.md</code> 624行（第11版まで。<b>A24・A25・A25b・A25c が未記載＝債務</b>）</td></tr>
+<tr><td>決定的コア</td><td><code>sales_logic.py</code> <b>1,417行</b>・標準ライブラリのみ・<code>check_*</code> 関数 <b>23本</b></td></tr>
+<tr><td>理由コード</td><td>停止・降格など <b>91種</b>／営業に聞き直す項目 <b>34種</b>／必須ブロック 33種／書き方の制約 31種</td></tr>
+<tr><td>回帰テスト</td><td><b>132項目 全通過</b>（第12版の97 ＋ 第12.1版で35）。各アノマリーが買い手の逐語と対応づけられている</td></tr>
+<tr><td>速度</td><td><b>140マイクロ秒/セル</b>（生成前の確定。LLM呼び出しゼロ）</td></tr>
+<tr><td>生成の指示</td><td><code>prompts8_v11.py</code> 238行・判定 0行・指示文 約4,300字/セル（Arm 1）</td></tr>
+<tr><td>1走行の規模</td><td>8セル × 3アーム＝24エージェント／1時間47分・158万トークン（第12版）</td></tr>
+<tr><td>アノマリー累計</td><td>A1–A25（5版〜12.1版）／A26 は候補・測り直し待ち／依存規則 R1–R19</td></tr>
+<tr><td>設計語の漏洩</td><td><b>0/36枚（6走行連続）</b>。ただし D1〜D7 の記号については <code>\b</code> の書き方のせいで<b>検査自体が走っていなかった</b>（第12.1版で修正。緩い正規表現で再走査しても漏洩 0件）</td></tr>
+<tr><td>アーム実験の採点</td><td>arm0 <b>6</b> ／ arm1 <b>4</b> ／ arm2 <b>7</b>（第12.1版の物差し。第12版の報告は 10／4／7）</td></tr>
+<tr><td>版</td><td>git <code>ec8a218</code>（tag v12.1）／<code>sales_logic.py</code> sha256[:12] = <code>c2cdcb1eafd2</code></td></tr>
 </table>
 
 <div class="foot">
-<p>営業資料生成モデル 第11版 ／ 数値はすべて <code>decisions8_v10.json</code>・<code>verified8_v10.json</code>・<code>sales_logic.py</code> の実測値から。<br>
-関連文書：<code>claude/モデルv11-仕様.md</code>（形式系の本体）、<code>claude/第10版-対照実験レポート.html</code>（この走行の詳細）、<code>claude/統合検討-既存理論と本モデル.md</code>（既存研究との対応）。</p>
+<p>営業資料生成モデル 第12.1版 ／ 数値はすべて <code>decisions8_v10.json</code>（as-run）・<code>run8_v11.json</code>・<code>verified8_v11.json</code>・<code>sales_logic.py</code> の実測値から。<br>
+関連文書：<code>claude/引き継ぎ書-第12.1版.md</code>（<b>新しいスレッドはここから</b>）、<code>claude/第12.1版-物差しの検分.md</code>（§4-1 の全結果と根拠）、<code>claude/モデルv11-仕様.md</code>（形式系の本体）、<code>claude/第12版-アーム実験レポート.md</code>（アーム実験の詳細・<b>stop の数字は訂正前</b>）、<code>claude/統合検討-既存理論と本モデル.md</code>（既存研究との対応）。</p>
+<p style="margin-top:10px;color:var(--sub);font-size:12.5px">この文書で<b>取り消した記述</b>：「R10a は提示の問題ではない」（指示文に渡っていなかった）／「Arm 1 が A16 を消した」（A16 は物差しの誤りだった）／Arm 0 の stop 10・A16 2・R10b 2（正しくは 6・0・0）。</p>
 </div>
 
 </div>
