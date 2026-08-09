@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第11版）</title>
+<style>
+:root{
+  --ink:#1a1c22; --sub:#5d6470; --line:#d8dbe2; --bg:#fbfbfc;
+  --model:#2c5aa0; --modelbg:#eaf0fa;
+  --instr:#a8690e; --instrbg:#fbf2e2;
+  --gen:#2f7a4d;  --genbg:#e9f5ee;
+  --chk:#a33a3a;  --chkbg:#fbecec;
+  --neutral:#6b7280; --neutralbg:#f1f3f6;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
+  line-height:1.85; font-size:15px; letter-spacing:.01em;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 28px 96px}
+h1{font-size:27px;line-height:1.45;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--sub);font-size:13.5px;margin:0 0 40px}
+h2{font-size:20px;margin:64px 0 6px;padding-bottom:10px;border-bottom:2px solid var(--ink);letter-spacing:-.01em}
+h2 .n{font-size:13px;color:var(--sub);font-weight:600;letter-spacing:.08em;display:block;margin-bottom:4px;border:0}
+h3{font-size:16px;margin:34px 0 8px}
+p{margin:.7em 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;background:#eceef2;padding:.1em .38em;border-radius:3px}
+small{color:var(--sub);font-size:12.5px;line-height:1.7}
+
+/* ── 冒頭サマリ ── */
+.lede{background:#fff;border:1px solid var(--line);border-left:4px solid var(--ink);padding:22px 26px;border-radius:4px;margin:0 0 12px}
+.lede p{margin:.45em 0}
+
+/* ── 一枚図 ── */
+.map{margin:30px 0 10px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:26px 22px}
+.band{display:grid;grid-template-columns:118px 1fr;gap:16px;align-items:stretch;margin-bottom:10px}
+.band:last-child{margin-bottom:0}
+.bandlab{font-size:12px;font-weight:700;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-radius:5px;padding:10px 6px;line-height:1.5}
+.bandlab span{font-weight:400;font-size:10.5px;opacity:.85;margin-top:3px}
+.b-model .bandlab{background:var(--modelbg);color:var(--model);border:1px solid #bcd0ec}
+.b-instr .bandlab{background:var(--instrbg);color:var(--instr);border:1px solid #e6cf9c}
+.b-gen   .bandlab{background:var(--genbg);color:var(--gen);border:1px solid #b6d9c4}
+.b-chk   .bandlab{background:var(--chkbg);color:var(--chk);border:1px solid #e8bcbc}
+.nodes{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.node{flex:1 1 0;min-width:118px;background:#fff;border:1px solid var(--line);border-radius:5px;padding:9px 11px;position:relative;font-size:12.5px;line-height:1.6}
+.node b{display:block;font-size:13px;margin-bottom:2px}
+.node em{font-style:normal;color:var(--sub);font-size:11px;display:block;margin-top:3px;font-family:ui-monospace,Menlo,monospace}
+.node:not(:last-child)::after{content:"▸";position:absolute;right:-9px;top:50%;transform:translateY(-50%);color:#b5bac4;font-size:13px;z-index:2}
+.b-model .node{border-color:#bcd0ec}
+.b-instr .node{border-color:#e6cf9c}
+.b-gen   .node{border-color:#b6d9c4}
+.b-chk   .node{border-color:#e8bcbc}
+.vsep{text-align:center;color:#b5bac4;font-size:15px;line-height:1;margin:2px 0 8px;padding-left:134px}
+
+/* ── 層カード ── */
+.layer{background:#fff;border:1px solid var(--line);border-radius:6px;margin:22px 0;overflow:hidden}
+.lhead{display:flex;align-items:baseline;gap:12px;padding:14px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.lnum{font-size:12px;font-weight:700;letter-spacing:.1em;padding:2px 9px;border-radius:3px;white-space:nowrap}
+.t-model .lnum{background:var(--modelbg);color:var(--model)}
+.t-instr .lnum{background:var(--instrbg);color:var(--instr)}
+.t-gen   .lnum{background:var(--genbg);color:var(--gen)}
+.t-chk   .lnum{background:var(--chkbg);color:var(--chk)}
+.ltitle{font-size:17px;font-weight:700;margin:0}
+.lwho{font-size:12px;color:var(--sub);margin-left:auto}
+.lbody{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.lleft{padding:18px 22px 20px;border-right:1px solid var(--line)}
+.lright{padding:18px 22px 20px;background:#fcfcfd}
+.io{font-size:12px;color:var(--sub);margin:0 0 12px;padding:7px 11px;background:var(--neutralbg);border-radius:4px;line-height:1.7}
+.io b{color:var(--ink)}
+.ex{font-size:12.5px;line-height:1.75}
+.ex .exlab{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--sub);display:block;margin:0 0 6px}
+pre{background:#f5f6f8;border:1px solid var(--line);border-radius:4px;padding:11px 13px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.65;margin:8px 0;white-space:pre-wrap;word-break:break-all}
+pre.tight{white-space:pre;word-break:normal}
+.lbody ul,.lbody ol{margin:.5em 0;padding-left:1.25em}
+.lbody li{margin:.3em 0}
+
+/* ── 表 ── */
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13px;background:#fff}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top;line-height:1.65}
+th{background:#f2f4f7;font-weight:700;font-size:12.5px}
+td code{font-size:.85em}
+
+.tag{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:3px;letter-spacing:.03em;white-space:nowrap}
+.tg-model{background:var(--modelbg);color:var(--model)}
+.tg-instr{background:var(--instrbg);color:var(--instr)}
+.tg-gen{background:var(--genbg);color:var(--gen)}
+.tg-chk{background:var(--chkbg);color:var(--chk)}
+
+.callout{border-left:3px solid var(--ink);background:#fff;border:1px solid var(--line);border-left-width:3px;padding:16px 20px;border-radius:4px;margin:20px 0}
+.callout.warn{border-left-color:var(--chk)}
+.callout.ok{border-left-color:var(--gen)}
+.callout p:first-child{margin-top:0}
+.callout p:last-child{margin-bottom:0}
+
+details{background:#fff;border:1px solid var(--line);border-radius:5px;margin:12px 0;padding:0}
+summary{cursor:pointer;padding:12px 18px;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▶";font-size:10px;color:var(--sub);transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details .dbody{padding:0 18px 18px;border-top:1px solid var(--line);margin-top:0;padding-top:14px}
+.slide{border:1px solid var(--line);border-radius:4px;margin:10px 0;overflow:hidden}
+.shead{background:#f2f4f7;padding:6px 12px;font-size:12px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.sverd{font-size:11px;padding:1px 8px;border-radius:3px;font-weight:700}
+.v-通過{background:#e0f0e6;color:#256b41}
+.v-揺らぐ{background:#fdf0d8;color:#8a5b0c}
+.v-棄却{background:#fadedd;color:#973232}
+.sbody{padding:11px 14px;font-size:12.5px;line-height:1.9}
+.swhy{padding:10px 14px;font-size:12px;line-height:1.8;background:#fcfafa;border-top:1px dashed var(--line);color:#4a4f59}
+.swhy b{color:var(--chk);font-size:11px;letter-spacing:.05em}
+
+/* ── 図版 ── */
+.fig{background:#fff;border:1px solid var(--line);border-radius:6px;padding:18px 20px 14px;margin:24px 0}
+.fig svg{width:100%;height:auto;display:block}
+.fig h4{margin:0 0 4px;font-size:14.5px}
+.fig .fnum{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--sub);display:block;margin-bottom:2px}
+.figcap{font-size:12.5px;color:#4a4f59;margin:12px 0 0;line-height:1.8;border-top:1px dashed var(--line);padding-top:10px}
+.figcap b{color:var(--ink)}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:#f5f6f8;border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin:10px 0;line-height:1.9;overflow-x:auto}
+.deriv{font-size:12.5px;line-height:1.9;margin:12px 0}
+.deriv .step{display:grid;grid-template-columns:30px 1fr;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.deriv .step:last-child{border-bottom:0}
+.deriv .k{font-weight:700;color:var(--sub);font-size:11px;padding-top:3px}
+.deriv .why{color:var(--sub);font-size:11.5px;display:block}
+mark.hl-ok{background:#d7f0e0;color:inherit;padding:1px 0;border-radius:2px}
+mark.hl-ng{background:#fbdcda;color:inherit;padding:1px 0;border-radius:2px}
+pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-height:1.9;max-height:none;background:#fcfcfd}
+.foot{margin-top:70px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--sub)}
+@media(max-width:820px){
+  .lbody{grid-template-columns:1fr}
+  .lleft{border-right:0;border-bottom:1px solid var(--line)}
+  .band{grid-template-columns:1fr}
+  .vsep{padding-left:0}
+  .node:not(:last-child)::after{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>公理から営業メッセージまで、何がどう決まっているか</h1>
+<p class="sub">営業資料生成モデル 第11版 ／ 流れの図解 ／ 2026-08-07</p>
+
+<div class="lede">
+<p><b>この文書が答えること。</b>「原理を3つ立てた」「軸を座標にした」「Pythonで検査する」と言ってきたものが、最終的に1枚の営業スライドの日本語になるまでに、<b>どこで何が決まっているのか</b>。</p>
+<p><b>いちばん大事な一行。</b>この仕組みは <b>文章を書く機械ではありません</b>。<b>「買い手のこの状況では、何を書けば通り、何を書くと落ちるか」を機械的に確定させる装置</b>であって、日本語を書くのは最後の1工程だけです。</p>
+</div>
+
+<h2><span class="n">OVERVIEW</span>一枚図</h2>
+<p>左から右へ、上から下へ流れます。色は「そこで決まったことに責任を持つ層」を表しています。</p>
+
+<div class="map">
+
+  <div class="band b-model">
+    <div class="bandlab">モデル<span>何が正しいか</span></div>
+    <div class="nodes">
+      <div class="node"><b>① 公理</b>3原理。守るべき形<em>SPEC §1</em></div>
+      <div class="node"><b>② 軸</b>買い手を座標に<em>SPEC §3–4</em></div>
+      <div class="node"><b>③ 形式論理</b>検査できる形へ<em>R1–R19／A1–A23</em></div>
+      <div class="node"><b>④ Python</b>機械的に実行<em>compile_deal()</em></div>
+    </div>
+  </div>
+  <div class="vsep">▼ 決定表（decisions.json）＝ 買い手ごとに確定した「書くべきこと・書いてはならないこと」</div>
+
+  <div class="band b-instr">
+    <div class="bandlab">生成の指示<span>どう見せるか</span></div>
+    <div class="nodes">
+      <div class="node" style="flex:0 1 260px"><b>⑤ プロンプト組み立て</b>決定表を日本語の作業指示に翻訳する。字数・枚割り・申告欄もここ<em>prompts.py</em></div>
+      <div class="node" style="flex:1"><b>ここには論理が一行も無い</b>判定は④で終わっている。⑤がやるのは並べ替えと言い換えだけ<em>247行／判定 0</em></div>
+    </div>
+  </div>
+  <div class="vsep">▼ 指示文（1セルあたり約3,600字）</div>
+
+  <div class="band b-gen">
+    <div class="bandlab">LLM<span>言葉にするだけ</span></div>
+    <div class="nodes">
+      <div class="node" style="flex:0 1 260px"><b>⑥ 生成</b>スライド6枚の本文＋自己申告（declared）<em>1セル＝1エージェント</em></div>
+      <div class="node" style="flex:1"><b>LLM に判断させないもの</b>何を書くか・誰に向けるか・どの日付を使うか・どの打ち手に触れるか。全部④で決まっている<em></em></div>
+    </div>
+  </div>
+  <div class="vsep">▼ 本文6枚 ＋ 申告値21項目</div>
+
+  <div class="band b-chk">
+    <div class="bandlab">検査<span>仕様を満たしたか</span></div>
+    <div class="nodes">
+      <div class="node"><b>⑦ 生成後検査</b>同じ論理式で出来上がりを測る<em>validate_copy()</em></div>
+      <div class="node"><b>合否と理由コード</b>stop／要判断／info<em>79 + 27 コード</em></div>
+      <div class="node"><b>盲検買い手</b>実際に落ちるか<em>マルチエージェント検証</em></div>
+      <div class="node"><b>ずれ＝アノマリー</b>次版の修正対象<em>A1–A23</em></div>
+    </div>
+  </div>
+</div>
+
+<div class="callout">
+<p><b>読み方のコツ。</b>①〜④は<b>買い手ごとに一度だけ回る計算</b>で、答えは一意に決まります（同じ入力なら必ず同じ決定表。1セル80マイクロ秒）。⑤〜⑥は<b>作文</b>で、同じ指示でも出てくる文章は毎回違います。⑦はその作文を①〜④の物差しで測り直す工程です。<br>
+<b>つまりこの体系は、作文の自由度を「どうしても人間の言葉が要る最後の一段」だけに閉じ込めるための装置です。</b></p>
+</div>
+
+<h2><span class="n">LAYER 1</span>公理 ― 何を守るのか</h2>
+<p>すべての出発点は3つだけです。営業でも心理学でもなく、<b>「合意はどう積み上がり、どこで壊れるか」</b>についての形式的な主張です。第7版までは中心命題が7本ありましたが、重複していたので3本に畳みました。</p>
+
+<table>
+<tr><th style="width:130px">原理</th><th style="width:230px">言っていること（普通の言葉で）</th><th>ここから何が出るか</th></tr>
+<tr>
+  <td><b>Π<sub>1</sub> 蓄積律</b><br><small>合意は資本である</small></td>
+  <td>資料は、買い手が<b>タダで頷けること</b>から始めて、<b>金を出す判断</b>で終わる。前の枚で取った同意は次の枚の土台として使い回せる。そして<b>一度でも前の枚と矛盾したら、それまでの同意が全部無効になる</b>。</td>
+  <td>枚の順番（①→⑥）。単位を途中で置き換えてはいけない理由。<b>「侮辱」の正体</b>＝買い手が自分で積んだ判断（過去の発注、いまの体制）を取り消せと要求すること。矛盾先が「この資料で積んだ同意」なら全損、「買い手が自分で積んだもの」なら侮辱。</td>
+</tr>
+<tr>
+  <td><b>Π<sub>2</sub> 通関律</b><br><small>資本は使う席まで運ばれないと使えない</small></td>
+  <td>資料は<b>途中の席を全部通る</b>。店長 → 社長、課長 → 学部長会 → 理事会。各席は<b>自分の帳票の言葉でしか読めない</b>。読めない量・知らない語は、そこで止まる。<br>ただし<b>落とすのではなく、書き足せば通る</b>。</td>
+  <td>③で新語を出したら既存の科目名を併記する。⑥では終端の席の量だけでなく<b>途中の席が読める量も置く</b>。金額が動くと言うなら<b>実際にその費目を減らせる人</b>が要る。</td>
+</tr>
+<tr>
+  <td><b>Π<sub>3</sub> 所在律</b><br><small>拘束と証拠は同じ所にないと効かない</small></td>
+  <td>「やらざるを得ない理由」と「その証拠」は<b>同じ出所</b>でなければ効かない。制度が縛っているなら証拠は登録番号、責任分界が問題なら証拠は契約書の条文。性能表は答えにならない。</td>
+  <td>D軸（他の打ち手を消す12次元）が <b>所在 λ × 様式 ε</b> の表に畳める。効かない証拠12件のうち12件がこの2座標で説明できた。</td>
+</tr>
+</table>
+
+<p><small>形式で書くと Π<sub>2</sub> は <code>cross(x,β) ⟺ conv(x, basis(β⁺)) ∧ ∃act⟨w,d,o⟩</code>。「読める（可能）」と「実際に動かす人がいる（執行）」の連言です。この2つを分けたことが、A12（金額が動かない）とA1（量が読めない）が別の失敗だと分かった理由です。</small></p>
+
+<h2><span class="n">LAYER 2</span>軸 ― 買い手を座標に落とす</h2>
+<p>公理は「形」しか与えません。目の前の買い手を扱うには、その買い手の世界を<b>数えられる座標</b>にする必要があります。これが軸です。第7版までは「8葉」「12次元」「5種」といった<b>列挙</b>でしたが、座標に畳みました。</p>
+
+<table>
+<tr><th style="width:110px">軸</th><th style="width:250px">座標</th><th>畳んだことで何が起きたか</th></tr>
+<tr><td><b>座席</b></td><td>誰が読み、誰が決め、誰が止め、誰が費目を減らせるか。各席に〈基準 κ・様式語 Form・由来〉</td><td>「承認する人（J）／採択を止める人（V）／金を減らす人（W）」が、<b>一つの表の3セル</b>だと分かった。空きセルが2つあり、片方は既知の未解決項目と一致した。</td></tr>
+<tr><td><b>T軸</b><br><small>今やる理由</small></td><td>勾配 γ・再来 ρ・被拘束対象 o・LT既込 φ の4座標</td><td>8種類の「日付の型」が4座標から導出に。「傾きだけの日付は単独で使えない」が、規定ではなく<b>定義の帰結</b>になった。</td></tr>
+<tr><td><b>D軸</b><br><small>他の打ち手を消す</small></td><td>所在 λ（8種）× 様式 ε（構造／非対称）</td><td>12次元が2座標に。D<sub>7</sub>（自社が残る根拠）が新次元ではなく<b>既存次元の ε 反転</b>だと分かった。</td></tr>
+<tr><td><b>κ</b><br><small>席の基準</small></td><td>実務性 0 ／ 価格 1 ／ 財源 2 ／ 説明可能性 3 ／ 政治的可視性 4 の<b>1本の階数</b></td><td>「どの基準からどの基準へ翻訳できるか」の手書き25マス表が、<b>隣接則（差が1以内）だけで24マス再現</b>できた。<b>本文の後半で効いてくるのはここです。</b></td></tr>
+<tr><td><b>Acct</b><br><small>費目</small></td><td>向き・帰属・硬さ・支払単位の4座標</td><td>「時間が浮いても日給なら金は浮かない」が式で書けるように。「うちは人を減らさん」＝硬さ固定、で8件の失敗が一行に。</td></tr>
+<tr><td><b>商材座標</b><br><small>第10版</small></td><td>検証時点 ν・分割試用 θ・切替コスト σ<sub>p</sub>・発現ラグ ω・帰属可能性 α・会計分類 β</td><td>それまで業界ごとに手で書いていた表を、<b>商材の性質から生成</b>できるようにした（既存研究の測定尺度を流用）。業界固有のバイアスが他業界に伝播する経路を1本に減らした。</td></tr>
+</table>
+
+<h2><span class="n">LAYER 3</span>形式論理 ― 検査できる形にする</h2>
+<p>公理（形）と軸（座標）が揃うと、<b>「この買い手のこの状況では、こう書かねばならない／こう書いてはならない」</b>が式として書けます。これが規則 R1–R19 とアノマリー由来条件 A1–A23 です。ここではその形式系そのものを図にします。</p>
+
+<h3>3-1. 記法 ― 何が書けて、何が書けないか</h3>
+<p>第7版の内部検査で見つかった不具合12件のうち9件は、命題の間違いではなく<b>型・束縛・定義域の間違い</b>でした。同じ誤りが4回出たものは、規則を足しても再発します。<b>書けなくするのが正しい</b>——そこで記法を5つ固定しました。</p>
+
+<div class="fig">
+<span class="fnum">FIG. 1</span><h4>5つの記法（signature）</h4>
+<svg viewBox="0 0 940 300" role="img" aria-label="5つの記法">
+<defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#8b93a1"/></marker></defs>
+<g font-family="ui-monospace,Menlo,monospace">
+<rect x="8" y="8" width="290" height="82" rx="5" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="22" y="30" font-size="13" font-weight="700" fill="#2c5aa0" font-family="sans-serif">N₁ 承認演算子</text>
+<text x="22" y="52" font-size="12.5" fill="#1a1c22">⟦φ⟧ ← 世界について真</text>
+<text x="22" y="72" font-size="12.5" fill="#1a1c22">Γₛ ⊢ φ ← 段sで承認済み</text>
+<text x="228" y="82" font-size="10.5" fill="#5d6470" font-family="sans-serif">裸のφは構文エラー</text>
+
+<rect x="318" y="8" width="290" height="82" rx="5" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="332" y="30" font-size="13" font-weight="700" fill="#2c5aa0" font-family="sans-serif">N₂ 単位元と未定義</text>
+<text x="332" y="52" font-size="12.5" fill="#1a1c22">X⊥ = X ⊔ {⊥}</text>
+<text x="332" y="72" font-size="11.5" fill="#1a1c22" font-family="sans-serif">⊥ はどの値とも比較できない</text>
+
+<rect x="628" y="8" width="304" height="82" rx="5" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="642" y="30" font-size="13" font-weight="700" fill="#2c5aa0" font-family="sans-serif">N₃ 行為の三つ組</text>
+<text x="642" y="52" font-size="12.5" fill="#1a1c22">act⟨w, d, o⟩</text>
+<text x="642" y="70" font-size="11" fill="#1a1c22" font-family="sans-serif">誰が・いつ・何を。世界を変える／世界から取る</text>
+<text x="642" y="85" font-size="11" fill="#1a1c22" font-family="sans-serif">主張は、この形でしか書けない</text>
+
+<rect x="8" y="102" width="450" height="76" rx="5" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="22" y="124" font-size="13" font-weight="700" fill="#2c5aa0" font-family="sans-serif">N₄ 単位付き量</text>
+<text x="22" y="146" font-size="12.5" fill="#1a1c22">Qty = ⟨数, 単位, 基準κ⟩</text>
+<text x="22" y="166" font-size="11.5" fill="#1a1c22" font-family="sans-serif">単位を落とした量は書けない。「480時間」と「38万円」は別の型</text>
+
+<rect x="478" y="102" width="454" height="76" rx="5" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="492" y="124" font-size="13" font-weight="700" fill="#2c5aa0" font-family="sans-serif">N₅ 座席の型</text>
+<text x="492" y="146" font-size="12.5" fill="#1a1c22">Seat = ⟨κ, Form, χ, origin, auth⟩</text>
+<text x="492" y="166" font-size="11.5" fill="#1a1c22" font-family="sans-serif">基準・様式語・通し方・由来・権限。席は名前ではなく5つ組</text>
+</g>
+
+<line x1="470" y1="192" x2="470" y2="212" stroke="#8b93a1" stroke-width="1.5" marker-end="url(#a1)"/>
+<rect x="8" y="216" width="924" height="76" rx="5" fill="#fbecec" stroke="#e8bcbc"/>
+<text x="24" y="238" font-size="12.5" font-weight="700" fill="#a33a3a">記法がなかったために、同じ一つの誤りが何度も別々に発見されていた</text>
+<text x="24" y="259" font-size="12" fill="#4a4f59">N₂ が無かった → 「0か月」を〈反復しない〉と〈即座に反復〉の両方に使い、誤検出6件。同型の誤りが計4回。</text>
+<text x="24" y="278" font-size="12" fill="#4a4f59">N₃ が無かった → A7・A8・A12/R13・A15/R15 を、4人の別々の買い手が別々に発見。実は1つの型だった。</text>
+</svg>
+<p class="figcap"><b>読み方。</b>ここに書けない形の主張は、そもそも仕様に載りません。たとえば「この提案は効果がある」は N₁ 違反（⟦⟧ なのか Γ⊢ なのか決まっていない）、「工数が480時間減る」は N₄ を満たすが N₃ を満たさない（誰がいつ減らすのかが無い）ので、金額の主張には使えません。</p>
+</div>
+
+<h3>3-2. Π<sub>1</sub> 蓄積律 ― 合意は積み上がり、矛盾で全損する</h3>
+
+<div class="formula">Γ<sub>s</sub> = Γ<sub>s</sub><sup>init</sup> ∪ {φ<sub>s</sub>} 　　max<sub>φ∈Γs</sub> cost(φ) ≤ max<sub>φ∈Γs'</sub> cost(φ)　(s &lt; s')　　<b>Γ<sub>s</sub> ⊬ ⊥　(∀s)</b></div>
+
+<div class="fig">
+<span class="fnum">FIG. 2</span><h4>Π₁ の階段 ― 積み上がり方と、2種類の壊れ方</h4>
+<svg viewBox="0 0 940 380" role="img" aria-label="Π1 蓄積律の階段">
+<defs>
+<marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#a33a3a"/></marker>
+<marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#a8690e"/></marker>
+</defs>
+<line x1="44" y1="272" x2="44" y2="34" stroke="#9aa1ad" stroke-width="1.3"/>
+<polygon points="44,28 40,38 48,38" fill="#9aa1ad"/>
+<text x="52" y="30" font-size="11.5" fill="#5d6470">cost（買い手が差し出すもの）</text>
+<line x1="44" y1="272" x2="930" y2="272" stroke="#9aa1ad" stroke-width="1.3"/>
+
+<g>
+<rect x="58" y="240" width="138" height="32" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="127" y="234" font-size="12.5" font-weight="700" text-anchor="middle" fill="#2c5aa0">① 現状</text>
+<text x="127" y="260" font-size="11" text-anchor="middle" fill="#3d4450">タダで頷ける事実</text>
+
+<rect x="200" y="212" width="138" height="60" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="269" y="206" font-size="12.5" font-weight="700" text-anchor="middle" fill="#2c5aa0">② 否定の内在</text>
+<text x="269" y="238" font-size="11" text-anchor="middle" fill="#3d4450">同じ材料を</text>
+<text x="269" y="254" font-size="11" text-anchor="middle" fill="#3d4450">別の単位で数え直す</text>
+
+<rect x="342" y="184" width="138" height="88" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="411" y="178" font-size="12.5" font-weight="700" text-anchor="middle" fill="#2c5aa0">③ 問題化</text>
+<text x="411" y="215" font-size="11" text-anchor="middle" fill="#3d4450">欠如に名前をつける</text>
+<text x="411" y="231" font-size="11" text-anchor="middle" fill="#3d4450">＋既存科目に対応づけ</text>
+
+<rect x="484" y="156" width="138" height="116" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="553" y="150" font-size="12.5" font-weight="700" text-anchor="middle" fill="#2c5aa0">④ 必然化</text>
+<text x="553" y="192" font-size="11" text-anchor="middle" fill="#3d4450">外の日付を置く</text>
+<text x="553" y="208" font-size="11" text-anchor="middle" fill="#3d4450">（今やる理由）</text>
+
+<rect x="626" y="128" width="138" height="144" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="695" y="122" font-size="12.5" font-weight="700" text-anchor="middle" fill="#2c5aa0">⑤ 消去</text>
+<text x="695" y="170" font-size="11" text-anchor="middle" fill="#3d4450">他の打ち手が</text>
+<text x="695" y="186" font-size="11" text-anchor="middle" fill="#3d4450">成り立たない条件</text>
+
+<rect x="768" y="100" width="138" height="172" fill="#dfe9f8" stroke="#9dbbe4"/>
+<text x="837" y="94" font-size="12.5" font-weight="700" text-anchor="middle" fill="#2c5aa0">⑥ 提案</text>
+<text x="837" y="150" font-size="11" text-anchor="middle" fill="#3d4450">金額・期日・実行者</text>
+<text x="837" y="166" font-size="11" text-anchor="middle" fill="#3d4450">（有料の判断）</text>
+</g>
+<text x="482" y="292" font-size="12" text-anchor="middle" fill="#5d6470" font-family="ui-monospace,Menlo,monospace">Γ₁ ⊆ Γ₂ ⊆ Γ₃ ⊆ Γ₄ ⊆ Γ₅ ⊆ Γ₆　（承認は何度使っても減らない＝contraction）</text>
+
+<path d="M 700 122 C 640 60, 380 60, 320 206" fill="none" stroke="#a33a3a" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#a2)"/>
+<rect x="392" y="44" width="240" height="34" rx="4" fill="#fbecec" stroke="#e8bcbc"/>
+<text x="512" y="66" font-size="11.5" text-anchor="middle" fill="#a33a3a" font-weight="700">Γₛ と矛盾 → Γ ⊢ ⊥ → 全額失効</text>
+
+<path d="M 830 278 C 800 340, 480 350, 300 340" fill="none" stroke="#a8690e" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#a3)"/>
+<rect x="34" y="322" width="252" height="42" rx="4" fill="#fbf2e2" stroke="#e6cf9c"/>
+<text x="160" y="340" font-size="11.5" text-anchor="middle" fill="#a8690e" font-weight="700">Γ&#94;own（買い手が資料の外で積んだ承認）</text>
+<text x="160" y="356" font-size="11" text-anchor="middle" fill="#7d5a20">過去の発注判断・いまの体制・自分が裁定者であること</text>
+<text x="600" y="356" font-size="11.5" fill="#a8690e" font-weight="700">こちらを攻撃すると ≺（侮辱）</text>
+</svg>
+<p class="figcap"><b>2種類の壊れ方が、同じ一つの式から出ます。</b>φ を承認するために、買い手が既に積んだ χ を取り消さねばならないとき、Π₁ の単調性が破れる。<span class="formula" style="display:inline-block;margin:0;padding:3px 8px">insult(φ) ⟺ ∃χ ∈ Γ&#94;own. Γ<sub>s−1</sub> ∪ {φ} ⊢ ¬χ</span><br>
+攻撃先が<b>この論証で積んだもの</b>なら ⊥（全損）、<b>買い手が資料の外で積んだもの</b>なら ≺（侮辱）。第4版から名前だけあった「侮辱」に、第8版で初めて対象が与えられました。<br>
+<b>実務的な帰結。</b>⑤で「いまの外注先は能力がない」と書くと、買い手は自分の過去の選定を取り消さないと提案を飲めなくなる。だから⑤は<b>手段の条件</b>を書き、買い手の<b>過去の決定</b>には触れない。<code>check_insult()</code>／R17 がこれを検査します。</p>
+</div>
+
+<h3>3-3. Π<sub>2</sub> 通関律 ― 二重の門</h3>
+
+<div class="formula">cross(x, β) ⟺ <b>conv( x, basis(β⁺) )</b> ∧ <b>∃ act⟨w,d,o⟩. auth(w,o) ∧ tgt(o) = x</b><br>　　　　　　　　＿＿＿＿＿＿＿＿＿＿＿＿　　＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿<br>　　　　　　　　　　可能（読めるか）　　　　　　　執行（実際に動かす人がいるか）</div>
+
+<div class="fig">
+<span class="fnum">FIG. 3</span><h4>Π₂ の二重の門 ― どちらで止まったかで処方が違う</h4>
+<svg viewBox="0 0 940 330" role="img" aria-label="Π2 通関律の二重の門">
+<defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#5d6470"/></marker></defs>
+<rect x="8" y="60" width="150" height="82" rx="5" fill="#f1f3f6" stroke="#c8ccd4"/>
+<text x="83" y="84" font-size="12.5" font-weight="700" text-anchor="middle" fill="#1a1c22">担体 x</text>
+<text x="83" y="106" font-size="11.5" text-anchor="middle" fill="#3d4450">語・量・命題・提案</text>
+<text x="83" y="126" font-size="11" text-anchor="middle" fill="#5d6470">例：900〜1400人時</text>
+
+<line x1="162" y1="101" x2="204" y2="101" stroke="#5d6470" stroke-width="1.4" marker-end="url(#a4)"/>
+
+<rect x="208" y="40" width="216" height="122" rx="5" fill="#eaf0fa" stroke="#7ba0d8" stroke-width="1.6"/>
+<text x="316" y="64" font-size="13" font-weight="700" text-anchor="middle" fill="#2c5aa0">可能の門</text>
+<text x="316" y="86" font-size="12" text-anchor="middle" fill="#1a1c22" font-family="ui-monospace,Menlo,monospace">conv(x, basis(j⁺))</text>
+<text x="316" y="110" font-size="11.5" text-anchor="middle" fill="#3d4450">その席の帳票の言葉で</text>
+<text x="316" y="127" font-size="11.5" text-anchor="middle" fill="#3d4450">読めるか</text>
+<text x="316" y="149" font-size="10.5" text-anchor="middle" fill="#5d6470">担体の型でディスパッチする</text>
+
+<line x1="428" y1="101" x2="470" y2="101" stroke="#5d6470" stroke-width="1.4" marker-end="url(#a4)"/>
+
+<rect x="474" y="40" width="216" height="122" rx="5" fill="#e9f5ee" stroke="#6aab86" stroke-width="1.6"/>
+<text x="582" y="64" font-size="13" font-weight="700" text-anchor="middle" fill="#2f7a4d">執行の門</text>
+<text x="582" y="86" font-size="12" text-anchor="middle" fill="#1a1c22" font-family="ui-monospace,Menlo,monospace">∃act⟨w,d,o⟩</text>
+<text x="582" y="110" font-size="11.5" text-anchor="middle" fill="#3d4450">それを実際に動かす</text>
+<text x="582" y="127" font-size="11.5" text-anchor="middle" fill="#3d4450">権限のある人がいるか</text>
+<text x="582" y="149" font-size="10.5" text-anchor="middle" fill="#5d6470">〈人と対象〉は対で検査する</text>
+
+<line x1="694" y1="101" x2="736" y2="101" stroke="#5d6470" stroke-width="1.4" marker-end="url(#a4)"/>
+<rect x="740" y="60" width="192" height="82" rx="5" fill="#dfe9f8" stroke="#9dbbe4"/>
+<text x="836" y="88" font-size="13" font-weight="700" text-anchor="middle" fill="#2c5aa0">通関 cross(x, β)</text>
+<text x="836" y="112" font-size="11.5" text-anchor="middle" fill="#3d4450">次の席へ運ばれる</text>
+
+<line x1="316" y1="166" x2="316" y2="192" stroke="#a33a3a" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="180" y="196" width="272" height="76" rx="5" fill="#fbecec" stroke="#e8bcbc"/>
+<text x="316" y="216" font-size="11.5" font-weight="700" text-anchor="middle" fill="#a33a3a">ここで止まる＝読めない</text>
+<text x="316" y="236" font-size="11" text-anchor="middle" fill="#4a4f59">A1（④の量）／A5（⑥の提案）／A11・R11（③の語）</text>
+<text x="316" y="253" font-size="11" text-anchor="middle" fill="#4a4f59">A16（途中の席）</text>
+<text x="316" y="268" font-size="11" text-anchor="middle" fill="#2f7a4d">処方：両替経路・既存語の対応を<tspan font-weight="700">書き足す</tspan></text>
+
+<line x1="582" y1="166" x2="582" y2="192" stroke="#a33a3a" stroke-width="1.3" stroke-dasharray="4 3"/>
+<rect x="470" y="196" width="272" height="76" rx="5" fill="#fbecec" stroke="#e8bcbc"/>
+<text x="606" y="216" font-size="11.5" font-weight="700" text-anchor="middle" fill="#a33a3a">ここで止まる＝動かす人がいない</text>
+<text x="606" y="236" font-size="11" text-anchor="middle" fill="#4a4f59">A12・R13（費目を減らす）／A15・R15（受領記録）</text>
+<text x="606" y="253" font-size="11" text-anchor="middle" fill="#4a4f59">A7・A8（拘束者）／A21（実行を拒む）</text>
+<text x="606" y="268" font-size="11" text-anchor="middle" fill="#2f7a4d">処方：<tspan font-weight="700">誰が・いつ・どの費目で</tspan>を書く</text>
+
+<rect x="8" y="282" width="924" height="44" rx="4" fill="#f5f6f8" stroke="#d8dbe2"/>
+<text x="24" y="301" font-size="11.5" fill="#3d4450"><tspan font-weight="700">境界 β は席と席の間だけではない。</tspan>　席→席（起案し運ぶ）／紙→世界（費目を減らす）／世界→紙（データの受領記録・日付を握る当事者・拘束者の実在）</text>
+<text x="24" y="319" font-size="11.5" fill="#3d4450"><tspan font-weight="700">四つとも同じ act⟨w,d,o⟩ である。</tspan>　この型がなかったために、4人の別々の買い手が別々に同じ穴を見つけていた。</text>
+</svg>
+<p class="figcap"><b>「通関であって濾過ではない」の意味。</b>第7版は T(Γ) = {φ ∈ Γ : …} と<b>減算</b>で書いていましたが、実際の処方はすべて<b>加算</b>でした。通らなかった量には両替経路を書き足す（A1）、②の単位は保持したまま κ<sub>n</sub> の量を併記する（A6）、新語には既存語の対応を併記する（A11）。<b>通らないものは落ちるのではなく、書き足せば通る。</b>この書き換えが第8版の中身の変更のひとつです。</p>
+</div>
+
+<h3>3-4. κ の階数 ― この体系でいちばん働いている一本の直線</h3>
+<p>「その席の基準で読めるか」を判定するのが可能の門ですが、その中身は<b>5つの基準を1本の直線に並べた階数</b>です。手書きで作っていた25マスの両替表が、隣接則だけで24マス再現できました。</p>
+
+<div class="formula">rk : 実務性 ↦ 0,　価格 ↦ 1,　財源 ↦ 2,　説明可能性 ↦ 3,　政治的可視性 ↦ 4<br>両替可能(κ, κ') ⟺ ∃r ∈ rk(κ), r' ∈ rk(κ'). |r − r'| ≤ 1 ∧ ¬( (r=0) ⊻ (r'=0) )</div>
+
+<div class="fig">
+<span class="fnum">FIG. 4</span><h4>κ の階数グラフ ― いま起きている問題は、この図の1本の辺の話</h4>
+<svg viewBox="0 0 940 300" role="img" aria-label="κ の階数グラフ">
+<defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#a33a3a"/></marker></defs>
+<line x1="126" y1="96" x2="298" y2="96" stroke="#a8690e" stroke-width="2" stroke-dasharray="6 4"/>
+<line x1="322" y1="96" x2="478" y2="96" stroke="#7ba0d8" stroke-width="2.2"/>
+<line x1="502" y1="96" x2="658" y2="96" stroke="#7ba0d8" stroke-width="2.2"/>
+<line x1="682" y1="96" x2="828" y2="96" stroke="#7ba0d8" stroke-width="2.2"/>
+
+<g text-anchor="middle">
+<circle cx="102" cy="96" r="25" fill="#fbf2e2" stroke="#c9922e" stroke-width="2"/>
+<text x="102" y="102" font-size="16" font-weight="700" fill="#8a5b0c">0</text>
+<text x="102" y="48" font-size="13" font-weight="700" fill="#1a1c22">実務性</text>
+<text x="102" y="66" font-size="10.5" fill="#5d6470">現場が回るか</text>
+<text x="102" y="146" font-size="10.5" fill="#5d6470">作業時間・人時</text>
+<text x="102" y="162" font-size="10.5" fill="#5d6470">廃棄率</text>
+
+<circle cx="310" cy="96" r="25" fill="#eaf0fa" stroke="#7ba0d8" stroke-width="2"/>
+<text x="310" y="102" font-size="16" font-weight="700" fill="#2c5aa0">1</text>
+<text x="310" y="48" font-size="13" font-weight="700" fill="#1a1c22">価格</text>
+<text x="310" y="146" font-size="10.5" fill="#5d6470">仕入原価・単価</text>
+
+<circle cx="490" cy="96" r="25" fill="#eaf0fa" stroke="#7ba0d8" stroke-width="2"/>
+<text x="490" y="102" font-size="16" font-weight="700" fill="#2c5aa0">2</text>
+<text x="490" y="48" font-size="13" font-weight="700" fill="#1a1c22">財源</text>
+<text x="490" y="146" font-size="10.5" fill="#5d6470">手元資金・帰属収支</text>
+
+<circle cx="670" cy="96" r="25" fill="#eaf0fa" stroke="#7ba0d8" stroke-width="2"/>
+<text x="670" y="102" font-size="16" font-weight="700" fill="#2c5aa0">3</text>
+<text x="670" y="48" font-size="13" font-weight="700" fill="#1a1c22">説明可能性</text>
+<text x="670" y="146" font-size="10.5" fill="#5d6470">教育の質保証・定員充足</text>
+
+<circle cx="852" cy="96" r="25" fill="#eaf0fa" stroke="#7ba0d8" stroke-width="2"/>
+<text x="852" y="102" font-size="16" font-weight="700" fill="#2c5aa0">4</text>
+<text x="852" y="48" font-size="13" font-weight="700" fill="#1a1c22">政治的可視性</text>
+<text x="852" y="146" font-size="10.5" fill="#5d6470">議会・世論</text>
+</g>
+<text x="210" y="82" font-size="10.5" text-anchor="middle" fill="#a8690e" font-weight="700">執行を要する辺（A12）</text>
+
+<path d="M 478 122 C 400 220, 200 220, 118 122" fill="none" stroke="#a33a3a" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#a5)"/>
+<g stroke="#a33a3a" stroke-width="2.6"><line x1="288" y1="178" x2="308" y2="198"/><line x1="308" y1="178" x2="288" y2="198"/></g>
+<rect x="352" y="212" width="540" height="72" rx="5" fill="#fbecec" stroke="#e8bcbc"/>
+<text x="368" y="234" font-size="12" font-weight="700" fill="#a33a3a">距離 2 → 辺がない ＝ A16_NOT_CONV_AT_SEAT</text>
+<text x="368" y="254" font-size="11.5" fill="#4a4f59">⑥に置いた量は〈財源〉ひとつ。ところが途中の席（店長・入試広報課長・</text>
+<text x="368" y="272" font-size="11.5" fill="#4a4f59">教務主任・店舗運営部）が読めるのは〈実務性〉。第10版で 7/8 がここで止まった。</text>
+<text x="40" y="240" font-size="11.5" fill="#5d6470">検算：手書き25マス中</text>
+<text x="40" y="258" font-size="11.5" fill="#5d6470"><tspan font-weight="700" fill="#1a1c22">24マス</tspan> がこの隣接則で再現。</text>
+<text x="40" y="276" font-size="11" fill="#5d6470">外れるのは 3→1 の1マスのみ</text>
+</svg>
+<p class="figcap"><b>階数0が孤立して見えていた理由が A12 です。</b>図の橙色の破線がそれで、〈実務性〉と〈価格〉のあいだ——つまり<b>物量から金額への両替だけ</b>が執行連言（費目を実際に減らす人）を要します。「可能性」の表からはこの辺が消えて見えていました。階数で書き直すと「距離1だが執行を要する辺」として正しく表現され、<b>可能の門は通るが執行の門で止まる</b>という現象が式で説明できます。<br>
+<b>副産物。</b>「合成を終端の席ひとつに潰してよいのは、席に沿って階数が単調なときだけ」が機械検査できるようになりました。<span class="formula" style="display:inline-block;margin:0;padding:3px 8px">T<sub>n−1→n</sub> ∘ ⋯ ∘ T<sub>1→2</sub> = T<sub>1→n</sub> ⟺ rk(κ<sub>k</sub>) が k について単調</span></p>
+</div>
+
+<h3>3-5. Π<sub>3</sub> 所在律 ― 拘束と証拠は同じ所にあるか</h3>
+
+<div class="formula">binds(c, y) ⟺ λ(c) ∉ ctrl(y) ∧ y ∈ scope(λ(c))　　　effective(e, c) ⟺ <b>λ(e) = λ(c) ∧ ε(e) = ε(c)</b></div>
+
+<p>拘束が効くのは、それが被拘束者の<b>制御の外</b>にあり、かつ被拘束者がその<b>適用範囲に入る</b>ときだけ。証拠が効くのは、拘束と<b>同じ所在 λ</b>かつ<b>同じ様式 ε</b>のときだけ。この2座標で、⑤の12次元がすべて位置づきます。</p>
+
+<div class="fig">
+<span class="fnum">FIG. 5</span><h4>D軸 ＝ 所在 λ × 様式 ε ― 12次元が1枚の表になる</h4>
+<table style="margin:0">
+<tr><th style="width:150px">λ（所在）</th><th style="width:34%">ε ＝ <b>構造</b><br><small style="font-weight:400">この種類は原理的にできない</small></th><th style="width:34%">ε ＝ <b>非対称</b><br><small style="font-weight:400">この個体は持ち、あの個体は持たない</small></th></tr>
+<tr><td>手段</td><td><b>D₁</b> 能力</td><td style="background:#fbecec;color:#a33a3a"><b>禁止</b>　性能比較表は |C|=1 を作らない（実測。導けない）</td></tr>
+<tr><td>関係</td><td><b>D₂</b> 帰責</td><td><b>D<sub>7c</sub></b> 責任分界の引受範囲</td></tr>
+<tr><td>決定主体</td><td><b>D₃</b> 権限</td><td>―</td></tr>
+<tr><td>正当化</td><td><b>D₄</b> 手続</td><td><b>D<sub>7a</sub></b> 同型の実名事例</td></tr>
+<tr><td>買い手の資源</td><td><b>D₅</b> 資源配分</td><td><b>D<sub>7d</sub></b> 価格構造の開示</td></tr>
+<tr><td>制度</td><td><b>D<sub>6a</sub></b></td><td><b>D<sub>7b</sub></b> 認定・登録の非対称</td></tr>
+<tr><td>市場</td><td><b>D<sub>6b</sub></b>　<small>拘束者が ⊥ でよい唯一の所在（市場は人格を持たない）</small></td><td>歩留まりの実数</td></tr>
+<tr><td>上位者</td><td><b>D<sub>6c</sub></b></td><td>承認リードタイムの実測</td></tr>
+</table>
+<p class="figcap"><b>この表から導出されること。</b>（1）<b>D₇ は新しい次元ではない</b>——D₄・D<sub>6a</sub>・D₂・D₅ の ε を反転したもの。（2）<b>|C|=1 に D₇ が要る理由</b>——ε＝構造 の主張はカテゴリごと消すので、定義上カテゴリ内の一個体を特定できない。「これ、御社じゃなくても成り立つ話だよね」は<b>ε が全部〈構造〉だったことの正確な報告</b>です。（3）<b>R1</b>——λ(D₅)＝買い手の資源 ∈ ctrl(買い手)。買い手が制御できる拘束は買い手が解けるので、D₅ 単独では消去にならない。<br>
+<b>検算：</b>第7版で列挙していた「効かない証拠」12件のうち、10件は λ の不一致、残る2件は λ が一致して ε が不一致。<b>2座標で 12/12。</b></p>
+</div>
+
+<h3>3-6. 座席 ― 三つの役は、一つの表の三セルだった</h3>
+
+<div class="formula">auth : 𝒜 → 𝒫( ℒ × {+, −} )　　ℒ = { Γ, adopt, Acct }<br>取引の成立 ⟺ ∀ℓ ∈ ℒ. ∃w. auth(w, ℓ, 必要な向き) ∧ ¬∃v. auth(v, adopt, −) ∧ veto(v)</div>
+
+<div class="fig">
+<span class="fnum">FIG. 6</span><h4>座席の帳簿表 ― 空きセルが2つあり、片方は既知の未解決項目と一致した</h4>
+<table style="margin:0">
+<tr><th style="width:130px">帳簿 ℓ</th><th style="width:210px">＋（与える）</th><th style="width:210px">−（止める・減らす）</th><th>欠けると</th></tr>
+<tr><td><b>Γ</b> 承認</td><td style="background:#eaf0fa"><b>J</b>　承認を与える席<br><small>学部長会・理事会・社長</small></td><td style="background:#fdf6e8;color:#8a5b0c"><b>空きセル</b><br><small>検収・返金・不承認（§8 U4）</small></td><td>Γ が積み上がらない</td></tr>
+<tr><td><b>adopt</b> 採択</td><td>―</td><td style="background:#eaf0fa"><b>V</b>　採択を止める席<br><small>労働組合・現場長</small></td><td>買っても使えない</td></tr>
+<tr><td><b>Acct</b> 費目</td><td style="background:#fdf6e8;color:#8a5b0c"><b>空きセル</b><br><small>予算を付ける</small></td><td style="background:#eaf0fa"><b>W</b>　費目を減らす席<br><small>店長・工場長</small></td><td>承認されても κ<sub>n</sub> が動かない</td></tr>
+</table>
+<p class="figcap"><b>第7版の「W は V の鏡像である」という観察は正しく、鏡像である理由は同じ表の別セルだからでした。</b>そして表には空きセルが2つあり、片方（Γ の −）は既に「未解決項目 U4」として観察済みだった。<b>未踏ではなく未記入</b>だったわけです。<br>
+<b>第11版の A21 はこの表から出ました。</b>V に「拒む」という状態があるなら、W にも同じ状態があるはず——実際に買い手はこう言いました：「シフトを実際に削らんかぎり、うちの金は一円も残らんの。それを削るのは店長で、店長は棚替えの時期に人は減らせんと言う」。<b>W は実在するのに、実行を拒む。</b></p>
+</div>
+
+<h3>3-7. 規則はどこから出てきたか</h3>
+
+<div class="fig">
+<span class="fnum">FIG. 7</span><h4>導出の系統図 ― 3原理＋5記法から19規則・23条件へ</h4>
+<svg viewBox="0 0 940 330" role="img" aria-label="規則の導出系統図">
+<defs><marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#9aa1ad"/></marker></defs>
+<g text-anchor="middle">
+<rect x="20" y="10" width="230" height="46" rx="5" fill="#2c5aa0"/>
+<text x="135" y="30" font-size="13.5" font-weight="700" fill="#fff">Π₁ 蓄積律</text>
+<text x="135" y="48" font-size="10.5" fill="#cfe0f5">合意は無矛盾に積み上がる</text>
+
+<rect x="290" y="10" width="330" height="46" rx="5" fill="#2c5aa0"/>
+<text x="455" y="30" font-size="13.5" font-weight="700" fill="#fff">Π₂ 通関律</text>
+<text x="455" y="48" font-size="10.5" fill="#cfe0f5">資本は使う席まで運ばれないと使えない</text>
+
+<rect x="660" y="10" width="260" height="46" rx="5" fill="#2c5aa0"/>
+<text x="790" y="30" font-size="13.5" font-weight="700" fill="#fff">Π₃ 所在律</text>
+<text x="790" y="48" font-size="10.5" fill="#cfe0f5">拘束と証拠は同じ所在に</text>
+
+<line x1="135" y1="58" x2="135" y2="86" stroke="#9aa1ad" stroke-width="1.3" marker-end="url(#a6)"/>
+<line x1="380" y1="58" x2="380" y2="86" stroke="#9aa1ad" stroke-width="1.3" marker-end="url(#a6)"/>
+<line x1="540" y1="58" x2="540" y2="86" stroke="#9aa1ad" stroke-width="1.3" marker-end="url(#a6)"/>
+<line x1="790" y1="58" x2="790" y2="86" stroke="#9aa1ad" stroke-width="1.3" marker-end="url(#a6)"/>
+
+<rect x="30" y="90" width="210" height="32" rx="4" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="135" y="111" font-size="11.5" font-weight="700" fill="#2c5aa0">単調性・無矛盾・Γ&#94;init</text>
+
+<rect x="286" y="90" width="188" height="32" rx="4" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="380" y="111" font-size="11.5" font-weight="700" fill="#2c5aa0">可能連言 conv</text>
+
+<rect x="480" y="90" width="188" height="32" rx="4" fill="#e9f5ee" stroke="#b6d9c4"/>
+<text x="574" y="111" font-size="11.5" font-weight="700" fill="#2f7a4d">執行連言 ∃act ＋ N₃</text>
+
+<rect x="694" y="90" width="226" height="32" rx="4" fill="#eaf0fa" stroke="#bcd0ec"/>
+<text x="807" y="111" font-size="11.5" font-weight="700" fill="#2c5aa0">binds ／ effective ＋ λ×ε</text>
+</g>
+
+<g font-size="11" text-anchor="middle">
+<line x1="135" y1="124" x2="135" y2="146" stroke="#9aa1ad" stroke-width="1.2" marker-end="url(#a6)"/>
+<rect x="20" y="150" width="230" height="120" rx="4" fill="#fff" stroke="#d8dbe2"/>
+<text x="135" y="170" font-weight="700" fill="#1a1c22" font-size="11.5">枚の順序と単位の保存</text>
+<text x="135" y="192" fill="#3d4450">R10a/b/c・R14（型検査）</text>
+<text x="135" y="212" fill="#3d4450">A4・A9・A10・A13・A14</text>
+<text x="135" y="232" fill="#3d4450">R8（Γ&#94;init）</text>
+<text x="135" y="254" fill="#a8690e" font-weight="700">R17 侮辱（第8版で新設）</text>
+
+<line x1="380" y1="124" x2="380" y2="146" stroke="#9aa1ad" stroke-width="1.2" marker-end="url(#a6)"/>
+<rect x="286" y="150" width="188" height="120" rx="4" fill="#fff" stroke="#d8dbe2"/>
+<text x="380" y="170" font-weight="700" fill="#1a1c22" font-size="11.5">読めるか</text>
+<text x="380" y="192" fill="#3d4450">A1（④の量）</text>
+<text x="380" y="212" fill="#3d4450">A5（⑥の提案）</text>
+<text x="380" y="232" fill="#3d4450">A11・R11・R9（語）</text>
+<text x="380" y="254" fill="#a33a3a" font-weight="700">A16・A23（途中の席）</text>
+
+<line x1="574" y1="124" x2="574" y2="146" stroke="#9aa1ad" stroke-width="1.2" marker-end="url(#a6)"/>
+<rect x="480" y="150" width="188" height="120" rx="4" fill="#fff" stroke="#d8dbe2"/>
+<text x="574" y="170" font-weight="700" fill="#1a1c22" font-size="11.5">動かす人がいるか</text>
+<text x="574" y="192" fill="#3d4450">A12・R13（費目）</text>
+<text x="574" y="212" fill="#3d4450">A15・R15（受領記録）</text>
+<text x="574" y="232" fill="#3d4450">A7・A8（拘束者・適用対象）</text>
+<text x="574" y="254" fill="#a8690e" font-weight="700">A21（実行を拒む）</text>
+
+<line x1="807" y1="124" x2="807" y2="146" stroke="#9aa1ad" stroke-width="1.2" marker-end="url(#a6)"/>
+<rect x="694" y="150" width="226" height="120" rx="4" fill="#fff" stroke="#d8dbe2"/>
+<text x="807" y="170" font-weight="700" fill="#1a1c22" font-size="11.5">どの根拠が効くか</text>
+<text x="807" y="192" fill="#3d4450">D軸 12次元 ＝ λ×ε</text>
+<text x="807" y="212" fill="#3d4450">R1（D₅ は単独で消去しない）</text>
+<text x="807" y="232" fill="#3d4450">A19・A20</text>
+<text x="807" y="254" fill="#3d4450">PRIMARY（類型→許される次元）</text>
+</g>
+
+<rect x="20" y="282" width="900" height="44" rx="4" fill="#f5f6f8" stroke="#d8dbe2"/>
+<text x="36" y="301" font-size="11.5" fill="#3d4450"><tspan font-weight="700">R2・R3・R4・R7・R12b・R16 は、実は一つの規則だった。</tspan>　Π₁ ＋「自分にも同じ条件を当てる」の自己適用。</text>
+<text x="36" y="319" font-size="11.5" fill="#3d4450">R7 は第5版、R16 は第7版。層も別（層2と層3.5）に置いていた——<tspan font-weight="700">二版を隔てて、同じ規則を二度発見していた。</tspan></text>
+</svg>
+</div>
+
+<p><b>規則は思いつきで足していません。</b>ほぼ全部が「公理 × 軸」から導出されるか、実測で外せなかった残渣として明示的に残されるかのどちらかです。実際の検査に落ちたところを4つ：</p>
+
+<table>
+<tr><th style="width:80px">規則</th><th style="width:240px">導出</th><th>実際の検査</th></tr>
+<tr><td><b>R13</b></td><td>Π<sub>2</sub> の執行連言 ＋ 行為の三つ組 ⟨誰が・いつ・何を⟩</td><td>⑥で「浮いた分を減らす」と書くなら、<b>その人がその費目を減らせる権限を持っているか</b>を〈人と費目の対〉で照合する。別々に見ると「工場長が外注加工費を止める」が通ってしまう。</td></tr>
+<tr><td><b>R17</b></td><td>Π<sub>1</sub> の単調性の破れ</td><td>⑤で「いまの取引先の選定が誤りだった」と読める書き方をしていないか。買い手は自分の過去の判断を取り消さないと提案を飲めなくなる。</td></tr>
+<tr><td><b>A16</b></td><td>Π<sub>2</sub> を終端の席だけでなく<b>全リンク</b>に適用</td><td>⑥に置いた量が、<b>途中の席の基準でも読めるか</b>を κ の階数で判定。差が2以上なら通らない。</td></tr>
+<tr><td><b>R6b</b></td><td>T軸の φ（LT既込）の定義</td><td>「境界型の日付」だけがリードタイムの逆算を要する。行動型で引くと二重計上。<b>例外ではなく型エラー</b>。</td></tr>
+</table>
+
+<h3>3-8. 一本の導出を、最後まで追う</h3>
+<p>抽象論だけだと分かりにくいので、R2-P1（地場スーパー社長）の④に置かれた日付 <b>2027-09-30</b> が、どういう推論を経て「降格」になったかを最後まで書きます。</p>
+
+<div class="fig">
+<span class="fnum">FIG. 8</span><h4>τ = 2027-09-30 に対する導出</h4>
+<div class="deriv">
+<div class="step"><span class="k">前提</span><span>営業の聞き取り ν から　<code>TauItem(form="A", d=2027-09-30, src="契約", known="未知", scope=Scope(keys=[("業態","食品スーパー")], source=<b>None</b>), binders=["主要卸（一次問屋）"])</code></span></div>
+<div class="step"><span class="k">1</span><span>T軸の座標へ分解。<code>form="A"</code> ⟹ γ＝段, ρ＝一度, o＝⊥, φ＝境界<span class="why">→ M₀ 消去力＝〈不可逆〉、必須の日付＝{d}（w も Δ も要らない）</span></span></div>
+<div class="step"><span class="k">2</span><span>φ＝境界 なので R6b が掛かる。着手期限 ＝ d − LT* ＝ 2027-09-30 − 4か月 ＝ <b>2027-05-28</b><span class="why">→ φ＝行動（B・E型）で同じ引き算をすると二重計上になる。これは例外ではなく型エラー</span></span></div>
+<div class="step"><span class="k">3</span><span>Π₃ 第2連言 <code>y ∈ scope(λ(c))</code> を検査。scope.keys ＝〈業態＝食品スーパー〉。買い手は該当する。<span class="why">→ 適用対象としては通る</span></span></div>
+<div class="step"><span class="k">4</span><span>ところが <b>N₃</b>（行為の三つ組）が要求する <code>act⟨w, d, o⟩</code> のうち、<b>この scope 値を誰がいつどの条文から取ったのか</b>が ⊥（未記入）。<span class="why">→ 機械は「業態＝食品スーパー」という値が正しいかどうかを検査できない。真偽が確かめられるのは<b>出所が書いてあるとき</b>だけ</span></span></div>
+<div class="step"><span class="k">5</span><span>したがって <code>A22_SCOPE_UNSOURCED</code>（<b>降格</b>）。日付は棄却されないが、<b>④の主位置には使えない</b>。<span class="why">→ 停止ではなく降格なのは、値が偽だと決まったわけではないから（§6 X4：失敗の重さの割当は実測）</span></span></div>
+<div class="step"><span class="k">6</span><span>Π₂ 執行連言：この日を握っているのは <code>binders=["主要卸"]</code>。人格を持つ所在（λ＝上位者）なので拘束者の同定は満たす。<span class="why">→ λ＝市場 なら拘束者は ⊥ でよい。ここは上位者なので実名が要る</span></span></div>
+<div class="step"><span class="k">7</span><span><b>生成後。</b>⑥の申告 <code>s6_period_months = 12</code>。④で「毎年来る」と宣言した周期と一致 ⟹ <code>R10a_REPRODUCES_PROBLEM</code>（<b>停止</b>）<span class="why">→ Π₁：自分で問題だと言ったものを、提案が同じ周期で再生産している。承認が Γ 内で矛盾する</span></span></div>
+<div class="step"><span class="k">8</span><span><b>買い手（盲検）の逐語：</b>「どの契約書の何条か書いていない」＝ステップ4–5。「毎年来るなら、取り返しはつく」＝ステップ7。<span class="why">→ 後者は<b>走行時に機械が先に当てていた</b>。前者は<b>走行時には述語が無く、機械は黙っていた</b>——ここから A22 が生まれた</span></span></div>
+</div>
+<p class="figcap">この8行が、この体系の全体像の縮図です。<b>入力 ν → 軸への分解 → 公理の各連言の照合 → 停止／降格／要判断の割当 → 生成後の再検査 → 買い手による答え合わせ。</b>ステップ1〜6は生成前（80マイクロ秒）、ステップ7は生成後、ステップ8が次版のアノマリーを生む場所です。<br>
+<b>ひとつ断り書き。</b>ステップ4–5（A22）は<b>この走行の結果として第11版で新設された検査</b>で、走行時には存在しませんでした。上に書いたのは「いま同じ入力を通すとどうなるか」です。<b>第10版の走行では、ここは機械が黙っていて買い手だけが落とした</b>——それがアノマリーの定義そのものです。</p>
+</div>
+
+<h3>3-9. 導けないもの ― 原理の外に明示的に置いてあるもの</h3>
+<p>形式系の誠実さは、<b>何が導けないかを書いてあるか</b>で決まります。以下は原理から出ないと分かっているもので、実測値・工学的判断としてそれぞれ別枠に置いてあります。</p>
+
+<table>
+<tr><th style="width:60px">#</th><th style="width:340px">内容</th><th>なぜ導けないか</th></tr>
+<tr><td><b>X1</b></td><td>σ<sub>prod</sub> の閾値（100万円・四半期・年次）</td><td>Γ<sup>pre</sup>（すでに合意済みの段）の存在を予測する経験的ヒューリスティック</td></tr>
+<tr><td><b>X2</b></td><td>A2 の発火条件（買い手がいつ検算し始めるか）</td><td>原理は「何が正しいか」を言うが、「買い手がいつ確かめるか」は言わない</td></tr>
+<tr><td><b>X3</b></td><td>λ＝手段 の非対称が効かないこと／適用範囲・同型性の粒度キー／rk の順序と例外1マス</td><td>各所在の<b>内容</b>。原理は形を与えるだけ</td></tr>
+<tr><td><b>X4</b></td><td>失敗の重さの割当（停止／降格／要判断）</td><td>実測</td></tr>
+<tr><td><b>X5</b></td><td>層の割当（生成前に測るか、生成後に測るか）</td><td>情報がいつ手に入るかという工学的事実</td></tr>
+<tr><td><b>X6</b></td><td>θ<sub>auto</sub>・α・h／「予測は生成器に出させない」</td><td>決定理論とメタ規則。Γ の理論と直交する</td></tr>
+</table>
+
+<p><small>加えて、Π₁ 第2式の <b>cost 単調性は、いまだ検査対象を持っていません</b>。≺（侮辱）は第8版で対象を得ましたが、cost は得ていない。3原理のなかで唯一、実装が空のままの箇所です。</small></p>
+
+<h2><span class="n">LAYER 4</span>Python ― 論理式を機械的に実行する</h2>
+
+<div class="layer t-model">
+  <div class="lhead"><span class="lnum">LAYER 4</span><span class="ltitle">compile_deal() ― 生成前の確定</span><span class="lwho">責任：モデル</span></div>
+  <div class="lbody">
+    <div class="lleft">
+      <p class="io"><b>入力</b> ν＝買い手の聞き取り（座席・日付・他の打ち手・費目・商材座標）＋ 売り手が実際に持っている物<br><b>出力</b> 決定表 <code>decisions.json</code></p>
+      <p>この関数は<b>推論をしません</b>。論理式から導かれることだけを、順番に照合していきます。<code>sales_logic.py</code> は 1,153行、標準ライブラリのみ、検査関数 21本。1セル 80マイクロ秒。</p>
+      <p>出すのは次のようなものです。</p>
+      <ul>
+        <li><b>枚割り σ</b>：①〜⑥のどれを作るか（すでに合意済みの段は落とす）</li>
+        <li><b>終端の席と、その基準 κ・様式語</b></li>
+        <li><b>使ってよい日付 τ<sup>ok</sup></b>：出所・適用範囲・逆算した着手期限</li>
+        <li><b>⑤で触れてよい打ち手 δ</b>と、その各々に許される次元</li>
+        <li><b>必ず入れる要素（ブロック）</b>と<b>書き方の制約（規則）</b></li>
+        <li><b>止まる理由（findings）</b>と<b>営業に聞き直すべきこと（needs_judgment）</b></li>
+      </ul>
+      <p><small>ここで重要な設計方針が一つ。<b>Python に置くのは、論理式から機械的に導かれることだけ</b>です。「この買い手に響く言い回し」のような推論は一行も入っていません。だからこそ検査に使えます。</small></p>
+    </div>
+    <div class="lright">
+      <span class="exlab">実例：R2-P1（地場スーパー3店舗の社長／広告・販促支援）<br><span style="font-weight:400;letter-spacing:0">※ 第11版のコードで同じ入力を通した結果。走行時は第10版だったので A21・A22 の2行はまだ出ていません</span></span>
+      <pre>sigma      ①②③④⑤⑥
+j_star     社長
+kappa_n    価格・財源
+form_n     仕入原価／手元資金／粗利
+chain      店長（実務性：作業時間・廃棄率）
+           → 社長（価格・財源：仕入原価・手元資金・粗利）
+tau_ok     2027-09-30（A型・出所=契約・買い手には未知）
+           ※ D型は「単独では④を立てられない」ので棄却
+start_deadline 2027-05-28（逆算）
+delta      主要卸の販促支援 → D6c（拘束者＝主要卸）
+           他社の広告会社   → D7a・D7d
+d7_basis   D7d（価格構成の開示）
+executors  社長［パート人時・仕入原価・廃棄・販促費］
+blocks     21項目   rules 15項目
+findings   A22_SCOPE_UNSOURCED ×2（降格）
+           TD_ALONE（棄却）
+judgment   A21_WILLING_UNKNOWN（社長が実行に同意
+           しているかを聞き取っていない）
+generate   True</pre>
+      <p style="font-size:12.5px"><small>この時点で、<b>この案件で何を書けるかは全部決まっています</b>。「他社の広告会社を⑤で扱ってよい。ただし使える論拠は同型実名事例と価格内訳の2つだけ」「2027-09-30 は使ってよいが出所が未記入なので主位置には置けない」——ここまでが計算です。</small></p>
+    </div>
+  </div>
+</div>
+
+<h2><span class="n">LAYER 5</span>プロンプト ― 決定表を日本語の指示に翻訳する</h2>
+
+<div class="layer t-instr">
+  <div class="lhead"><span class="lnum">LAYER 5</span><span class="ltitle">prompts.py ― 生成の指示</span><span class="lwho">責任：生成の指示</span></div>
+  <div class="lbody">
+    <div class="lleft">
+      <p class="io"><b>入力</b> 決定表 <code>decisions.json</code><br><b>出力</b> 生成器に渡す指示文（1セル 約3,600字）</p>
+      <p><b>ここには判定が一行もありません。</b>247行のうち、やっているのは決定表の項目を日本語の見出しに並べ替えることだけです。</p>
+      <p>指示文に入るもの：読み手と裁定者の一覧／すでに合意済みで<b>資料に書いてはならない</b>こと／売り手が実際に持っている物／使ってよい日付とその適用範囲／⑤で扱う打ち手とその論拠／必ず入れる要素／各枚の書き方／<b>本文に出してはならない語</b>／字数。</p>
+      <p><b>形式系の言葉は生成器に渡しません。</b>「消去」「様相」「必然化」「被覆率」といった設計語は禁止語リストに入っていて、5走行連続で漏洩ゼロ（0/36枚）です。生成器は自分が何の理論で動かされているかを知りません。</p>
+      <div class="callout warn" style="margin:16px 0 0;padding:12px 16px">
+        <p style="font-size:12.5px;margin:0"><b>この層が今いちばん怪しい。</b>拡張子は <code>.py</code> ですが、書き換わるのは<b>LLMに渡す日本語の散文と字数配分</b>で、論理ではありません。だから直しても検査の物差しは変わらない。<b>後半の「現在地」で戻ってきます。</b></p>
+      </div>
+    </div>
+    <div class="lright">
+      <span class="exlab">実例：R2-P1 に渡した指示（抜粋）</span>
+      <pre>【読み手と裁定者】
+  ・店長（見るもの：実務性 ／ 通し方：店で回るか
+        ／ 単独 ／ 資料を読む）
+  ・社長（見るもの：価格・財源 ／ 通し方：手元資金
+        ／ 単独 ／ 資料を読む）
+  ※ 最後に決めるのは【社長】。この人物は価格・財源
+     でしか物を見ない。
+  ※ 様式に載っている語：仕入原価／手元資金／粗利
+  ※ **資料は途中の座席を全部通る。**終端だけに
+     合わせて書くと、手前で止まる。
+     ・店長 は 実務性 でしか読まない
+       ／様式の語：作業時間／廃棄率
+
+【使える日付】
+  ・2027-09-30（その日を過ぎると取り返しがつかない
+     終端日／出所：契約／買い手にとって未知）
+      この日付が効く相手：業態が食品スーパー、
+      この日を握っているのは 主要卸（一次問屋）
+      （**この範囲を④に必ず書く**）
+
+【⑤で扱う打ち手（これ以外は⑤に出さない）】
+  ・「主要卸の販促支援を使う」→ この相手の承認が
+     なければ動かせない拘束（拘束者：主要卸）…
+  ・「他社の広告会社」→ 同型の実名事例 ／
+     価格構成の開示
+
+【本文に出してはならない語】消去、残余、様相、
+  必然化、問題化、被覆率、拘束の所在、…
+
+【出力】各枚 200〜450字。declared を正直に申告。</pre>
+    </div>
+  </div>
+</div>
+
+
+<h3 style="font-size:16px;margin:34px 0 8px">Layer 5 の出力 ― 指示文の全文（R2-P1）</h3>
+<p>この層で何が起きているかは、実物を見るのがいちばん早いので、1ケース分をそのまま載せます。<b>3,539字。ここに書いてある値は全部 Layer 4 の決定表から来ていて、この層が足したものは一つもありません。</b></p>
+
+<table>
+<tr><th style="width:230px">指示文のブロック</th><th style="width:250px">決定表のどの項目から</th><th>公理のどこから</th></tr>
+<tr><td>【読み手と裁定者】</td><td><code>seats</code>／<code>chain</code>／<code>j_star</code>／<code>kappa_n</code>／<code>form_n</code></td><td>N₅ 座席の型、Π₂ 全リンク</td></tr>
+<tr><td>【費目を実際に減らせる座席】</td><td><code>executors</code></td><td>Π₂ 執行連言、座席表の Acct(−)</td></tr>
+<tr><td>【買い手が自分で決めてきたこと】</td><td><code>rules: R17_NOT_INSULT</code></td><td>Π₁ 単調性の破れ（≺）</td></tr>
+<tr><td>【使える日付】と適用範囲</td><td><code>tau_ok</code>（棄却された D 型は載らない）</td><td>T軸4座標、Π₃ scope</td></tr>
+<tr><td>【⑤で扱う打ち手】</td><td><code>delta</code>／<code>five_mentions</code>／<code>d7_basis</code></td><td>λ×ε、PRIMARY</td></tr>
+<tr><td>【必ず入れる要素】20項目</td><td><code>blocks</code>（33種から選択）</td><td>被覆グリッドの各セル</td></tr>
+<tr><td>【書き方の制約】13項目</td><td><code>rules</code>（29種から選択）</td><td>R1–R19／A1–A23</td></tr>
+<tr><td>【作る枚】と各枚の仕様</td><td><code>sigma</code> ＋ 固定の <code>STAGE_SPEC</code></td><td>Π₁ の階段</td></tr>
+<tr><td>【本文に出してはならない語】</td><td>固定リスト（<code>BAN</code>）</td><td>R9：形式系の語彙を生成器に渡さない</td></tr>
+</table>
+
+<div class="callout" style="padding:12px 18px">
+<p style="margin:0;font-size:13px"><b>色の凡例。</b>
+<mark class="hl-ok">緑</mark>＝<b>席ごとに書けと明示している箇所</b>。この指示があった③は 6/6 で守られました。
+<mark class="hl-ng">赤</mark>＝<b>いま問題になっている箇所</b>。⑥の(1)は「②の単位」と「終端の席の量」の2つしか求めていない。途中の席の量を求める文が、<b>【作る枚】の⑥仕様には無い</b>（【書き方の制約】のリストには「⑥の量は、資料を読むすべての座席の基準で読める形にする」が<b>ある</b>。それでも 7/8 で落ちた）。字数上限450字も、(1)〜(4)を全部入れるには足りていない。</p>
+</div>
+
+<details>
+<summary>指示文 全文（3,539字）― そのまま生成器に渡しているテキスト</summary>
+<div class="dbody">
+<pre class="rawprompt">あなたは営業資料の作成者。以下の条件で、スライド 6 枚の本文を書く。
+
+【買い手】小売（食品スーパー） ／ 地場単独店（社長直轄）
+【読み手と裁定者】
+  ・店長（見るもの：実務性 ／ 通し方：店で回るか ／ 単独 ／ 資料を読む）
+  ・社長（見るもの：価格・財源 ／ 通し方：手元資金 ／ 単独 ／ 資料を読む）
+  ※ 最後に決めるのは【社長】。この人物は 価格・財源 でしか物を見ない。
+  ※ この座席の文書様式に載っている語は次のものだけ：仕入原価／手元資金／粗利
+  ※ **資料は途中の座席を全部通る。**終端だけに合わせて書くと、手前で止まる。
+<mark class="hl-ok">     ・店長 は 実務性 でしか読まない／様式の語：作業時間／廃棄率</mark>
+<mark class="hl-ok">     ・社長 は 価格・財源 でしか読まない／様式の語：仕入原価／手元資金／粗利</mark>
+  ※ 資料を最後まで読む人のうち、最も遠い座席は【社長】。
+
+【費目を実際に減らせる座席（この人たちが動かなければ、金額は紙の上だけの話になる）】
+  ・社長（減らせる費目：パート人時・仕入原価・廃棄・販促費）
+
+【買い手が自分で決めてきたこと（これを否定してはならない）】
+  ・現在の体制も、いまの取引先も、買い手自身が選んだ結果である。
+    『その選択は誤りだった』と読める書き方をすると、買い手は自分の判断を
+    取り消さなければ提案を受け入れられなくなる。⑤では手段の**条件**を書き、
+    買い手の**過去の決定**には触れないこと。
+
+【売り手が実際に持っている物】
+・商材：広告・募集／販促支援（媒体設計、制作、効果測定）。3か月〜12か月、180万〜900万円。
+・保有する登録・認証：なし
+・実名で出せる事例：△△学院大学（私立大学、学生3000〜8000名、関西）／
+  ○○ストア株式会社（食品スーパー、20〜49店舗、関西）
+・媒体費と制作費の内訳、人月単価を開示できる
+・契約書に成果責任の範囲は明記していない
+・上位者（所轄庁・卸など）の承認を取り付けた実績：2件、実測日数：20〜45日
+・人材の接触可能母数・採用歩留まりは持っていない
+
+【今日の日付】2026-08-06
+【使える日付（これ以外の日付を『今やる理由』にしてはならない）】
+  ・2027-09-30（その日を過ぎると取り返しがつかない終端日／出所：契約／買い手にとって未知）
+      この日付が効く相手：業態が食品スーパー、この日を握っているのは 主要卸（一次問屋）（**この範囲を④に必ず書く**）
+      添える量：秋の定番改訂商談までに確定していない売場の作業時間  概算 900〜1400  出所：買い手データ
+      ※ この量は 価格・財源 では直接読めない。同じ枚の中で、誰の何が 価格・財源 の側で動くのかを書き添えること。
+
+【⑤で扱う打ち手（これ以外は⑤に出さない）】
+  ・「主要卸の販促支援を使う」 → この相手の承認がなければ動かせない、という買い手の外側の拘束（拘束者：主要卸（一次問屋））。これを持ち出す以上、⑥に自社側の同じ指標の実数を2つ（承認を取った実績件数と、承認までの実測日数）必ず書く
+  ・「他社の広告会社」 → 同型の実名事例 ／ 価格構成の開示
+【⑥で、同種の他社ではなく自社が残る根拠として使えるもの】
+  ・価格構成の開示
+
+【必ず入れる要素】
+  ・困りごとの見える化
+  ・そもそも何かの説明
+  ・新しい呼び名と既存の科目名の対応
+  ・仕組みの開示
+  ・認証・お墨付き
+  ・試せる仕掛け
+  ・期限の明示
+  ・今すぐやる理由
+  ・その日付が誰に効くかの明示
+  ・第三者拘束の実際
+  ・カテゴリ内で自社が残る根拠
+  ・最終裁定点の基準で読める量
+  ・浮いた分を誰がいつどの費目で減らすか
+  ・⑤で他手段を落とした条件を自社案にも当てた結果
+  ・買い手が自分で決めてきたことを否定していないかの確認
+  ・その日付が決定の締切であることの明示
+  ・数えた量のうち提案が消す部分の対応表
+  ・起案理由文
+  ・上申用サマリ
+  ・人間記入スロット
+【書き方の制約】
+  ・自社側の同一指標の実数を⑥に必須
+  ・カテゴリ内の残余を⑥で明示
+  ・結論文・金額レンジ・期日・想定反論を書き切る
+  ・購買部門の独立審査。⑤の残余を購買様式へ二重出力
+  ・別制度暦の座席あり。④に事業影響への翻訳を併記
+  ・⑥に最終裁定点の基準で読める量を必ず置く
+  ・⑥に〈誰が・いつ・どの費目を減らすか〉を必ず書く
+  ・⑥の量は、④の周期に合う型（総額系か流量系か）で出す
+  ・⑤で他の手段を落とした根拠を、自社の提案にも当てて確かめる
+  ・⑤は、買い手が自分で決めてきたことを否定しない
+  ・⑥の量は、資料を読むすべての座席の基準で読める形にする
+  ・③の新語に、最終裁定点の様式にある語との対応を併記
+  ・④で数えた量のうち、提案が消す部分の対応表を⑥に
+
+【作る枚】①・②・③・④・⑤・⑥（この段だけ。他の段は作らない）
+  ①：買い手が無料で頷ける事実だけを置く。数字は買い手の世界の数字（買い手自身が持っている、あるいは公開統計で確認できるもの）に限る。売り手の話は一切しない。断定してよい。
+  ②：①で置いた事実の内側から、『その状態は十分ではないかもしれない』を引き出す。外から新しい悪い事実を持ち込んではならない。①と同じ材料を、別の単位で数え直すこと。ここは断定しない。読み手が〈そうだね、気になるね〉で止まってよい枚。
+  ③：②で見えた欠如に名前をつける。買い手の語彙にまだない一語を与える。**同時に、その一語が最終裁定点の様式のどの語に当たるかを併記すること。**新しい呼び名だけを置くと、その語は起案者の机で止まり、決裁の場には運ばれない。
+<mark class="hl-ok">      併記する既存語は、**資料を読むすべての座席の様式語から一つずつ**選ぶ。終端の語だけでは途中の座席で止まる。</mark>
+  ④：『なぜ今か』を、①〜③の外側にある日付で立てる。指定された日付をそのまま書き、**その日付が誰に効くのか（どの区分・どの当事者に適用されるのか）を必ず添える**。買い手がまだ自分で計算していない量を一つ添え、幅（下限〜上限）と出所を書く。その日付に間に合わなかったときに何が失われるかを因果で繋ぐ。
+  ⑤：他の打ち手が成り立たない理由を、制約原理の開示として書く。『できません』『対応していません』という能力の否定ではなく、『◯◯という条件の下では、◯◯は成立しない』という形にする。指定された手段だけを扱い、箇条書きの否定文を並べない。
+  ⑥：提案。結論文・金額レンジ・実施期日・想定反論への回答を書き切る。命令法（〜してください／ご決断を）で締めない。約束法（必ず〜します／保証します）を使わない。
+      さらに⑥では次の三つを必ず満たすこと。
+<mark class="hl-ng">      (1) ②で使った単位を**そのまま残したうえで**、価格・財源 の側で読める量（金額・回収年数・利益の変動など）を**併記**する。単位を置き換えて消してはならない。両方を並べる。</mark>
+      (2) ④で数えた量のうち、本提案が実際に消すのはどの部分かを示す。全部でないなら、どこまでかを数で書く。
+      (3) 想定反論への回答は、最も保守的な一人が訊く順に置く。
+      (4) **浮いた分を、誰が・いつ・どの費目で実際に減らすのか**を書く。上の『費目を実際に減らせる座席』から選び、その人が減らせる費目だけを挙げる。
+
+【本文に出してはならない語】消去、残余、カテゴリC、様相、必然化、問題化、内在的否定、措定、実然、前提化、共著者、蝶番、縮退、拘束の所在、エンテュメーメ、省略三段論法、外延、被覆率、M_0、M_i、D1〜D7 のような記号、T-A〜T-E のような記号
+  これらは資料を設計するための言葉であって、買い手に見せる言葉ではない。現場の言葉に置き換えて書くこと。
+
+<mark class="hl-ng">【出力】各枚 200〜450字の日本語本文。見出し語だけの箇条書きにしない。そのままスライドに貼れる文章にすること。加えて declared の各項目を正直に申告すること（書いていない段の項目は null にする）。**買い手がどう反応するかの予測は書かない。**self_report には、仕様のうち書ききれなかった点と、規定がなくて困った点だけを書く。</mark></pre>
+<p style="font-size:12.5px;margin:14px 0 4px"><b>これとは別に、盲検買い手役へ渡す人格設定（生成器には見せない）：</b></p>
+<pre class="rawprompt">あなたは地場の食品スーパー（3店舗、従業員パート込み90名）の【社長】。
+・自分の判断基準は〈仕入原価〉と〈手元資金〉の二つだけ。
+・決裁はあなた一人。稟議はない。
+・店長は作業時間と廃棄率しか見ていない。</pre>
+<p style="font-size:12.5px;color:#5d6470;margin-top:12px">※ <code>**〜**</code> は生成器への強調記号で、そのまま渡しています。この指示文には形式系の語（Π・κ・λ・εなど）が一つも入っていないことを確認してください。生成器は自分が何の理論で動かされているかを知りません。</p>
+</div>
+</details>
+
+
+<h3 style="font-size:16px;margin:34px 0 8px">同じ入力を、第11版のコードで組み直すと</h3>
+<p>上の全文は<b>走行時に実際に渡したもの（第10版）</b>です。同じ入力を第11版の <code>sales_logic.py</code> で組み直すと、指示文は自動的に3行増えます。差分はこれだけ：</p>
+
+<pre class="tight">走行時 3,539字 → 第11版の決定表で組み直すと 3,624字
+
+【必ず入れる要素】に追加
++  ・読む座席ごとに一つずつ置いた量                                  ← B_seat_quantities（A23）
+
+【書き方の制約】に追加
++  ・⑥には、資料を読む座席の数だけ量を置く（一つの量で全座席は賄えない）  ← A23_PER_SEAT
++  ・費目を減らす座席が実行に同意しているかを確かめる                  ← A21_WILLING
+
+【作る枚】の⑥仕様 (1)〜(4)　　変化なし
+【出力】各枚 200〜450字　　　　変化なし
+declared の申告欄　　　　　　　変化なし</pre>
+
+<div class="callout warn">
+<p><b>ここが、第12版のアーム実験で決着した点です。</b></p>
+<p>第11版のモデルは「読む座席の数だけ量を置け」を<b>決定表として既に出しています</b>。指示文にも自動で載る。<b>モデル側の仕事はここで終わっています。</b></p>
+<p>ところが、増えたのは<b>【必ず入れる要素】と【書き方の制約】のリストに1行ずつ</b>だけです。③が 6/6 で守られたのは、リストに項目があったからではなく、<b>【作る枚】の③の仕様に一文が埋め込まれていたから</b>でした——「併記する既存語は、資料を読むすべての座席の様式語から一つずつ選ぶ」。</p>
+<p><b>実験の答え（第12版）。</b>⑥の枚仕様に③と同型の一文を書き下ろした <b>Arm 1 で A16 は 0 になりました</b>（stop 合計も 10→4、pass 2/8→3/8）。<b>置き場所が効く</b>——リストではなく、枚ごとの仕様に書く。</p>
+<p><b>ただし、もう一つ強い経路が見つかりました。</b>枚仕様を変えていない Arm 0 でも、<b>出力スキーマに <code>s6_kappa_by_seat</code> の欄が在るだけで 8/8 が申告した</b>（予測は 0/8）。欄そのものが指示として働きます。ただし Arm 0 は「申告はしたが本文には書いていない」が2件。<b>欄だけなら申告する。欄＋枚仕様で初めて本文に出る。</b>詳細は後半の「現在地」に。</p>
+</div>
+
+<h2><span class="n">LAYER 6</span>LLM ― 言葉にする</h2>
+
+<div class="layer t-gen">
+  <div class="lhead"><span class="lnum">LAYER 6</span><span class="ltitle">生成器 ― ここだけが作文</span><span class="lwho">責任：LLM</span></div>
+  <div class="lbody">
+    <div class="lleft">
+      <p class="io"><b>入力</b> 指示文（約3,600字）<br><b>出力</b> 本文6枚 ＋ 自己申告 <code>declared</code> 21項目</p>
+      <p>生成器がやるのは<b>日本語にすること</b>だけです。何を書くか・誰に向けるか・どの日付を使うか・どの打ち手に触れるか・どの論拠が使えるかは、すべて Layer 4 で決まっています。</p>
+      <p><b>declared（自己申告）</b>が仕組みの要です。生成器は書いた文章と一緒に「②の単位は何にしたか」「⑥で使った基準は何か」「実行者は誰・いつ・どの費目か」を機械可読な値で申告します。これがないと、出来上がった日本語を機械が測れません。</p>
+      <p><b>予測は書かせません。</b>初版で生成器に「買い手はどう反応するか」を書かせたところ、系統的に楽観へ寄りました。いまは予測を独立のエージェントに出させ、生成器には見せていません。</p>
+    </div>
+    <div class="lright">
+      <span class="exlab">実例：R2-P1 の申告値（21項目のうち）</span>
+      <pre>s2_from_unit    回数（年2回・3店舗という数え方）
+s2_unit         人時
+s3_form_mapping 「棚待ち人時」＝店長の様式では〈作業時間〉
+                のうち店頭に出ないまま消える分、社長の
+                様式では〈粗利〉のうち確定の遅れで
+                取り損ねる分
+s4_declares_repetition  true
+s6_kappa        財源          ←★ ここが後で問題になる
+s6_realize_actor    社長
+s6_realize_account  パート人時
+s6_realize_date     2027-04-01
+s6_start_date       2026-09-01
+s6_coverage_full    false
+s6_coverage_subset  true
+s6_self_check       true
+s6_ends_imperative  false
+s6_contains_promise false</pre>
+    </div>
+  </div>
+</div>
+
+<h2><span class="n">LAYER 7</span>検査 ― 出来上がりを同じ物差しで測る</h2>
+
+<div class="layer t-chk">
+  <div class="lhead"><span class="lnum">LAYER 7</span><span class="ltitle">validate_copy() ＋ 盲検買い手</span><span class="lwho">責任：検査</span></div>
+  <div class="lbody">
+    <div class="lleft">
+      <p class="io"><b>入力</b> 本文6枚 ＋ declared ＋ 決定表<br><b>出力</b> 合否 ＋ 理由コード（stop 79種／要判断 27種）</p>
+      <p>生成前と<b>同じ論理式</b>で、出来上がった文章を測り直します。生成前に測れなかったもの（実際に何を書いたか）だけがここに来ます。</p>
+      <p>それとは別に、<b>買い手を演じる独立のエージェント</b>に資料を読ませ、枚ごとに「通過／揺らぐ／棄却」を出させます。買い手役はモデルのことも規則のことも知りません。さらに<b>予測役</b>を別に立て、買い手に見せる前に「どこで落ちるか」を予測させておきます。</p>
+      <p><b>この3役を分けている理由</b>：予測を先に置くと、「モデルが外した」のか「買い手がたまたま厳しかった」のかを分離できます。ずれの中身が次版の修正対象＝<b>アノマリー</b>です。</p>
+    </div>
+    <div class="lright">
+      <span class="exlab">実例：R2-P1 の検査結果と買い手の反応</span>
+      <pre>validate_copy → pass: False
+  R10a_REPRODUCES_PROBLEM  (stop)
+     ④が「毎年来る」と書いた。反復すると自分で
+     書いた問題を、⑥が12か月周期で再生産している
+
+盲検買い手（社長役）の判定
+  ① 通過   ② 揺らぐ   ③ 棄却
+  ④ 棄却   ⑤ 揺らぐ   ⑥ 棄却
+  最長滞在：④（予測も④。一致）
+  上申：しない</pre>
+      <p style="font-size:12.5px;margin-top:12px"><small><b>買い手が③で落とした理由（逐語）</b>：「そもそも粗利は私の判断基準ではない。私が見ているのは仕入原価と手元資金の二つだけだ」——<b>これはモデルが chain に「社長＝価格・財源」と入れていた通りの反応</b>です。そして④では「どの契約書の何条か書いていない」。<b>走行時のモデルには、これを名指す述語がありませんでした</b>——機械は黙っていた。この一言から第11版で <code>A22_SCOPE_UNSOURCED</code> を新設しています。<b>これが「アノマリーから修正が生まれる」ということです。</b></small></p>
+    </div>
+  </div>
+</div>
+
+<details>
+<summary>R2-P1 の生成された全文と、買い手の逐語（実物）</summary>
+<div class="dbody">
+<div class="slide"><div class="shead"><span>① 現状</span><span class="sverd v-通過">通過</span></div>
+<div class="sbody">3店舗、パート込み90名。売場の定番は、主要卸との商談を経て春と秋の年2回入れ替わる。棚割が確定してから店頭が動くまでの段取りは、各店の店長が組んでいる。店長が毎日見ているのは作業時間と廃棄率であり、社長が見ているのは仕入原価と手元資金である。改訂のたびに、値札の差し替え、棚の組み替え、初回発注量の決め直しが、3店舗ぶん発生する。ここに挙げたのはすべて御社の帳票と商談記録に残っている事実で、外から持ち込んだ数字は一つもない。</div>
+<div class="swhy"><b>買い手</b>　書いてあることは全部合っている。（…）ひとつだけ引っかかったのは「商談記録に残っている事実」という言い方で、うちの商談記録を見せた覚えはない。ただ中身が合っているので、前提としては使ってよい。</div></div>
+
+<div class="slide"><div class="shead"><span>② 否定の内在（単位の数え直し）</span><span class="sverd v-揺らぐ">揺らぐ</span></div>
+<div class="sbody">ここまでを「年2回・3店舗」という回数の単位で数えてきた。同じものを、人時という単位で数え直してみる。ひと改訂あたり、値札差し替えと棚の組み替えと初回発注の決め直しに、1店舗で何人が何時間かかっているか。それを3店舗ぶん、年2回積み上げた合計を、御社は帳票の外に置いたままかもしれない。（…）回数が少ないことは、時間が少ないことを意味しないかもしれない。</div>
+<div class="swhy"><b>買い手</b>　人時は私の帳票の言葉ではない。人時を見ているのは店長で、店長は作業時間と廃棄率しか見ていない。私にとって人時が意味を持つのは、それが実際にパートの支払い時間として減ったときだけだ。時間が浮いても、シフトを実際に削らなければ手元資金は1円も動かない。だから「気になる話だ」で止まる。</div></div>
+
+<div class="slide"><div class="shead"><span>③ 問題化（新語＋既存科目への対応）</span><span class="sverd v-棄却">棄却</span></div>
+<div class="sbody">前の枚で分けられなかった部分に、名前をつける。「棚待ち人時」と呼ぶ。（…）ただし新しい呼び名だけを置くと、その語は店長の机で止まり、決裁の場には運ばれない。そこで既存の科目に対応づけておく。店長の帳票では〈作業時間〉のうち、成果物が一度も店頭に出ないまま消える部分。社長の帳票では〈粗利〉のうち、確定の遅れた棚が低い回転のまま置かれることで取り損ねる部分。</div>
+<div class="swhy"><b>買い手</b>　その等式の根拠が一行もない。作業時間はパートの時給で出ていく現金であり、粗利の取り損ねは最初から入ってこなかった金だ。性質が違う。（…）ふたつ、そもそも粗利は私の判断基準ではない。私が見ているのは仕入原価と手元資金の二つだけだ。</div></div>
+
+<div class="slide"><div class="shead"><span>④ 必然化（外の日付）</span><span class="sverd v-棄却">棄却</span></div>
+<div class="sbody">今やる理由はここまでの中にはなく、外の日付にある。2027年9月30日。契約上の終端日で、これを過ぎると取り返しがつかない。効く相手は食品スーパーという業態で、この日を握っているのは主要卸（一次問屋）である。（…）その量は概算900〜1400人時。同じ商談は毎年秋に来るので、この積み残りも毎年来る。</div>
+<div class="swhy"><b>買い手</b>　どの契約書の何条か書いていない。うちの主要卸との取引基本契約にその日は聞いた覚えがない。卸の暦だと自分で書いているなら、それは卸の都合であって、私を縛る日ではない。しかも同じ枚に「毎年来る」と書いてある。毎年来るなら、取り返しはつく。<br><small>→ 後者は生成後に <code>R10a_REPRODUCES_PROBLEM</code> が検出済み。前者は<b>走行時のモデルには述語がなく、機械は黙っていた</b>——ここから第11版で <code>A22_SCOPE_UNSOURCED</code>（適用対象の出所が未記入なら降格）を新設した。</small></div></div>
+
+<div class="slide"><div class="shead"><span>⑤ 消去（他の打ち手の不成立条件）</span><span class="sverd v-揺らぐ">揺らぐ</span></div>
+<div class="sbody">まず、主要卸の販促支援を使う場合。これは御社の中だけでは動かせず、主要卸（一次問屋）の承認が要る。（…）次に、他社の広告会社。ここは、同じ業態・同じ規模の実名事例を出せること、媒体費・制作費・人月単価の内訳を開示できること、この二つが揃えば成立する。いまの体制も取引先も、御社が条件を見て選んだ結果であり、ここで書いたのは手段の条件であって、これまでの選択の評価ではない。</div>
+<div class="swhy"><small>最後の一文は R17（侮辱検査）に対応する書き方。⑤は5走行を通じて最も安定している枚です。</small></div></div>
+
+<div class="slide"><div class="shead"><span>⑥ 提案</span><span class="sverd v-棄却">棄却</span></div>
+<div class="sbody">提案：秋の商談前に売場を確定させる媒体設計・制作・効果測定を、1店舗1カテゴリ3か月の試行から始め、12か月で3店舗へ広げる。着手2026-09-01、180万〜900万円。（…）先の900〜1400人時のうち本案が消すのは先行確定ぶん300〜450人時で全部ではない。金額では時給1,200円換算で年36〜54万円。浮いた分は社長が2027-04-01にパート人時で減らす。（…）決裁欄：承認日＿＿／条件＿＿。</div>
+<div class="swhy"><small>449字。上限450字にほぼ貼り付いている。ここに「(1)単位の併記 (2)被覆率 (3)反論の順 (4)実行者・費目・日付」を全部入れた結果です。<b>これが後半の話につながります。</b></small></div></div>
+</div>
+</details>
+
+<h2><span class="n">SUMMARY</span>誰が何を決めているか</h2>
+<p>同じことを、責任の分界として一枚に。<b>ここがこの文書のいちばんの要点です。</b></p>
+
+<table>
+<tr><th style="width:150px">層</th><th style="width:190px">決めていること</th><th style="width:150px">実体</th><th>そこが間違っていると</th></tr>
+<tr><td><span class="tag tg-model">入力 ν</span> 営業の聞き取り</td><td>買い手の事実。誰が決裁し、誰が金を減らせ、どの日付が効くか</td><td><code>cells*.py</code>／将来はDjangoの入力フォーム</td><td>正しい理論で正しく計算しても、答えが現実と合わない。<b>機械には検出できない</b></td></tr>
+<tr><td><span class="tag tg-model">モデル</span> 公理・軸・論理式・Python</td><td><b>何が正しいか</b>。何を書けば通り、何を書くと落ちるか</td><td><code>SPEC.md</code> 624行<br><code>sales_logic.py</code> 1,153行</td><td>失敗を<b>名指す言葉がない</b>。買い手が落としても機械は「問題なし」と言う</td></tr>
+<tr><td><span class="tag tg-instr">生成の指示</span> プロンプト</td><td><b>どう見せるか</b>。どの順で、どの欄に、何字で書かせるか</td><td><code>prompts*.py</code> 247行<br>（判定 0行）</td><td>規則は正しく、機械も正しく検出するのに、<b>出来上がった文章が仕様を満たさない</b></td></tr>
+<tr><td><span class="tag tg-gen">LLM</span> 生成器</td><td>日本語の言い回しだけ</td><td>1セル＝1エージェント</td><td>読みにくい。ただし<b>内容が外れることは構造上ほぼ起きない</b>（材料を全部与えているため）</td></tr>
+<tr><td><span class="tag tg-chk">検査</span></td><td>出来上がりが仕様を満たすか／実際に買い手が通すか</td><td><code>validate_copy()</code>＋盲検エージェント</td><td>ずれが見えなくなる。改善の駆動源が消える</td></tr>
+</table>
+
+<h2><span class="n">NOW</span>現在地 ― 失敗の所在は四つある</h2>
+
+<p>第5版から第9版まで、見つかった不具合はすべて<b>モデル層</b>にありました。買い手が落とした場所で、機械は黙っていた。だから直し方は毎回「述語を足す／型を直す」でした。第10版でそれが変わり、第12版でもう一つ増えました。<b>いまは四つに分かれます。</b></p>
+
+<table>
+<tr><th style="width:120px">所在</th><th style="width:260px">症状</th><th>直し方</th></tr>
+<tr><td><span class="tag tg-model">入力 ν</span></td><td>正しく計算しても現実と合わない</td><td>聞き取りを直す。<b>機械には検出できない</b></td></tr>
+<tr><td><span class="tag tg-model">モデル</span></td><td>買い手が落としたのに機械が黙っている</td><td>述語・型を足す（A1〜A24 のほとんど）</td></tr>
+<tr><td><span class="tag tg-instr">生成の指示</span></td><td>規則も型も正しく、機械も検出するのに、生成物が満たさない</td><td>提示仕様を書き換える（第12版のアーム実験）</td></tr>
+<tr><td><span class="tag tg-chk">検査</span></td><td><b>落ちていないのに、落ちたと言う</b></td><td>照合の実装を直す（<b>A25</b>）</td></tr>
+</table>
+
+<div class="callout warn">
+<p><b>四つ目は第12版で見つかりました。そして、それまでの数字を汚していました。</b></p>
+<p><code>check_unit_presence</code> が、宣言された単位を⑥の本文と<b>完全一致</b>で照合していた。ところが生成器は <code>s2_unit</code> に「作業時間（時間）」のような<b>説明句つきの文字列</b>を入れてくる。本文に「作業時間」と書いてあっても外します。</p>
+<pre class="tight" style="margin:10px 0">第12版の走行（3アーム計）  R10b_UNIT_ABSENT 15件 → うち 14件が誤検出
+第10版の走行              R10b_UNIT_ABSENT  5件 → うち  4件が誤検出</pre>
+<p>しかも <code>kept_unit</code> は <code>check_chain</code> の候補基底に「実務性」を足すかどうかを決めているので、<b>この誤りは A16 の件数も押し上げていました。</b></p>
+</div>
+
+<p><b>第10版を、修正後の同じ物差しで測り直すと：</b></p>
+
+<table>
+<tr><th style="width:220px"></th><th style="width:140px">当時の報告</th><th>修正後</th></tr>
+<tr><td>stop 合計</td><td>25</td><td><b>13</b></td></tr>
+<tr><td><code>A16_NOT_CONV_AT_SEAT</code></td><td>7</td><td><b>3</b></td></tr>
+<tr><td><code>R10b</code>（ABSENT＋REPLACED）</td><td>10</td><td><b>2</b></td></tr>
+</table>
+
+<p>「A16 が 7/8」「⑥の字数が足りない」は、<b>相当部分が測定の産物</b>でした。同一プロンプト内の対照も、正しくはこうなります。</p>
+
+<pre class="tight">リスト単独        A16_CHAIN                    → 0/3   （当時 0/7 と報告）
+リスト＋枚仕様     R11_FORM_MAPPING ＋③の一文    → 6/6</pre>
+
+<p>向きは変わりませんが、根拠はずっと弱い。A16 も R10b も<b>買い手には見えない内部検査</b>なので、5走行のあいだ誰も気づけませんでした。</p>
+
+<h3>第12版のアーム実験 ― 提示仕様を1次元ずつ動かす</h3>
+
+<p>同じ8セル・同じ入力で、指示文だけを3通りに変えて24体を走らせました（買い手は使わない。仕様の遵守は <code>validate_copy</code> が決定的に判定するので）。数字はすべて修正後の物差しです。</p>
+
+<table>
+<tr><th style="width:150px"></th><th>stop</th><th>A16</th><th>R10b</th><th>R10a</th><th>A23紙側</th><th>pass</th><th>⑥字数</th></tr>
+<tr><td>第10版</td><td>13</td><td>3</td><td>2</td><td>5</td><td>―</td><td>0/8</td><td>474</td></tr>
+<tr><td><b>Arm 0</b><br><small>共通修正のみ</small></td><td>10</td><td>2</td><td>2</td><td>4</td><td>2</td><td>2/8</td><td>449</td></tr>
+<tr style="background:#e9f5ee"><td><b>Arm 1</b><br><small>＋⑥の枚仕様に座席の列挙</small></td><td><b>4</b></td><td><b>0</b></td><td><b>0</b></td><td>4</td><td><b>0</b></td><td><b>3/8</b></td><td>560</td></tr>
+<tr><td><b>Arm 2</b><br><small>＋⑥の字数 700〜900字</small></td><td>7</td><td>0</td><td>0</td><td>5</td><td>2</td><td>1/8</td><td>898</td></tr>
+</table>
+
+<p><b>字数の仮説は棄却されました。</b>⑥の字数分布が答えを出しています。</p>
+
+<pre class="tight">Arm 0（上限450）  447 449 449 449 450 450 450 450   ← 全部が上限
+Arm 1（上限450）  448 449 450 451 561 564 754 806   ← 半分が自分で破った
+Arm 2（上限900）  885 889 894 895 903 905 908 911   ← 全部が新しい上限</pre>
+
+<p><b>枠を与えると、枠まで書く。</b>Arm 2 は450字を900字に広げたのに成績が落ちました（stop 4→7）。増えた450字は必須要素ではなく別のことに使われている。対して Arm 1 は字数を一言も変えていないのに、必要な3セルだけが自分で上限を破りました。E1-P1 の自己申告にこうあります——「全部入れると450字を物理的に超えるため、<b>要素を落とすより字数の側を破った</b>」。<b>要求を具体的に書けば、枠は生成器が調整します。枠を先に広げても、要求は満たされません。</b></p>
+
+<p><b>申告欄は、指示より先に効きました。</b>予測では Arm 0 の座席申告は 0/8 のはずが、実測 <b>8/8</b>。出力スキーマに <code>s6_kappa_by_seat</code> の欄が在るだけで全セルが埋めています。ただし Arm 0 は <code>A23_SEAT_WORD_ABSENT</code> が2件——<b>申告はしたが、本文には書いていない</b>。枚仕様にも書き下ろした Arm 1 は 0件でした。</p>
+
+<pre class="tight">欄だけ              → 申告する。本文には書かないことがある
+欄 ＋ 枚ごとの仕様   → 本文にも書く</pre>
+
+<p>③が 6/6 で守られていたのと同じ構造です。紙側の検査を入れておかなければ、Arm 0 を「A16 が落ちた」と誤って読むところでした。</p>
+
+<p><b>R10a はどのアームでも動きません</b>（4／4／5）。内訳は s4=12か月・s6=12か月 が4件、s4=12か月・s6=1か月 が5件。後者は指示文（「同じ周期で作り直さない」）では許されるのに、検査（<code>s6 ≤ s4</code>＝「同じ頻度以上」）で落ちています。より根本的に、扱っている商材は3〜12か月契約と SaaS なので <code>s6_period = 0</code>（単発）以外に満たす道がない。<b>比べるべきは課金周期ではなく〈提案後に④の問題が残る周期〉ではないか</b>——これが次のアノマリー候補（A26）です。</p>
+
+<p><b>まだ一度も測っていないこと。</b>ここまでは「仕様を満たすか」しか測っていません。<b>満たした資料が実際に買い手を通るかは、第12版でも測っていない</b>（アーム実験では買い手を使わなかったため）。次は Arm 1 の生成物に予測者と盲検買い手を付けます。</p>
+
+<h2><span class="n">SCALE</span>規模と実測</h2>
+<table>
+<tr><th style="width:210px">項目</th><th>値</th></tr>
+<tr><td>中心命題</td><td>7本（第7版）→ <b>3原理＋5記法</b>（第8版以降）</td></tr>
+<tr><td>仕様書</td><td><code>SPEC.md</code> 624行／数式 461本</td></tr>
+<tr><td>決定的コア</td><td><code>sales_logic.py</code> 1,153行・標準ライブラリのみ・検査関数 21本</td></tr>
+<tr><td>理由コード</td><td>停止・降格など 79種／営業に聞き直す項目 27種／必須ブロック 33種</td></tr>
+<tr><td>回帰テスト</td><td>81項目 全通過（各アノマリーが買い手の逐語と対応づけられている）</td></tr>
+<tr><td>速度</td><td><b>80マイクロ秒/セル</b>（生成前の確定。LLM呼び出しゼロ）</td></tr>
+<tr><td>生成の指示</td><td><code>prompts*.py</code> 247行・判定 0行・指示文 約3,566字/セル（R2-P1 は 3,539字）</td></tr>
+<tr><td>1走行の規模</td><td>8セル × 3役（生成・独立予測・盲検買い手）＝ 24エージェント／約73〜90分</td></tr>
+<tr><td>アノマリー累計</td><td>A1–A23（5版〜11版）／依存規則 R1–R19</td></tr>
+<tr><td>設計語の漏洩</td><td><b>0/36枚（5走行連続）</b>。業界・商材・仕様を替えても保たれている</td></tr>
+</table>
+
+<div class="foot">
+<p>営業資料生成モデル 第11版 ／ 数値はすべて <code>decisions8_v10.json</code>・<code>verified8_v10.json</code>・<code>sales_logic.py</code> の実測値から。<br>
+関連文書：<code>claude/モデルv11-仕様.md</code>（形式系の本体）、<code>claude/第10版-対照実験レポート.html</code>（この走行の詳細）、<code>claude/統合検討-既存理論と本モデル.md</code>（既存研究との対応）。</p>
+</div>
+
+</div>
+</body>
+</html>

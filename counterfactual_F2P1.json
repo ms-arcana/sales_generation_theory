@@ -1,0 +1,27 @@
+{
+ "cell": "F2-P1",
+ "recast": false,
+ "findings": [
+  {
+   "code": "A1_NOT_EXPRESSIBLE",
+   "level": "stop",
+   "ref": "B:2027-03-01 実務性->['価格', '財源']"
+  },
+  {
+   "code": "M0_EXCLUDED",
+   "level": "info",
+   "ref": "現状のまま人手で回す"
+  },
+  {
+   "code": "A2_SATISFIED",
+   "level": "info",
+   "ref": "D7b,D7c"
+  },
+  {
+   "code": "R7_D6c_OK",
+   "level": "info",
+   "ref": "既存の人材派遣会社に増員を頼む"
+  }
+ ],
+ "generate": false
+}

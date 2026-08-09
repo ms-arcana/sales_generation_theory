@@ -1,0 +1,1095 @@
+[
+ {
+  "id": "E1-P1",
+  "業界": "学校法人",
+  "セグメント": "私立大学（合議・非単調な座席列）",
+  "商材": "広告・募集支援",
+  "generate": true,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "kappa_n": [
+   "財源"
+  ],
+  "chain": [
+   [
+    "入試広報課長",
+    [
+     "実務性"
+    ],
+    [
+     "オープンキャンパス動員",
+     "出願件数",
+     "広報予算執行"
+    ],
+    "組織"
+   ],
+   [
+    "学部長会",
+    [
+     "説明可能性"
+    ],
+    [
+     "アドミッションポリシー",
+     "定員充足率",
+     "教育の質保証"
+    ],
+    "制度"
+   ]
+  ],
+  "tau_ok": [
+   [
+    "Ec",
+    "2027-06-30",
+    "契約",
+    "未知"
+   ]
+  ],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_prohibition",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_chain_form",
+   "B_decision_date",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "R2",
+   "R5c",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "GAMMA_COLLEGIAL",
+   "B2",
+   "B3",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "R18_INSTITUTIONAL",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "入試広報課長",
+    [
+     "媒体費",
+     "広報外注費"
+    ]
+   ],
+   [
+    "法人事務局",
+    [
+     "人件費（専任）",
+     "業務委託費"
+    ]
+   ]
+  ],
+  "findings": [
+   {
+    "code": "A8_BINDER_NOT_ABOVE",
+    "level": "reject",
+    "ref": "A:2027-05-31 学内の入試委員会",
+    "msg": "棄却：その拘束者は買い手の上位にいない"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま自前の広報でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_NOT_REQUIRED",
+    "level": "info",
+    "ref": "",
+    "msg": "カテゴリ内比較は問われない局面"
+   }
+  ]
+ },
+ {
+  "id": "E1-P2",
+  "業界": "学校法人",
+  "セグメント": "私立大学（合議・非単調な座席列）",
+  "商材": "ITソリューション",
+  "generate": true,
+  "sigma": [
+   "⑤",
+   "⑥"
+  ],
+  "kappa_n": [
+   "財源"
+  ],
+  "chain": [
+   [
+    "入試広報課長",
+    [
+     "実務性"
+    ],
+    [
+     "オープンキャンパス動員",
+     "出願件数",
+     "広報予算執行"
+    ],
+    "組織"
+   ],
+   [
+    "学部長会",
+    [
+     "説明可能性"
+    ],
+    [
+     "アドミッションポリシー",
+     "定員充足率",
+     "教育の質保証"
+    ],
+    "制度"
+   ]
+  ],
+  "tau_ok": [
+   [
+    "Ec",
+    "2027-06-30",
+    "契約",
+    "未知"
+   ]
+  ],
+  "blocks": [
+   "B_compare_current",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "R2",
+   "R5c",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "GAMMA_COLLEGIAL",
+   "B2",
+   "B3",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "R18_INSTITUTIONAL"
+  ],
+  "executors": [
+   [
+    "入試広報課長",
+    [
+     "媒体費",
+     "広報外注費"
+    ]
+   ],
+   [
+    "法人事務局",
+    [
+     "人件費（専任）",
+     "業務委託費"
+    ]
+   ]
+  ],
+  "findings": [
+   {
+    "code": "A8_BINDER_NOT_ABOVE",
+    "level": "reject",
+    "ref": "A:2027-05-31 学内の入試委員会",
+    "msg": "棄却：その拘束者は買い手の上位にいない"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま自前の広報でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   }
+  ]
+ },
+ {
+  "id": "E2-P1",
+  "業界": "学校法人",
+  "セグメント": "専修学校（オーナー系・単独決裁）",
+  "商材": "広告・募集支援",
+  "generate": false,
+  "sigma": [
+   "①",
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "chain": [
+   [
+    "教務主任",
+    [
+     "実務性"
+    ],
+    [
+     "募集説明会",
+     "担任工数"
+    ],
+    "個人"
+   ],
+   [
+    "理事長",
+    [
+     "価格",
+     "財源"
+    ],
+    [
+     "手元資金",
+     "支払",
+     "納付金収入"
+    ],
+    "個人"
+   ]
+  ],
+  "tau_ok": [],
+  "blocks": [
+   "B_visualize",
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R1_VIOLATION",
+   "R2",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "理事長",
+    [
+     "人件費（専任）",
+     "媒体費",
+     "業務委託費"
+    ]
+   ]
+  ],
+  "findings": [
+   {
+    "code": "A18_RESULT_NOT_DECISION",
+    "level": "reject",
+    "ref": "A:2027-04-01",
+    "msg": "棄却：その日付は結果が現れる日であって、決定が締まる日ではない。手前にある本当の締切を書く"
+   },
+   {
+    "code": "R6_NO_TAU",
+    "level": "stop",
+    "ref": "",
+    "msg": "停止：④を供給する日付がゼロ"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま自前の広報でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7d",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "A20_D5_IS_READER",
+    "level": "stop",
+    "ref": "職員を増やして内製する 理事長",
+    "msg": "停止：枠を決めているのは読み手自身。それは拘束ではなく選択である"
+   }
+  ]
+ },
+ {
+  "id": "E2-P2",
+  "業界": "学校法人",
+  "セグメント": "専修学校（オーナー系・単独決裁）",
+  "商材": "ITソリューション",
+  "generate": false,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "chain": [
+   [
+    "教務主任",
+    [
+     "実務性"
+    ],
+    [
+     "募集説明会",
+     "担任工数"
+    ],
+    "個人"
+   ],
+   [
+    "理事長",
+    [
+     "価格",
+     "財源"
+    ],
+    [
+     "手元資金",
+     "支払",
+     "納付金収入"
+    ],
+    "個人"
+   ]
+  ],
+  "tau_ok": [],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R1_VIOLATION",
+   "R2",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "理事長",
+    [
+     "人件費（専任）",
+     "媒体費",
+     "業務委託費"
+    ]
+   ]
+  ],
+  "findings": [
+   {
+    "code": "A18_RESULT_NOT_DECISION",
+    "level": "reject",
+    "ref": "A:2027-04-01",
+    "msg": "棄却：その日付は結果が現れる日であって、決定が締まる日ではない。手前にある本当の締切を書く"
+   },
+   {
+    "code": "R6_NO_TAU",
+    "level": "stop",
+    "ref": "",
+    "msg": "停止：④を供給する日付がゼロ"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま自前の広報でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "A20_D5_IS_READER",
+    "level": "stop",
+    "ref": "職員を増やして内製する 理事長",
+    "msg": "停止：枠を決めているのは読み手自身。それは拘束ではなく選択である"
+   }
+  ]
+ },
+ {
+  "id": "R1-P1",
+  "業界": "小売（食品スーパー）",
+  "セグメント": "チェーン本部（分業・単調な座席列）",
+  "商材": "広告・販促支援",
+  "generate": false,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "kappa_n": [
+   "財源"
+  ],
+  "chain": [
+   [
+    "店舗運営部",
+    [
+     "実務性"
+    ],
+    [
+     "人時売上高",
+     "作業時間",
+     "発注精度"
+    ],
+    "組織"
+   ],
+   [
+    "商品本部バイヤー",
+    [
+     "価格"
+    ],
+    [
+     "原価率",
+     "取引条件",
+     "粗利率"
+    ],
+    "組織"
+   ]
+  ],
+  "tau_ok": [],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_VIOLATION",
+   "R2",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE",
+   "VETO:労働組合"
+  ],
+  "executors": [
+   [
+    "店舗運営部",
+    [
+     "パート人時",
+     "販促費"
+    ]
+   ],
+   [
+    "商品本部バイヤー",
+    [
+     "仕入原価",
+     "廃棄"
+    ]
+   ]
+  ],
+  "findings": [
+   {
+    "code": "R6b_LT_SHORT",
+    "level": "reject",
+    "ref": "A:2026-11-30 3m<4m",
+    "msg": "棄却：実効リードタイムに足りない。次の窓へ繰り上げる"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "TD_ALONE",
+    "level": "reject",
+    "ref": "D",
+    "msg": "棄却：T-D は単独では④を立てられない。B または C と重ねる"
+   },
+   {
+    "code": "R6_NO_TAU",
+    "level": "stop",
+    "ref": "",
+    "msg": "停止：④を供給する日付がゼロ"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人海戦術でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7a,D7d",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "現在の卸の販促支援を使う",
+    "msg": "承認取得実績あり"
+   },
+   {
+    "code": "A19_FREE_NOT_ELIMINABLE",
+    "level": "stop",
+    "ref": "現在の卸の販促支援を使う 主位置=D2",
+    "msg": "停止：買い手にとって無料の手段を、帰責・手続・権限・資源で消そうとしている。失うものがない手段はそれでは消えない"
+   }
+  ]
+ },
+ {
+  "id": "R1-P2",
+  "業界": "小売（食品スーパー）",
+  "セグメント": "チェーン本部（分業・単調な座席列）",
+  "商材": "ITソリューション",
+  "generate": false,
+  "sigma": [
+   "⑤",
+   "⑥"
+  ],
+  "kappa_n": [
+   "財源"
+  ],
+  "chain": [
+   [
+    "店舗運営部",
+    [
+     "実務性"
+    ],
+    [
+     "人時売上高",
+     "作業時間",
+     "発注精度"
+    ],
+    "組織"
+   ],
+   [
+    "商品本部バイヤー",
+    [
+     "価格"
+    ],
+    [
+     "原価率",
+     "取引条件",
+     "粗利率"
+    ],
+    "組織"
+   ]
+  ],
+  "tau_ok": [],
+  "blocks": [
+   "B_compare_current",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_VIOLATION",
+   "R2",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "VETO:労働組合"
+  ],
+  "executors": [
+   [
+    "店舗運営部",
+    [
+     "パート人時",
+     "販促費"
+    ]
+   ],
+   [
+    "商品本部バイヤー",
+    [
+     "仕入原価",
+     "廃棄"
+    ]
+   ]
+  ],
+  "findings": [
+   {
+    "code": "R6b_LT_SHORT",
+    "level": "reject",
+    "ref": "A:2026-11-30 3m<7m",
+    "msg": "棄却：実効リードタイムに足りない。次の窓へ繰り上げる"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "TD_ALONE",
+    "level": "reject",
+    "ref": "D",
+    "msg": "棄却：T-D は単独では④を立てられない。B または C と重ねる"
+   },
+   {
+    "code": "R6_NO_TAU",
+    "level": "stop",
+    "ref": "",
+    "msg": "停止：④を供給する日付がゼロ"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人海戦術でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7a,D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "現在の卸の販促支援を使う",
+    "msg": "承認取得実績あり"
+   },
+   {
+    "code": "A19_FREE_NOT_ELIMINABLE",
+    "level": "stop",
+    "ref": "現在の卸の販促支援を使う 主位置=D2",
+    "msg": "停止：買い手にとって無料の手段を、帰責・手続・権限・資源で消そうとしている。失うものがない手段はそれでは消えない"
+   }
+  ]
+ },
+ {
+  "id": "R2-P1",
+  "業界": "小売（食品スーパー）",
+  "セグメント": "地場単独店（社長直轄）",
+  "商材": "広告・販促支援",
+  "generate": false,
+  "sigma": [
+   "①",
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "chain": [
+   [
+    "店長",
+    [
+     "実務性"
+    ],
+    [
+     "作業時間",
+     "廃棄率"
+    ],
+    "個人"
+   ],
+   [
+    "社長",
+    [
+     "価格",
+     "財源"
+    ],
+    [
+     "仕入原価",
+     "手元資金",
+     "粗利"
+    ],
+    "個人"
+   ]
+  ],
+  "tau_ok": [],
+  "blocks": [
+   "B_visualize",
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R1_VIOLATION",
+   "R2",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "社長",
+    [
+     "パート人時",
+     "仕入原価",
+     "廃棄",
+     "販促費"
+    ]
+   ]
+  ],
+  "findings": [
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "B:2027-03-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A18_RESULT_NOT_DECISION",
+    "level": "reject",
+    "ref": "B:2027-03-01",
+    "msg": "棄却：その日付は結果が現れる日であって、決定が締まる日ではない。手前にある本当の締切を書く"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "TD_ALONE",
+    "level": "reject",
+    "ref": "D",
+    "msg": "棄却：T-D は単独では④を立てられない。B または C と重ねる"
+   },
+   {
+    "code": "R6_NO_TAU",
+    "level": "stop",
+    "ref": "",
+    "msg": "停止：④を供給する日付がゼロ"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人海戦術でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7d",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "現在の卸の販促支援を使う",
+    "msg": "承認取得実績あり"
+   },
+   {
+    "code": "A19_FREE_NOT_ELIMINABLE",
+    "level": "stop",
+    "ref": "現在の卸の販促支援を使う 主位置=D2",
+    "msg": "停止：買い手にとって無料の手段を、帰責・手続・権限・資源で消そうとしている。失うものがない手段はそれでは消えない"
+   },
+   {
+    "code": "A20_D5_IS_READER",
+    "level": "stop",
+    "ref": "パートを増やして内製する 社長",
+    "msg": "停止：枠を決めているのは読み手自身。それは拘束ではなく選択である"
+   }
+  ]
+ },
+ {
+  "id": "R2-P2",
+  "業界": "小売（食品スーパー）",
+  "セグメント": "地場単独店（社長直轄）",
+  "商材": "ITソリューション",
+  "generate": false,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "chain": [
+   [
+    "店長",
+    [
+     "実務性"
+    ],
+    [
+     "作業時間",
+     "廃棄率"
+    ],
+    "個人"
+   ],
+   [
+    "社長",
+    [
+     "価格",
+     "財源"
+    ],
+    [
+     "仕入原価",
+     "手元資金",
+     "粗利"
+    ],
+    "個人"
+   ]
+  ],
+  "tau_ok": [],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R1_VIOLATION",
+   "R2",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "社長",
+    [
+     "パート人時",
+     "仕入原価",
+     "廃棄",
+     "販促費"
+    ]
+   ]
+  ],
+  "findings": [
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "B:2027-03-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A18_RESULT_NOT_DECISION",
+    "level": "reject",
+    "ref": "B:2027-03-01",
+    "msg": "棄却：その日付は結果が現れる日であって、決定が締まる日ではない。手前にある本当の締切を書く"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "TD_ALONE",
+    "level": "reject",
+    "ref": "D",
+    "msg": "棄却：T-D は単独では④を立てられない。B または C と重ねる"
+   },
+   {
+    "code": "R6_NO_TAU",
+    "level": "stop",
+    "ref": "",
+    "msg": "停止：④を供給する日付がゼロ"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人海戦術でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "現在の卸の販促支援を使う",
+    "msg": "承認取得実績あり"
+   },
+   {
+    "code": "A19_FREE_NOT_ELIMINABLE",
+    "level": "stop",
+    "ref": "現在の卸の販促支援を使う 主位置=D2",
+    "msg": "停止：買い手にとって無料の手段を、帰責・手続・権限・資源で消そうとしている。失うものがない手段はそれでは消えない"
+   },
+   {
+    "code": "A20_D5_IS_READER",
+    "level": "stop",
+    "ref": "パートを増やして内製する 社長",
+    "msg": "停止：枠を決めているのは読み手自身。それは拘束ではなく選択である"
+   }
+  ]
+ }
+]

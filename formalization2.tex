@@ -1,0 +1,437 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setCJKmainfont{Noto Serif CJK JP}
+\setCJKsansfont{Noto Sans CJK JP}
+\setCJKmonofont{Noto Sans Mono CJK JP}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{newunicodechar}
+\newfontfamily\cjkglyph{Noto Serif CJK JP}
+\newunicodechar{①}{\mbox{\cjkglyph\symbol{"2460}}}
+\newunicodechar{②}{\mbox{\cjkglyph\symbol{"2461}}}
+\newunicodechar{③}{\mbox{\cjkglyph\symbol{"2462}}}
+\newunicodechar{④}{\mbox{\cjkglyph\symbol{"2463}}}
+\newunicodechar{⑤}{\mbox{\cjkglyph\symbol{"2464}}}
+\newunicodechar{⑥}{\mbox{\cjkglyph\symbol{"2465}}}
+\usepackage{mathpartir}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{geometry}
+\geometry{margin=22mm}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\definecolor{acc}{HTML}{473AA0}
+\definecolor{crim}{HTML}{8F2B2B}
+\definecolor{teal}{HTML}{1F5F5B}
+
+\newcommand{\suff}{\operatorname{suff}}
+\newcommand{\resolve}{\operatorname{resolve}}
+\newcommand{\blocked}{\operatorname{blocked}}
+\newcommand{\allowed}{\operatorname{allowed}}
+\newcommand{\address}{\operatorname{address}}
+\newcommand{\real}{\operatorname{real}}
+\newcommand{\persist}{\operatorname{persist}}
+\newcommand{\now}{\operatorname{now}}
+\newcommand{\facts}{\operatorname{facts}}
+\newcommand{\Lex}{\operatorname{Lex}}
+\newcommand{\diff}{\operatorname{diff}}
+\newcommand{\adopt}{\operatorname{adopt}}
+\newcommand{\uncomputed}{\operatorname{uncomputed}}
+\newcommand{\loss}{\operatorname{loss}}
+\newcommand{\LT}{\mathit{LT}}
+\newcommand{\Vocab}{\operatorname{Vocab}}
+\newcommand{\ok}{\operatorname{ok}}
+\newcommand{\on}{\operatorname{on}}
+\newcommand{\ban}{\operatorname{ban}}
+\newcommand{\start}{\operatorname{start}}
+\newcommand{\type}{\operatorname{type}}
+\newcommand{\stg}{\operatorname{stage}}
+\newcommand{\expr}{\operatorname{expressible}}
+\newcommand{\val}{\operatorname{valid}}
+\newcommand{\cost}{\operatorname{cost}}
+\newcommand{\gap}{\operatorname{gap}}
+\newcommand{\authr}{\operatorname{author}}
+\newcommand{\resp}{\operatorname{resp}}
+\newcommand{\judges}{\operatorname{judges}}
+\newcommand{\reads}{\operatorname{reads}}
+\newcommand{\Ev}{\operatorname{Ev}}
+\newcommand{\harm}{\operatorname{harm}}
+\newcommand{\close}{\operatorname{close}}
+\newcommand{\members}{\operatorname{members}}
+\newcommand{\seller}{\mathsf{seller}}
+\newcommand{\OK}{\textcolor{teal}{$\bullet$}}
+\newcommand{\HALF}{\textcolor{acc}{$\circ$}}
+\renewcommand{\NG}{\textcolor{crim}{$\times$}}
+
+\title{\textbf{営業資料生成モデル 第4版 ―― 形式化 第2稿}\\[4pt]
+\large カバレッジ表・欠落分の定式化・統合可能性の検証}
+\author{}
+\date{2026年8月6日}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}\noindent
+第1稿は中心命題5件・軸14項目・依存規則9件のうち約6割しか形式化しておらず、欠落は第2版で後から接ぎ木した部分（移送・責任）に集中していた。本稿は(1)カバレッジ表を先に置き、(2)欠落分を定式化し、(3)既存体系へ統合可能かを6点で検証する。
+
+結論：\textbf{欠落の大半は合成的に追加でき、既存の推論規則の書き直しを要さない}。$\Gamma$ の添字追加は保存的、移送は⑥の後に追加される規則列として append される。ただし\textbf{選好 $\prec$ の導入だけは体系の構造を変える}（$\vdash$ 単独から $\vdash$ と $\prec$ の二層へ）。これは保存的拡張であり既存の定理は失われないが、生成の判定条件が「導出可能」から「導出可能かつ選好上悪化しない」へ変わる。
+\end{abstract}
+
+\section{カバレッジ表}
+
+\newcommand{\cov}[4]{#1 & #2 & #3 & #4 \\}
+\begin{center}\small
+\begin{longtable}{@{}p{42mm}cp{58mm}c@{}}
+\toprule
+\textbf{対象} & \textbf{第1稿} & \textbf{欠けていたもの} & \textbf{第2稿} \\
+\midrule
+\endhead
+\multicolumn{4}{@{}l}{\textbf{中心命題}}\\
+\cov{§1.1 合意は資本}{\HALF}{コスト勾配（無料$\to$有料）。$\Gamma$ の要素に価格がない}{\OK}
+\cov{§1.2 承認は減衰しながら伝播}{\NG}{移送関数、両替所、切断、合議、社外}{\OK}
+\cov{§1.3 完結させた者が責任を負う}{\NG}{$\resp$ 述語、著者権、エンテュメーメの適用条件}{\OK}
+\cov{§1.4 否定は内から、暦は外から}{\OK}{---}{\OK}
+\cov{§1.5 資本には通貨の単位がある}{\HALF}{証拠と次元のマッチング、負の効用}{\OK}
+\midrule
+\multicolumn{4}{@{}l}{\textbf{軸}}\\
+\cov{$\tau$（T軸）／$\delta$（D軸）}{\OK}{$D_6$ の下位3型が未分化}{\OK}
+\cov{$S_1,S_2,S_3$／$I,H$}{\OK}{---}{\OK}
+\cov{$E_j$}{\OK}{基準点が「最も遠い読む座席」であること}{\OK}
+\cov{$E_r$}{\NG}{トークガイドの生成}{\OK}
+\cov{$A$（効果が分かる時点）}{\NG}{ブロック4/5/6/7/8/12 の点灯条件}{\OK}
+\cov{$C$（乗り換えの重さ）}{\NG}{ブロック8/9/13 の点灯条件}{\OK}
+\cov{hops}{\HALF}{スカラーではなく裁定点の列}{\OK}
+\cov{procedural／downward}{\NG}{層A/B分離、下向き資料}{\OK}
+\cov{$B_1,B_2,B_3$}{\NG}{移送関数の引数}{\OK}
+\cov{②の帰責先}{\NG}{②の主語規則}{\OK}
+\cov{買い手セグメント}{\NG}{既定値のセル化と信頼度}{\OK}
+\midrule
+\multicolumn{4}{@{}l}{\textbf{依存規則}}\\
+\cov{R1（D5$\to$T必須）}{\NG}{---}{\OK}
+\cov{R2/R3/R4}{\HALF}{減格・禁止側（$\Psi_b$ が空）}{\OK}
+\cov{R5（T-E型別置換）}{\NG}{置換表 $\rho$}{\OK}
+\cov{R6／R8／R9}{\OK}{---}{\OK}
+\cov{R7（自己適用検査）}{\NG}{---}{\OK}
+\midrule
+\multicolumn{4}{@{}l}{\textbf{体系の接続}}\\
+\cov{$\Sigma$ と $\on(b)$ の連結}{\NG}{縮退がブロックに効いていなかった（潜在バグ）}{\OK}
+\cov{$\allowed$ の⑤側条件への組込み}{\NG}{真だが書いてはならない消去}{\OK}
+\bottomrule
+\end{longtable}
+\end{center}
+
+\noindent\OK{} 形式化済み\quad \HALF{} 部分的\quad \NG{} 未形式化
+
+\medskip\noindent
+全23項目。第1稿：\OK{} 5 ／ \HALF{} 4 ／ \NG{} 14（充足率 約6割）。第2稿：\OK{} 23 ／ \NG{} 0（買い手セグメントは \S7 で形式化）。
+
+\section{欠落分の定式化 I ―― 資本のコスト勾配（§1.1）}
+
+$\Gamma$ を単なる集合にしたため「資本」の量的側面が落ちていた。価格関数を追加する。
+\[
+\cost : \Phi \to \mathbb{R}_{\geq 0}, \qquad
+\phi \in \Gamma_{①} \Rightarrow \cost(\phi) = 0, \qquad
+\cost(\adopt(P)) = \max
+\]
+\begin{equation}\label{eq:cost}
+s < s' \;\Longrightarrow\; \max_{\phi \in \Gamma_{s}} \cost(\phi) \;\leq\; \max_{\phi \in \Gamma_{s'}} \cost(\phi)
+\end{equation}
+
+「無料で差し出せるものから始まり、有料のもので終わる」が式\eqref{eq:cost}である。
+
+\paragraph{「消費財ではない」の形式的内容。}$\Gamma$ が古典的な構造規則をもつこと、すなわち\textbf{線形論理ではない}という主張である。
+\[
+\frac{\Gamma \vdash \varphi}{\Gamma, \psi \vdash \varphi}\ (\text{weakening})
+\qquad
+\frac{\Gamma, \varphi, \varphi \vdash \psi}{\Gamma, \varphi \vdash \psi}\ (\text{contraction})
+\]
+contraction が成り立つ ―― 承認は何度使っても減らない。これは非自明な主張であり、もし承認が消費されるなら $\multimap$ と $\otimes$ の体系になっていたはずである。
+
+\section{欠落分の定式化 II ―― 移送（§1.2）}
+
+\subsection{裁定点の列}
+
+hops をスカラー $\mathbb{N}$ ではなく、属性つきの列とする。
+\[
+J = \langle j_1, \dots, j_n \rangle, \qquad
+j_k = (\kappa_k,\ \chi_k,\ \gamma_k,\ \omega_k)
+\]
+\[
+\kappa_k \in \{\text{実務性},\text{財源},\text{説明可能性},\text{価格}\},\quad
+\chi_k : \text{制度暦},\quad
+\gamma_k \in \{\text{単独},\text{合議}\},\quad
+\omega_k \in \{\text{社内},\text{社外}\}
+\]
+$j_1$ は読み手、$j_n$ は最終裁定者。第4版の移送入力は $J$ の射影として得られる。
+\[
+\text{hops} = n - 1,\qquad
+B_1 \equiv \exists k.\ \kappa_k = \text{価格},\qquad
+B_2 \equiv \exists k.\ \chi_k \neq \chi_1,\qquad
+B_3 \equiv \gamma_n = \text{合議} \vee \omega_n = \text{社外}
+\]
+
+\subsection{移送関数}
+
+\begin{equation}\label{eq:T}
+T_{k \to k+1}(\Gamma) \;=\; \{\, \phi \in \Gamma \;:\; \expr(\phi, \kappa_{k+1}) \;\wedge\; \val(\phi, \chi_{k+1}) \,\}
+\end{equation}
+
+ここから第4版 \S1.2 の三つの現象が導かれる。
+
+\begin{align}
+\text{減衰} \quad&\Longleftrightarrow\quad |T_{k\to k+1}(\Gamma)| < |\Gamma| \\
+\text{両替所の強制通過} \quad&\Longleftrightarrow\quad \kappa_{k+1} \neq \kappa_k \ \wedge\ \expr(\cdot,\kappa_{k+1}) \text{ が真となる } \phi \text{ が少数} \\
+\text{切断} \quad&\Longleftrightarrow\quad \exists \phi.\ \neg\val(\phi, \chi_{k+1})
+\end{align}
+
+$B_1$（購買・調達部門の独立審査）が立つと $\kappa_{k+1} = \text{価格}$ となり、D5で積んだ機会費用の命題は $\expr$ を満たさず落ちる。これが\textbf{減衰ではなく両替所}であることの形式的内容である。$B_2$ が立つと、国内制度暦に依存する $\now(Q)$ が $\val$ を満たさず落ちる。
+
+\subsection{合議体と社外}
+
+合議体では導出関係そのものが弱まる。
+\begin{equation}
+\Gamma \vdash_{\gamma_k} \varphi \;\;\overset{\text{def}}{\Longleftrightarrow}\;\; \forall m \in \members(j_k).\ \Gamma \vdash_m \varphi
+\qquad\text{すなわち}\qquad
+\vdash_{\gamma_k} \;=\; \bigcap_{m} \vdash_m
+\end{equation}
+「平均でも最頻値でもなく、最も保守的な一人に合わせる」の形式的内容である。社外（$\omega_k = \text{社外}$）は $\Lex(j_k)$ が売り手の想定外であることを意味し、固有名を含む $\phi$ が $\expr$ を満たさなくなる。procedural の機構と同一である。
+
+\subsection{到達条件と縮退の基準点}
+
+\begin{equation}\label{eq:reach}
+\boxed{\;\text{承認が届く} \;\Longleftrightarrow\;
+\bigl(T_{n-1 \to n} \circ \cdots \circ T_{1 \to 2}\bigr)\bigl(\Gamma_{⑥}^{(1)}\bigr) \;\vdash_{\gamma_n}\; \adopt(P) \;}
+\end{equation}
+
+$T$ は $j_{k+1}$ で表現できない命題を落とすため、生成時点で $j_n$ 側の条件を満たしておく必要がある。ゆえに縮退の基準点は $j_1$ ではない。
+\begin{equation}
+\sigma_{\mathrm{read}}(E_{j^*}), \qquad j^* = j_{k^*},\quad k^* = \max\{\, k : \reads(j_k) \,\}
+\end{equation}
+「開始点は\textbf{資料を読む最も遠い座席}」（第4版 \S5.3）がこれである。$J$ は顧客軸として生成前に与えられるため、この後方依存は不動点を作らない（\S5, 検証6）。
+
+\section{欠落分の定式化 III ―― 責任と著者権（§1.3）}
+
+\begin{align}
+\gap(w_{⑥}) &\in \{\top,\bot\} && \text{⑥が一寸を残しているか} \\
+\authr(P) &= \begin{cases} j_1 & \gap(w_{⑥}) = \top \\ \seller & \gap(w_{⑥}) = \bot \end{cases} \\
+\Delta\resp(x) &= \resp_{\text{after}}(x) - \resp_{\text{before}}(x)
+= \begin{cases} 0 & x \in \judges(J) \\ >0 & \text{otherwise} \end{cases}
+\end{align}
+
+第4版 \S1.3 の「責任の初期保有量で符号が決まる」がこれである。裁定者は元よりその判定の責任を負うので増分ゼロ、伝達者は負わないので純増。
+
+\begin{equation}\label{eq:enth}
+\boxed{\;
+\gap(w_{⑥}) = \top \ \text{が許容される}
+\;\Longleftrightarrow\; \Delta\resp(\authr(P)) = 0
+\;\Longleftrightarrow\; j_1 \in \judges(J)
+\;\Longleftrightarrow\; n = 1
+\;}
+\end{equation}
+
+\paragraph{定理として得られたもの。}第1稿では $\mathrm{out}(⑥)$ の hops による場合分けとして\textbf{外から与えていた}規則が、式\eqref{eq:enth}により $\resp$ から\textbf{導出される}。すなわち「エンテュメーメを使ってよいのは hops $=0$ のときだけ」は仕様ではなく定理である。
+
+\section{欠落分の定式化 IV ―― 通貨と選好（§1.5）}
+
+\subsection{証拠と次元のマッチング}
+\[
+\Ev : \mathcal{D} \to \mathcal{P}(\Phi), \qquad
+\text{pay}(e, D) \;\Longleftrightarrow\; e \in \Ev(D)
+\]
+通貨の取り違えとは $e \in \Ev(D) \setminus \Ev(D')$ を $D'$ の買い手に差し出すことである。R2・R3 の「減格」は単に無効なのではなく\textbf{負の効果}をもつ。
+\begin{equation}
+e \in \{\text{性能},\text{精度}\} \ \wedge\ \delta(M_i) = D_2 \;\Longrightarrow\; \harm(e)
+\qquad\text{（ブラックボックス化するため）}
+\end{equation}
+
+\subsection{選好層 ―― 真であることと書いてよいことの分離}
+
+$\allowed$ は真理条件ではなく効用に関する制約であるため、$\vdash$ とは別の関係が要る。買い手の選好を $\prec$ とする。
+\begin{equation}\label{eq:pref}
+\prec \;\subseteq\; \mathcal{P}(\Phi) \times \mathcal{P}(\Phi)
+\end{equation}
+生成の適格性は、導出可能性と選好の\textbf{連言}になる。
+\begin{equation}\label{eq:gen}
+\boxed{\;
+\text{生成可}(w_s) \;\Longleftrightarrow\;
+\underbrace{\Gamma_{s-1} \vdash \mathrm{pre}(s)}_{\text{真理}}
+\ \wedge\
+\underbrace{\Gamma_{s-1} \not\succ \Gamma_s}_{\text{選好}}
+\ \wedge\
+\underbrace{\ok(w_s)}_{\text{表層}}
+\;}
+\end{equation}
+$\blocked(D_1, \text{内製}, Q)$ が真であっても $\allowed(D_1,\text{内製}) = \bot$ であるのは、$\Gamma_{④} \succ \Gamma_{⑤}$（承認が減る）ためである。侮辱とは選好上の後退であって、偽なる主張ではない。
+
+\section{欠落分の定式化 V ―― 規則と接続}
+
+\subsection{$\Sigma$ と $\on(b)$ の連結（第1稿の潜在バグ）}
+\begin{equation}\label{eq:onsigma}
+\boxed{\;\on(b) \;\equiv\; \Phi_b(\nu) \;\wedge\; \neg\Psi_b(\nu) \;\wedge\; \stg(b) \in \Sigma \;}
+\end{equation}
+第1稿では $\Sigma$ と $\on$ が無関係に並んでおり、⑤ が $\Sigma$ に無くてもブロック20/21/22が点灯した。「②③⑤の生成禁止」の形式的内容は式\eqref{eq:onsigma}である。
+
+\subsection{$\Psi_b$（禁止側）の充填 ―― R2/R3}
+\[
+\Psi_{\text{性能訴求}} \equiv \exists i.\ \delta(M_i) = D_2,
+\qquad
+\Psi_{\text{精度訴求}} \equiv \exists i.\ \delta(M_i) = D_3
+\]
+
+\subsection{R1・R5・R7}
+\begin{align}
+\text{R1}\quad & \exists i.\ \delta(M_i) = D_5 \;\longrightarrow\; \tau \neq \emptyset \wedge \now(Q) \\
+\text{R5}\quad & (f,\_,\_,\_) \in \tau \wedge f = \mathrm{E}_x \;\longrightarrow\; \close(⑥) = \rho(x),
+\quad \rho: \{a,b,c,d\} \to \text{Closing} \\
+\text{R7}\quad & \delta(M_i) \in \{D_{6a},D_{6b},D_{6c}\} \;\longrightarrow\; \neg\,\blocked\bigl(\delta(M_i),\ \seller,\ Q\bigr)
+\end{align}
+
+R7 は簡潔になった。\textbf{売り手自身が同じ拘束に掛かっていないこと}が、そのまま自己適用検査である。$\rho(d) = \text{不成立通知}$ とすることで、T-E(d) 恒常禁制の扱いも $\rho$ に吸収される。
+
+\subsection{⑤の側条件（$\allowed$ の組込み）}
+\begin{equation}
+\forall M_i \in M \setminus \{M_0\}.\quad
+\blocked\bigl(\delta(M_i), M_i, Q\bigr) \;\wedge\; \allowed\bigl(\delta(M_i), \type(M_i)\bigr)
+\end{equation}
+$\allowed$ が全 $M_i$ で偽になる場合が「⑤生成不能」である。
+
+\subsection{$\delta$ の値域の細分と、残る軸}
+\[
+\delta : M\setminus\{M_0\} \to \{D_1,\dots,D_5,\ D_{6a},\ D_{6b},\ D_{6c}\}
+\]
+$A$（効果が分かる時点）と $C$（乗り換えの重さ）は $\Phi_b$ に入るのみで、新たな構造を要さない。
+\[
+\on(4) \equiv A = \text{買う前に分かる},\quad
+\on(5) \equiv A = \text{使えば分かる},\quad
+\on(9) \equiv C_{\text{移行}} = \text{大仕事}
+\]
+$E_r$ はトークガイドの生成にのみ用いる。
+\[
+\mathrm{guide} = \Sigma \setminus \sigma_{\mathrm{read}}(E_r)
+\qquad\text{（対面で飛ばしてよい段の集合）}
+\]
+
+\section{統合可能性の検証}
+
+第2稿で追加した構造が、第1稿の推論規則を破壊しないかを7点で検証する。
+
+\paragraph{検証1：$\Gamma$ の添字追加は合成的か。\quad\OK}
+階段①〜⑥は $j_1$ において一度だけ実行され、移送はその後に作用する。したがって索引は二次元にならず、\textbf{逐次}である。
+\[
+\Gamma^{(1)}_{①} \to \cdots \to \Gamma^{(1)}_{⑥}
+\ \xrightarrow{\;T_{1\to2}\;}\ \Gamma^{(2)}
+\ \xrightarrow{\;T_{2\to3}\;}\ \cdots
+\ \xrightarrow{\;T_{n-1\to n}\;}\ \Gamma^{(n)}
+\]
+既存の推論規則は上付き $(1)$ を付すのみで、\textbf{書き直しを要さない}。移送は⑥の後に追加される規則列として append される。
+
+\paragraph{検証2：$\cost$ の追加は $\vdash$ に干渉するか。\quad\OK}
+干渉しない。$\cost$ は $\Phi$ 上の関数であり、導出関係に条件を課さない。式\eqref{eq:cost}は $\Gamma$ の系列に対する不変条件であって、規則の前提ではない。
+
+\paragraph{検証3：$\Sigma$ と $\on$ の連結は既存の意味を変えるか。\quad\OK（意図した変更）}
+$\on$ の定義に連言を1つ加えるだけだが、$\on(20),\on(21),\on(22)$ の意味は変わる（⑤ が $\Sigma$ に無ければ off）。これは第1稿の潜在バグの修正であり、意図した挙動変更である。
+
+\paragraph{検証4：$T$ が部分関数であることは問題か。\quad\OK（全域化可能）}
+$T$ が定義されない場合を $T(\Gamma) = \emptyset$ と定めれば全域になる。式\eqref{eq:reach}の左辺が $\emptyset$ となり、$\emptyset \nvdash \adopt(P)$ から「承認が届かない」が得られる。不成立が体系内で表現される。
+
+\paragraph{検証5：$\vdash_{\gamma}$（合議体）は単調性を保つか。\quad\OK（ただし注意）}
+$\vdash_\gamma = \bigcap_m \vdash_m$ であり、各 $\vdash_m$ が単調なら交叉も単調である。weakening・contraction も保たれる。
+ただし\textbf{カット除去は自明でない}。$\Gamma \vdash_\gamma \varphi$ かつ $\Gamma,\varphi \vdash_\gamma \psi$ から $\Gamma \vdash_\gamma \psi$ を導くには、各 $m$ で中間命題 $\varphi$ が同一である必要がある。合議体の各成員が異なる理由で $\varphi$ を承認している場合、実務上は成り立つが形式的には別途仮定を要する。生成器の実装には影響しない。
+
+\paragraph{検証6：後方依存（$j_n$ が生成を規定する）は循環するか。\quad\OK}
+循環しない。$J$ は顧客軸として\textbf{生成前に与えられる}パラメータであり、生成結果に依存しない。したがって不動点計算は不要で、$\Sigma$ の決定は一回で済む。
+
+\paragraph{検証7：選好 $\prec$ の導入。\quad\NG$\to$要拡張（ただし保存的）}
+これが唯一、体系の構造を変える。判定が $\vdash$ 単独から式\eqref{eq:gen}の三連言になる。
+\begin{itemize}
+\item $\prec$ は $\vdash$ に条件を課さないため、\textbf{保存的拡張}である。第1稿で導出できた命題はすべて導出可能なまま残る。
+\item 変わるのは\textbf{生成の判定}であって、導出可能性ではない。「真だが生成しない」という状態が体系内で表現できるようになる。
+\item 実装上は、$\prec$ は $\allowed$ の対応表と $\harm$ のリストとして与えられ、真理条件とは別のテーブルとして保持される（第4版 \S7.3）。
+\end{itemize}
+
+
+\section{欠落分の定式化 VI ―― セグメント既定値と信頼度}
+
+第1稿・本稿 \S1 のカバレッジ表で唯一 \NG{} のまま残っていた項目。既定値は表引きであって論理式としての内容をもたないが、\textbf{その表を信頼してよいか}は形式化できる。
+
+\subsection{値ではなく分布を返す}
+
+\[
+\hat\nu : \mathcal{K} \to \Delta(\mathcal{V}), \qquad
+\mathcal{K} = \text{業種} \times \text{商材} \times \mathrm{seg}
+\]
+\[
+\mathrm{seg} = (\text{規模},\ \text{法人形態},\ \text{公私},\ \text{取引関係の既存性})
+\]
+既定値を単一の値ではなく\textbf{値上の分布}として返す。ここから2つの量が出る。
+\[
+c(x) = \max_{v} \hat\nu(x)(v) \quad\text{（最頻値の確率＝信頼度）},
+\qquad
+\mathrm{Cand}(x) = \{\, v : \hat\nu(x)(v) \geq \epsilon \,\}
+\]
+
+\subsection{判定規則}
+
+\begin{equation}\label{eq:segrule}
+\boxed{\;
+\text{判定}(x) =
+\begin{cases}
+\text{自動採用} & c(x) \geq \theta_{\mathrm{auto}} \\[2pt]
+\text{候補提示（営業が選ぶ）} & c(x) < \theta_{\mathrm{auto}} \ \wedge\ |\mathrm{Cand}(x)| \leq 3 \\[2pt]
+\text{生成停止（2問で確定）} & |\mathrm{Cand}(x)| > 3
+\end{cases}
+\;}
+\end{equation}
+
+\subsection{$\theta_{\mathrm{auto}}$ は非対称コストから導出される}
+
+$u$ を正しい既定を自動採用したときの利得、$u_{\mathrm{ask}}$ を営業に1問聞くコスト、$h$ を誤った既定を採用したときの損害（$\harm$：侮辱による商談停止）とする。
+\[
+EU(\text{auto}) = c\,u - (1-c)\,h, \qquad EU(\text{ask}) = u - u_{\mathrm{ask}}
+\]
+\[
+EU(\text{auto}) \geq EU(\text{ask})
+\;\Longleftrightarrow\; c\,(u+h) \geq u + h - u_{\mathrm{ask}}
+\]
+\begin{equation}\label{eq:theta}
+\boxed{\;\theta_{\mathrm{auto}} = 1 - \frac{u_{\mathrm{ask}}}{u + h}\;}
+\end{equation}
+
+\paragraph{第4版 \S4.2 の二層設計が、パラメータ1本から導かれる。}
+式\eqref{eq:theta}の極限を取ると、仕様が「軸ごとに既定を持つ／持たない」と規定していた区別が\textbf{同一の規則の場合分け}として得られる。
+
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+軸 & $h$（誤りの損害） & $\theta_{\mathrm{auto}}$ & 帰結 \\
+\midrule
+$\delta$（D軸） & 大（侮辱→商談停止） & $\to 1$ & \textbf{実質、自動採用しない} \\
+移送入力（hops 等） & 小（丁寧すぎるだけ） & 低め & 既定を持ってよい（hops $=1$） \\
+$\tau$（T軸） & --- & --- & 日付が空欄なら値が選べない（\S4.2 の別規則） \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+すなわち「D軸は既定を持たない、移送入力は既定を持つ」は\textbf{仕様上の取り決めではなく、$h$ の大小からの帰結}である。
+
+\subsection{選択ログによる更新}
+
+営業が選んだ値を $v_{\mathrm{sel}}$ として、
+\begin{equation}
+\hat\nu_{t+1}(x) = (1-\alpha)\,\hat\nu_t(x) + \alpha\,\mathbf{1}_{v_{\mathrm{sel}}},
+\qquad
+\text{上書き率}(x) = 1 - \hat\nu_t(x)\bigl(v_{\mathrm{default}}\bigr)
+\end{equation}
+
+第4版 \S4.3 の「上書き率の高いセルは既定が誤っているセル」がこれである。選択ログは $\hat\nu$ の推定にそのまま使え、\textbf{運用しながら $c$ が上がったセルだけが自動採用へ昇格する}。初期状態では全セルが候補提示から始まる。
+
+\subsection{カバレッジ表の更新}
+
+これにより \S1 の表の最終行 \NG{} は \OK{} になる。第2稿：\OK{} 23 ／ \NG{} 0。ただし $\hat\nu$ の中身（分布そのもの）は経験的に推定するほかなく、形式化されたのは\textbf{推定値をどう扱うかの規則}である。
+
+\section{残る欠落}
+
+\paragraph{$\vdash$ は依然として買い手のものである。}
+本稿で追加した $T$、$\vdash_\gamma$、$\prec$ はいずれも\textbf{我々の側のモデル}であって、買い手の実際の導出関係ではない。$\expr$、$\val$、$\prec$ の中身は経験的に推定するほかなく、その場は閲覧ログと選択ログである（第4版 \S14）。
+
+\end{document}

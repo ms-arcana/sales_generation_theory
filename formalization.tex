@@ -1,0 +1,294 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setCJKmainfont{Noto Serif CJK JP}
+\setCJKsansfont{Noto Sans CJK JP}
+\setCJKmonofont{Noto Sans Mono CJK JP}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{newunicodechar}
+\newfontfamily\cjkglyph{Noto Serif CJK JP}
+\newunicodechar{①}{\mbox{\cjkglyph\symbol{"2460}}}
+\newunicodechar{②}{\mbox{\cjkglyph\symbol{"2461}}}
+\newunicodechar{③}{\mbox{\cjkglyph\symbol{"2462}}}
+\newunicodechar{④}{\mbox{\cjkglyph\symbol{"2463}}}
+\newunicodechar{⑤}{\mbox{\cjkglyph\symbol{"2464}}}
+\newunicodechar{⑥}{\mbox{\cjkglyph\symbol{"2465}}}
+\usepackage{mathpartir}
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{margin=25mm}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\definecolor{acc}{HTML}{473AA0}
+\definecolor{crim}{HTML}{8F2B2B}
+
+\newcommand{\suff}{\operatorname{suff}}
+\newcommand{\resolve}{\operatorname{resolve}}
+\newcommand{\blocked}{\operatorname{blocked}}
+\newcommand{\allowed}{\operatorname{allowed}}
+\newcommand{\address}{\operatorname{address}}
+\newcommand{\real}{\operatorname{real}}
+\newcommand{\persist}{\operatorname{persist}}
+\newcommand{\now}{\operatorname{now}}
+\newcommand{\facts}{\operatorname{facts}}
+\newcommand{\Lex}{\operatorname{Lex}}
+\newcommand{\diff}{\operatorname{diff}}
+\newcommand{\adopt}{\operatorname{adopt}}
+\newcommand{\uncomputed}{\operatorname{uncomputed}}
+\newcommand{\controllable}{\operatorname{controllable}}
+\newcommand{\revocable}{\operatorname{revocable}}
+\newcommand{\loss}{\operatorname{loss}}
+\newcommand{\LT}{\mathit{LT}}
+\newcommand{\Vocab}{\operatorname{Vocab}}
+\newcommand{\form}{\operatorname{form}}
+\newcommand{\ok}{\operatorname{ok}}
+\newcommand{\on}{\operatorname{on}}
+\newcommand{\start}{\operatorname{start}}
+\newcommand{\type}{\operatorname{type}}
+\newcommand{\bad}[1]{{\color{crim}#1}}
+
+\title{\textbf{営業資料生成モデル 第4版 ―― 形式化}\\[4pt]
+\large スライド文言決定手続きの三層形式系}
+\author{}
+\date{2026年8月6日}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+本稿は第4版の生成手続きを形式化する。結論として、この手続きは\textbf{単一の論理式では表現できず、論理の種類が異なる三層の形式系}になる。層1は命題論理（軸$\to$ブロック）、層2は様相を伴うシークエント計算（段の系列）、層3は文字列上の制約（生成文の適格性）である。
+形式化の副産物として、25業種検証で発見した6件のバグのうち\textbf{5件が型・アリティ・定義域の誤りであり、内容の誤りではない}ことが判明した。すなわち形式化を先行させていれば、検証を回す前に大半が検出できた。
+\end{abstract}
+
+\section{記号}
+
+\begin{align*}
+S &\quad \text{現状（買い手が無編集に頷ける命題）} \\
+Q &\quad \text{問題} \qquad P \quad \text{提案} \qquad C \quad \text{提案の属するカテゴリ} \\
+M &= \{M_0, M_1, \dots, M_n\} \quad \text{既存手段。}M_0 = \text{現状維持／来期送り} \\
+\Gamma_s &\quad \text{段 } s \text{ に入る時点で買い手が承認済みの命題集合} \\
+\nu &= \nu_{\mathrm{prod}} \uplus \nu_{\mathrm{cust}} \uplus \nu_{\mathrm{deal}} \quad \text{軸の評価}
+\end{align*}
+
+軸の中でも次の二つが本形式化の要である。
+
+\begin{align}
+\tau &\ \subseteq\ \mathrm{Form} \times \mathrm{Date} \times \mathrm{Src} \times \mathrm{Known}
+&&\text{T軸（\textbf{集合}。スカラーではない）}\\[2pt]
+\delta &\ :\ M \setminus \{M_0\} \longrightarrow \{D_1,\dots,D_6\}
+&&\text{D軸（\textbf{関数}。定数ではない）}
+\end{align}
+
+ここで
+\[
+\mathrm{Form} = \{\mathrm{A},\mathrm{B},\mathrm{C},\mathrm{D},\mathrm{E}_a,\mathrm{E}_b,\mathrm{E}_c,\mathrm{E}_d\},\quad
+\mathrm{Src} = \{\text{法令},\text{公的暦},\text{自然・需要},\text{契約},\text{売り手都合}\}
+\]
+\[
+\mathrm{Known} = \{\text{未知},\text{既知}\}
+\]
+
+$\delta$ が\textbf{関数}であることが第4版の中核である。第3版は $\delta_0$ を定数として扱っていた（\S6, バグ1）。
+
+\section{層1：軸 $\to$ ブロック（命題論理）}
+
+各ブロック $b$ の点灯は $\nu$ 上のブール関数である。ここは単一の論理式で書ける。
+\[
+\on(b) \;\equiv\; \Phi_b(\nu) \wedge \neg\Psi_b(\nu)
+\]
+
+代表例：
+\begin{align}
+\on(\text{5b：前例・実績}) &\equiv \exists i.\; \delta(M_i) = D_4 \\
+\on(\text{20：責任分界表}) &\equiv \exists i.\; \delta(M_i) = D_2 \\
+\on(\text{21：判断権の所在}) &\equiv \exists i.\; \delta(M_i) = D_3 \\
+\on(\text{22：機会費用}) &\equiv \exists i.\; \delta(M_i) = D_5 \\
+\on(\text{11：期限の明示}) &\equiv \exists (f,d,s,k) \in \tau.\; f \in \{\mathrm{A},\mathrm{B},\mathrm{C},\mathrm{D}\} \\
+\on(\text{10：持続の根拠}) &\equiv \text{持続要求}(\nu) \wedge \neg\,(I > H)
+\end{align}
+$I$ は回収年数、$H$ は買い手の意思決定ホライズン。
+
+\section{縮退：段の集合に対する演算子}
+
+縮退はブロック述語ではなく、\textbf{そもそもどの段が存在するか}を決める。$\Sigma \subseteq \{①,\dots,⑥\}$ とする。
+
+\[
+\sigma_{\mathrm{prod}}(\nu) =
+\begin{cases}
+\{①,\dots,⑥\} & S_3 = \text{あり} \\[2pt]
+\{①,⑥\} & S_3 = \text{なし} \wedge S_2 \geq \text{四半期} \wedge S_1 < 100\text{万} \\[2pt]
+\{①,④,⑥\} & S_3 = \text{なし} \wedge S_2 \leq \text{年次} \wedge S_1 < 100\text{万} \\[2pt]
+\{①,\dots,⑥\} & \text{otherwise}
+\end{cases}
+\]
+\[
+\sigma_{\mathrm{read}}(E_j) = \{\, s : s \geq \start(E_j) \,\}
+\]
+
+\begin{equation}\label{eq:sigma}
+\boxed{\;
+\Sigma =
+\begin{cases}
+\sigma_{\mathrm{prod}}(\nu) & \text{if } \sigma_{\mathrm{prod}}(\nu) \neq \{①,\dots,⑥\} \\
+\sigma_{\mathrm{read}}(E_j) & \text{otherwise}
+\end{cases}
+\;}
+\end{equation}
+
+\paragraph{仕様の訂正。}第4版本文 \S5.4 は「商材側$\to$読み手側の順で適用」と記していたが、単なる積集合であれば順序は可換であり、この記述は不正確である。正しくは式\eqref{eq:sigma}の\textbf{条件分岐}であって、\textbf{商材側が縮退を発火させた場合、読み手側は適用しない}。既に最小形であり、そこから①を除いてはならないためである。本文を差し替える。
+
+\section{層2：段の系列（推論規則）}
+
+各段は推論規則である。$\Gamma_{s-1}$ を前提、$\Gamma_s$ を結論とするシークエントとして書く。
+
+\begin{mathpar}
+\inferrule*[left=①]{\ }{\Gamma_{①} = \{S\}}
+\and
+\inferrule*[left=②]
+  {\Gamma_{①} \vdash S \\ \facts(②) \subseteq \facts(①)}
+  {\Gamma_{②} = \Gamma_{①} \cup \{\,\Diamond\neg\suff(S)\,\}}
+\end{mathpar}
+
+\begin{mathpar}
+\inferrule*[left=③]
+  {\Gamma_{②} \vdash \Diamond\neg\suff(S) \\ \diff\bigl(Q, \Lex(\text{buyer})\bigr) \neq \emptyset}
+  {\Gamma_{③} = \Gamma_{②} \cup \{Q\}}
+\and
+\inferrule*[left=④]
+  {\Gamma_{③} \vdash Q \\ \real(Q) \\ \persist(Q) \\ \now(Q)}
+  {\Gamma_{④} = \Gamma_{③} \cup \{\,\Box\,\address(Q)\,\}}
+\end{mathpar}
+
+\begin{mathpar}
+\inferrule*[left=⑤]
+  {\Gamma_{④} \vdash \Box\,\address(Q) \\\\ \forall M_i \in M \setminus \{M_0\}.\; \blocked\bigl(\delta(M_i),\, M_i,\, Q\bigr)}
+  {\Gamma_{⑤} = \Gamma_{④} \cup \bigl\{\, \Box\bigl(\resolve(x,Q) \to x \in C\bigr) \,\bigr\}}
+\and
+\inferrule*[left=⑥]
+  {\Gamma_{⑤} \vdash \Box\bigl(\resolve(x,Q) \to x \in C\bigr) \\ P \in C}
+  {\Gamma_{⑥} = \Gamma_{⑤} \cup \{P\}}
+\end{mathpar}
+
+\subsection{側条件の内容}
+
+\paragraph{②：$\facts(②) \subseteq \facts(①)$。}
+これが\textbf{内在的否定の形式的内容}である。②で用いる事実はすべて①に出典を持たねばならず、新しい事実は持ち込めない。Timmermans \& Tavory の \textit{revisiting}（別の単位で数え直す／別の形式で書き出す）がこの包含関係に落ちる。
+
+\paragraph{③：$\diff(Q, \Lex(\text{buyer})) \neq \emptyset$。}
+アブダクション条件。買い手の既存語彙 $\Lex(\text{buyer})$ との差分が空なら、それは verification であって abduction ではなく、承認を新たに生まない。
+
+\paragraph{⑤：量化域から $M_0$ が除かれている。}
+$M_0$（現状維持／来期送り）を消すのは④の日付である。実際、
+\[
+\now(Q) \;\Longrightarrow\; \Gamma_{④} \vdash \neg\resolve(M_0, Q)
+\]
+が既に成り立つ。⑤で改めて $M_0$ を否定すると二重否定になり、それが侮辱として着弾する。
+
+\subsection{$\now(Q)$ の展開 ―― R6 とT軸の必須フィールド}
+
+\begin{equation}
+\begin{aligned}
+\now(Q) \;\equiv\; \exists (f,d,s,k) \in \tau.\
+& d > t_{\mathrm{gen}} && \text{(R6a\ 未来性)} \\
+\wedge\ & d - \LT(P) \geq 0 && \text{(R6b\ リードタイム整合)} \\
+\wedge\ & \Box\bigl(\mathrm{at}(d) \wedge \neg P \to \loss\bigr) && \text{(R6c\ 因果接続)} \\
+\wedge\ & s \neq \text{売り手都合} && \text{(出典階層)} \\
+\wedge\ & \bigl(k = \text{未知} \;\vee\; \exists q.\ \uncomputed(q,\text{buyer})\bigr) && \text{(既知度)} \\
+\wedge\ & \bigl(f \neq \mathrm{D} \;\vee\; \exists (f',\_,\_,\_) \in \tau.\ f' \in \{\mathrm{B},\mathrm{C}\}\bigr) && \text{(T-D単独禁止)}
+\end{aligned}
+\end{equation}
+
+\paragraph{暦の外部性（中心命題 \S1.4 の形式的内容）。}第3版は外部性を $s \in \text{制度}$ という述語で定義していた。第4版では
+\[
+\neg\controllable(d,\text{buyer}) \;\wedge\; \neg\revocable(d) \;\wedge\; \exists q.\,\uncomputed(q,\text{buyer})
+\]
+となる。第1項が「買い手の意思の外から」、第3項が「買い手がまだ計算していない量とともに」に対応する。
+
+\subsection{エンテュメーメと移送}
+
+エンテュメーメは、\textbf{出力が $\Gamma_{⑥}$ ではなく $\Gamma_{⑤} \cup \{P \in C\}$ である}ことで表現される。$\adopt(P)$ は買い手自身が引く。ただし読み手が裁定者でない場合は反転する。
+
+\begin{equation}
+\mathrm{out}(⑥) =
+\begin{cases}
+\Gamma_{⑤} \cup \{P \in C\} & \text{hops} = 0 \\[2pt]
+\Gamma_{⑤} \cup \{P \in C,\ \adopt(P),\ \mathrm{cost},\ \mathrm{date},\ \mathrm{obj}\} & \text{hops} \geq 1
+\end{cases}
+\end{equation}
+
+\section{層3：生成文の適格性（文字列上の制約）}
+
+層2は\textbf{世界についての}述語、層3は\textbf{文字列についての}述語である。$w_s$ を段 $s$ の生成文とする。
+\[
+\ok(w_s) \;\equiv\; \neg\exists v \in V_0.\; v \sqsubseteq w_s \;\;\wedge\;\; \form(w_s) = \pi(s) \;\;\wedge\;\; \cdots
+\]
+$\sqsubseteq$ は部分文字列関係、$\pi(s)$ は段の提示形態。
+
+\subsection{禁止語彙は導出できる}
+
+\begin{equation}\label{eq:v0}
+\boxed{\;V_0 \;=\; \Vocab(\text{層1}) \;\cup\; \Vocab(\text{層2})\;}
+\end{equation}
+
+「消去」「残余」「$M_i$」「様相」「$\Box$」「$\Diamond$」「$\blocked$」「$\Gamma$」「$D_1$〜$D_6$」「T-A〜T-E」――これらはすべて層1・層2で\textbf{我々が}使っている記号である。\textbf{層2の語彙が層3に現れてはならない}というのが R9 の形式的内容であり、禁止語彙リストは式\eqref{eq:v0}から自動生成できる。手による保守を要しない。
+
+\subsection{真であることと、書いてよいことは別}
+
+\begin{equation}
+\underbrace{\blocked(D_5, M_1, Q)}_{\text{世界について真}}
+\qquad\text{と}\qquad
+\underbrace{w_{⑤} = \text{「消去対象は }M_1\text{…」}}_{\text{文字列}}
+\end{equation}
+
+前者が真であることと、後者がそれを\textbf{そのまま書く}ことは別である。25業種検証では、生成器が前者の語彙で後者を書いた結果、⑤の生成文 $123/125$ 本（$98\%$）で漏洩が生じた。④は $6/125$ 本（$5\%$）にとどまる。この非対称は、④には「日付を書け」という $\pi(④)$ の指定があり、⑤には $\pi(⑤)$ の指定がなかったことによる。
+
+さらに、真理条件とは別に\textbf{許容条件}が要る。
+\begin{align}
+\blocked(D, M_i, Q) &\quad \text{世界について真か} &&\text{層2}\\
+\allowed(D, \type(M_i)) &\quad \text{書いてよいか} &&\text{別表（第4版 \S7.3）}
+\end{align}
+
+\textbf{真だが書いてはいけない消去がある。} 例：$\blocked(D_1, \text{内製}, Q)$ が真でも $\allowed(D_1, \text{内製}) = \bot$ である。⑤の棄却条件の約半分はこの表に由来する。これは真理値ではなく\textbf{効用}に関する制約であり、原理的に層2には載らない。
+
+\section{形式化が診断すること}
+
+25業種検証で発見したバグを、形式的な誤りとして分類し直す。
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{52mm}p{68mm}l@{}}
+\toprule
+\textbf{バグ} & \textbf{形式的な誤り} & \textbf{種別} \\
+\midrule
+⑤のD次元がスライド単位 & $\delta$ を定数として扱っていた。正しくは $\delta : M \to \mathcal{D}$ & アリティ \\
+分析語彙の漏洩 & 層2の項を層3の文字列に埋め込んだ & レベル混同 \\
+縮退が読み手側のみ & $\Sigma = \sigma_{\mathrm{read}}(E_j)$ で $\sigma_{\mathrm{prod}}$ を欠く & 定義域 \\
+R6が空欄しか見ない & $\now(Q) \equiv \tau \neq \emptyset$ としか書いていなかった & 述語の弱さ \\
+hops がスカラー & 経路を $\mathbb{N}$ でモデル化。正しくは裁定点の列 $\langle j_1,\dots,j_n\rangle$ と属性 & 型 \\
+暦の外部性 & $s \in \text{制度}$ という述語。正しくは $\neg\controllable \wedge \neg\revocable \wedge \uncomputed$ & 述語の取り違え \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\noindent
+\textbf{6件中5件が型・アリティ・定義域の誤りであり、内容の誤りではない。}すなわち形式化を先行させていれば、125通りの検証を回す前に大半が検出できた。これは Timmermans \& Tavory の言う「予測を先に置く」と同じ話であり、\textbf{形式化は予測を明示する最も安価な手段}である。
+
+\section{形式化できないもの}
+
+\paragraph{$\vdash$ は買い手のものである。}
+$\Gamma \vdash \varphi$（「そうだね」と言える）の導出関係を定めているのは買い手の認知であって、我々ではない。我々が書けるのは\textbf{左辺に何を積むかという生成規則だけ}である。したがって「そうだね」テストそのものは形式化できず、\textbf{観察するしかない}（$\to$ 閲覧ログ、第4版 \S14）。
+
+\paragraph{②は二値ではない。}
+「そうだね\dots{}気になるね」という中間状態があるため、②の判定は
+\[
+\Gamma_{②} \vdash^{?} \Diamond\neg\suff(S), \qquad \vdash^{?} \in \{\top, \bot, \text{中間}\}
+\]
+の三値になる。第4版で②だけが「揺らぐ」を許容しているのはこのためである。
+
+\paragraph{侮辱コストは真理値ではない。}
+\S5.2 で述べたとおり $\allowed$ は効用に関する制約であり、層2の真理条件からは導けない。別表として持つほかない。
+
+\end{document}

@@ -1,0 +1,1126 @@
+[
+ {
+  "id": "F1-P1",
+  "業界": "食品メーカー",
+  "セグメント": "大手グループの生産子会社",
+  "商材": "協働ロボット＋ハンド",
+  "generate": true,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "sigma_by": "sigma_read",
+  "j_star": "親会社 生産技術部",
+  "kappa_n": [
+   "価格"
+  ],
+  "form_n": [
+   "単価",
+   "回収年数",
+   "見積総額"
+  ],
+  "tau_ok": [
+   [
+    "B",
+    "2027-03-01",
+    "自然・需要",
+    "既知"
+   ]
+  ],
+  "delta": [
+   [
+    "自社で増員して内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    null
+   ],
+   [
+    "既存の人材派遣会社に増員を頼む",
+    "既存外注",
+    [
+     "D2",
+     "D6c"
+    ],
+    "親会社 調達本部"
+   ],
+   [
+    "他社の省人化装置",
+    "競合",
+    [
+     "D7a",
+     "D7b"
+    ],
+    null
+   ]
+  ],
+  "five_mentions": [
+   "既存の人材派遣会社に増員を頼む",
+   "自社で増員して内製する"
+  ],
+  "d7_basis": [
+   "D7b",
+   "D7c"
+  ],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "R2",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "GAMMA_COLLEGIAL",
+   "B1",
+   "B2",
+   "B3",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "llm_calls": 6,
+  "findings": [
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "B:2027-03-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A8_ALREADY_APPLIED",
+    "level": "reject",
+    "ref": "A:2027-04-01 from=2020-04-01",
+    "msg": "棄却：当該区分への適用開始が過去。もう『今』ではない"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人手で回す",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "既存の人材派遣会社に増員を頼む",
+    "msg": "承認取得実績あり"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "ISO_CONTEXT_MISSING",
+    "ref": "所轄庁",
+    "msg": "買い手側の属性が未入力のため、事例の同型性を判定できない"
+   }
+  ]
+ },
+ {
+  "id": "F1-P2",
+  "業界": "食品メーカー",
+  "セグメント": "大手グループの生産子会社",
+  "商材": "業務改革コンサル",
+  "generate": false,
+  "sigma": [
+   "①",
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "sigma_by": "sigma_read",
+  "j_star": "親会社 生産技術部",
+  "kappa_n": [
+   "価格"
+  ],
+  "form_n": [
+   "単価",
+   "回収年数",
+   "見積総額"
+  ],
+  "tau_ok": [
+   [
+    "B",
+    "2027-03-01",
+    "自然・需要",
+    "既知"
+   ]
+  ],
+  "delta": [
+   [
+    "自社で増員して内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    null
+   ],
+   [
+    "既存の人材派遣会社に増員を頼む",
+    "既存外注",
+    [
+     "D2",
+     "D6c"
+    ],
+    "親会社 調達本部"
+   ],
+   [
+    "大手コンサルティングファーム",
+    "競合",
+    [
+     "D7a",
+     "D7d"
+    ],
+    null
+   ]
+  ],
+  "five_mentions": [
+   "既存の人材派遣会社に増員を頼む",
+   "自社で増員して内製する"
+  ],
+  "d7_basis": [
+   "D7d"
+  ],
+  "blocks": [
+   "B_visualize",
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "R2",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "GAMMA_COLLEGIAL",
+   "B1",
+   "B2",
+   "B3",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "llm_calls": 0,
+  "findings": [
+   {
+    "code": "A8_ALREADY_APPLIED",
+    "level": "reject",
+    "ref": "A:2027-04-01 from=2020-04-01",
+    "msg": "棄却：当該区分への適用開始が過去。もう『今』ではない"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "B:2027-03-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人手で回す",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7d",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_HALF",
+    "level": "stop",
+    "ref": "既存の人材派遣会社に増員を頼む",
+    "msg": "停止：承認実績はあるがリードタイムの実測がない（実数が1つ足りない）"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "ISO_CONTEXT_MISSING",
+    "ref": "所轄庁",
+    "msg": "買い手側の属性が未入力のため、事例の同型性を判定できない"
+   }
+  ]
+ },
+ {
+  "id": "F2-P1",
+  "業界": "食品メーカー",
+  "セグメント": "オーナー系中堅",
+  "商材": "協働ロボット＋ハンド",
+  "generate": false,
+  "sigma": [
+   "①",
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "sigma_by": "sigma_read",
+  "j_star": "社長",
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "form_n": [
+   "借入",
+   "手元資金",
+   "支払"
+  ],
+  "tau_ok": [
+   [
+    "A",
+    "2027-06-30",
+    "公的暦",
+    "未知"
+   ],
+   [
+    "B",
+    "2027-03-01",
+    "自然・需要",
+    "既知"
+   ]
+  ],
+  "delta": [
+   [
+    "自社で増員して内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    null
+   ],
+   [
+    "他社の省人化装置",
+    "競合",
+    [
+     "D7a",
+     "D7b"
+    ],
+    null
+   ]
+  ],
+  "five_mentions": [
+   "自社で増員して内製する",
+   "他社の省人化装置"
+  ],
+  "d7_basis": [
+   "D7b",
+   "D7c"
+  ],
+  "blocks": [
+   "B_visualize",
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_layer_a"
+  ],
+  "rules": [
+   "R1_OK",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "PROCEDURAL",
+   "A5_KAPPA_QUANTITY",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "llm_calls": 0,
+  "findings": [
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "B:2027-03-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人手で回す",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A7_BINDER_ABSENT",
+    "level": "stop",
+    "ref": "既存の人材派遣会社に増員を頼む 親会社",
+    "msg": "停止：その拘束者は買い手の周囲に実在しない"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "ISO_CONTEXT_MISSING",
+    "ref": "所轄庁,系列",
+    "msg": "買い手側の属性が未入力のため、事例の同型性を判定できない"
+   }
+  ]
+ },
+ {
+  "id": "F2-P2",
+  "業界": "食品メーカー",
+  "セグメント": "オーナー系中堅",
+  "商材": "業務改革コンサル",
+  "generate": false,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "sigma_by": "sigma_read",
+  "j_star": "社長",
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "form_n": [
+   "借入",
+   "手元資金",
+   "支払"
+  ],
+  "tau_ok": [
+   [
+    "B",
+    "2027-03-01",
+    "自然・需要",
+    "既知"
+   ]
+  ],
+  "delta": [
+   [
+    "自社で増員して内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    null
+   ],
+   [
+    "大手コンサルティングファーム",
+    "競合",
+    [
+     "D7a",
+     "D7d"
+    ],
+    null
+   ]
+  ],
+  "five_mentions": [
+   "自社で増員して内製する",
+   "大手コンサルティングファーム"
+  ],
+  "d7_basis": [
+   "D7a",
+   "D7d"
+  ],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R1_OK",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "llm_calls": 0,
+  "findings": [
+   {
+    "code": "A8_ALREADY_APPLIED",
+    "level": "reject",
+    "ref": "A:2027-04-01 from=2020-04-01",
+    "msg": "棄却：当該区分への適用開始が過去。もう『今』ではない"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "B:2027-03-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人手で回す",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A7_BINDER_ABSENT",
+    "level": "stop",
+    "ref": "既存の人材派遣会社に増員を頼む 親会社",
+    "msg": "停止：その拘束者は買い手の周囲に実在しない"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7a,D7d",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "ISO_CONTEXT_MISSING",
+    "ref": "所轄庁,系列",
+    "msg": "買い手側の属性が未入力のため、事例の同型性を判定できない"
+   }
+  ]
+ },
+ {
+  "id": "K1-P1",
+  "業界": "建設・設備工事",
+  "セグメント": "中堅ゼネコン",
+  "商材": "協働ロボット＋ハンド",
+  "generate": false,
+  "sigma": [
+   "⑤",
+   "⑥"
+  ],
+  "sigma_by": "sigma_read",
+  "j_star": "本社 工務部",
+  "kappa_n": [
+   "説明可能性",
+   "財源"
+  ],
+  "form_n": [
+   "完成工事総利益",
+   "実行予算",
+   "投資回収"
+  ],
+  "tau_ok": [
+   [
+    "C",
+    "2027-06-30",
+    "契約",
+    "未知"
+   ],
+   [
+    "D",
+    "2027-04-01",
+    "公的暦",
+    "既知"
+   ]
+  ],
+  "delta": [
+   [
+    "自社で増員して内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    null
+   ],
+   [
+    "他社の省人化装置",
+    "競合",
+    [
+     "D7a",
+     "D7b"
+    ],
+    null
+   ]
+  ],
+  "five_mentions": [
+   "自社で増員して内製する",
+   "他社の省人化装置"
+  ],
+  "d7_basis": [
+   "D7b",
+   "D7c"
+  ],
+  "blocks": [
+   "B_compare_current",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "GAMMA_COLLEGIAL",
+   "B2",
+   "B3",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY"
+  ],
+  "llm_calls": 0,
+  "findings": [
+   {
+    "code": "R6b_LT_SHORT",
+    "level": "reject",
+    "ref": "A:2027-03-31 7m<9m",
+    "msg": "棄却：実効リードタイムに足りない。次の窓へ繰り上げる"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "C:2027-06-30",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま常用でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A7_DIRECTION_REVERSED",
+    "level": "stop",
+    "ref": "既存の協力会社に応援を頼む 元請",
+    "msg": "停止：拘束の向きが逆。買い手が承認する側である"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "ISO_CONTEXT_MISSING",
+    "ref": "系列",
+    "msg": "買い手側の属性が未入力のため、事例の同型性を判定できない"
+   }
+  ]
+ },
+ {
+  "id": "K1-P2",
+  "業界": "建設・設備工事",
+  "セグメント": "中堅ゼネコン",
+  "商材": "業務改革コンサル",
+  "generate": false,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "sigma_by": "sigma_read",
+  "j_star": "本社 工務部",
+  "kappa_n": [
+   "説明可能性",
+   "財源"
+  ],
+  "form_n": [
+   "完成工事総利益",
+   "実行予算",
+   "投資回収"
+  ],
+  "tau_ok": [
+   [
+    "C",
+    "2027-06-30",
+    "契約",
+    "未知"
+   ],
+   [
+    "D",
+    "2027-04-01",
+    "公的暦",
+    "既知"
+   ]
+  ],
+  "delta": [
+   [
+    "自社で増員して内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    null
+   ],
+   [
+    "大手コンサルティングファーム",
+    "競合",
+    [
+     "D7a",
+     "D7d"
+    ],
+    null
+   ]
+  ],
+  "five_mentions": [
+   "自社で増員して内製する",
+   "大手コンサルティングファーム"
+  ],
+  "d7_basis": [],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "GAMMA_COLLEGIAL",
+   "B2",
+   "B3",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "llm_calls": 0,
+  "findings": [
+   {
+    "code": "A8_ALREADY_APPLIED",
+    "level": "reject",
+    "ref": "A:2027-04-01 from=2024-04-01",
+    "msg": "棄却：当該区分への適用開始が過去。もう『今』ではない"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "C:2027-06-30",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま常用でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A7_DIRECTION_REVERSED",
+    "level": "stop",
+    "ref": "既存の協力会社に応援を頼む 元請",
+    "msg": "停止：拘束の向きが逆。買い手が承認する側である"
+   },
+   {
+    "code": "A2_NOT_REQUIRED",
+    "level": "info",
+    "ref": "",
+    "msg": "カテゴリ内比較は問われない局面"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "ISO_CONTEXT_MISSING",
+    "ref": "系列",
+    "msg": "買い手側の属性が未入力のため、事例の同型性を判定できない"
+   }
+  ]
+ },
+ {
+  "id": "K2-P1",
+  "業界": "建設・設備工事",
+  "セグメント": "専門工事業（下請）",
+  "商材": "協働ロボット＋ハンド",
+  "generate": true,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "sigma_by": "sigma_read",
+  "j_star": "社長",
+  "kappa_n": [
+   "価格"
+  ],
+  "form_n": [
+   "人工",
+   "常用単価",
+   "手元資金"
+  ],
+  "tau_ok": [
+   [
+    "Ec",
+    "2027-01-15",
+    "契約",
+    "未知"
+   ],
+   [
+    "C",
+    "2027-06-30",
+    "契約",
+    "未知"
+   ],
+   [
+    "D",
+    "2027-04-01",
+    "公的暦",
+    "既知"
+   ]
+  ],
+  "delta": [
+   [
+    "自社で増員して内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    null
+   ],
+   [
+    "元請が指定する工法・体制",
+    "取引上位者の指定",
+    [
+     "D6c"
+    ],
+    "元請"
+   ],
+   [
+    "他社の省人化装置",
+    "競合",
+    [
+     "D7a",
+     "D7b"
+    ],
+    null
+   ]
+  ],
+  "five_mentions": [
+   "元請が指定する工法・体制",
+   "自社で増員して内製する"
+  ],
+  "d7_basis": [
+   "D7b",
+   "D7c"
+  ],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_prohibition",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_layer_a"
+  ],
+  "rules": [
+   "R1_OK",
+   "R5c",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "PROCEDURAL",
+   "A5_KAPPA_QUANTITY",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE",
+   "VETO:元請の安全衛生管理責任者"
+  ],
+  "llm_calls": 6,
+  "findings": [
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "Ec:2027-01-15",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "C:2027-06-30",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま常用でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "元請が指定する工法・体制",
+    "msg": "承認取得実績あり"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A8_BINDER_AMBIGUOUS",
+    "ref": "Ec:2027-01-15 元請,元請の安全衛生管理責任者",
+    "msg": "拘束者が複数いて日付が一意に定まらない。当事者を同定するまで④は立たない"
+   },
+   {
+    "code": "ISO_CONTEXT_MISSING",
+    "ref": "系列",
+    "msg": "買い手側の属性が未入力のため、事例の同型性を判定できない"
+   }
+  ]
+ },
+ {
+  "id": "K2-P2",
+  "業界": "建設・設備工事",
+  "セグメント": "専門工事業（下請）",
+  "商材": "業務改革コンサル",
+  "generate": false,
+  "sigma": [
+   "⑤",
+   "⑥"
+  ],
+  "sigma_by": "sigma_read",
+  "j_star": "社長",
+  "kappa_n": [
+   "価格"
+  ],
+  "form_n": [
+   "人工",
+   "常用単価",
+   "手元資金"
+  ],
+  "tau_ok": [
+   [
+    "Ec",
+    "2027-01-15",
+    "契約",
+    "未知"
+   ],
+   [
+    "C",
+    "2027-06-30",
+    "契約",
+    "未知"
+   ]
+  ],
+  "delta": [
+   [
+    "自社で増員して内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    null
+   ],
+   [
+    "元請が指定する工法・体制",
+    "取引上位者の指定",
+    [
+     "D6c"
+    ],
+    "元請"
+   ],
+   [
+    "大手コンサルティングファーム",
+    "競合",
+    [
+     "D7a",
+     "D7d"
+    ],
+    null
+   ]
+  ],
+  "five_mentions": [
+   "元請が指定する工法・体制",
+   "自社で増員して内製する"
+  ],
+  "d7_basis": [
+   "D7d"
+  ],
+  "blocks": [
+   "B_compare_current",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R1_OK",
+   "R5c",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "VETO:元請の安全衛生管理責任者"
+  ],
+  "llm_calls": 0,
+  "findings": [
+   {
+    "code": "A8_ALREADY_APPLIED",
+    "level": "reject",
+    "ref": "A:2027-04-01 from=2024-04-01",
+    "msg": "棄却：当該区分への適用開始が過去。もう『今』ではない"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "Ec:2027-01-15",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "C:2027-06-30",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま常用でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7d",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_HALF",
+    "level": "stop",
+    "ref": "元請が指定する工法・体制",
+    "msg": "停止：承認実績はあるがリードタイムの実測がない（実数が1つ足りない）"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A8_BINDER_AMBIGUOUS",
+    "ref": "Ec:2027-01-15 元請,元請の安全衛生管理責任者",
+    "msg": "拘束者が複数いて日付が一意に定まらない。当事者を同定するまで④は立たない"
+   },
+   {
+    "code": "ISO_CONTEXT_MISSING",
+    "ref": "系列",
+    "msg": "買い手側の属性が未入力のため、事例の同型性を判定できない"
+   }
+  ]
+ }
+]

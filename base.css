@@ -1,0 +1,20 @@
+:root {
+  --paper: #EFF0EC;
+  --paper-2: #F7F8F5;
+  --ink: #1A2420;
+  --ink-soft: #5C6862;
+  --ink-faint: #8B958F;
+  --rule: #CDD1C9;
+  --accent: #473AA0;
+  --accent-soft: #E5E2F6;
+  --accent-line: #B4ACE4;
+  --ochre: #8E6410;
+  --ochre-soft: #F1E9D6;
+  --ochre-line: #D8C48C;
+  --crimson: #9B2C2C;
+  --crimson-soft: #F6E4E4;
+  --crimson-line: #DFAFAF;
+  --font-display: "Shippori Mincho", serif;
+  --font-body: "Zen Kaku Gothic New", sans-serif;
+  --font-mono: "Roboto Mono", monospace;
+}

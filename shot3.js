@@ -1,0 +1,25 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch();
+  const p = await b.newPage({ viewport: { width: 1280, height: 1000 } });
+  const errs = [];
+  p.on('pageerror', e => errs.push(String(e)));
+  p.on('console', m => { if (m.type()==='error' && !m.text().includes('ERR_TUNNEL')) errs.push('console: '+m.text()); });
+  await p.goto('file:///home/claude/work/industry25-report.html');
+  await p.waitForTimeout(900);
+  const n = await p.$$eval('.slide', s => s.length);
+  const bars = await p.$$eval('.barrow', r => r.length);
+  const inds = await p.$$eval('.indbtn', r => r.length);
+  await p.evaluate(() => document.querySelectorAll('#dots button')[1].click());
+  await p.waitForTimeout(200); await p.screenshot({path:'r1.png',fullPage:true});
+  await p.evaluate(() => document.querySelectorAll('#dots button')[4].click());
+  await p.waitForTimeout(200); await p.screenshot({path:'r4.png',fullPage:true});
+  await p.evaluate(() => document.querySelectorAll('#dots button')[8].click());
+  await p.waitForTimeout(200);
+  await p.evaluate(() => document.querySelectorAll('.indbtn')[15].click());
+  await p.waitForTimeout(300); await p.screenshot({path:'r8.png',fullPage:true});
+  const dl = await p.$eval('#inddetail', e=>e.textContent.length);
+  console.log('slides',n,'bars',bars,'inds',inds,'detail',dl);
+  console.log('errors',JSON.stringify(errs));
+  await b.close();
+})();

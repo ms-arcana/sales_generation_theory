@@ -1,0 +1,1990 @@
+[
+ {
+  "id": "E1-P1",
+  "業界": "学校法人",
+  "セグメント": "私立大学（合議・非単調な座席列）",
+  "商材": "広告・募集支援",
+  "generate": true,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "j_star": "学部長会",
+  "kappa_n": [
+   "財源"
+  ],
+  "form_n": [
+   "予算科目",
+   "学生生徒等納付金",
+   "帰属収支差額"
+  ],
+  "tau_ok": [
+   [
+    "Ec",
+    "2027-06-30",
+    "契約",
+    "未知"
+   ]
+  ],
+  "delta": [
+   [
+    "職員を増やして内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    {
+     "D5": "法人事務局"
+    }
+   ],
+   [
+    "現在の広告代理店に追加発注する",
+    "既存外注",
+    [
+     "D2"
+    ],
+    {}
+   ],
+   [
+    "他社の広告会社",
+    "競合",
+    [
+     "D7a",
+     "D7d"
+    ],
+    {}
+   ]
+  ],
+  "five_mentions": [
+   "現在の広告代理店に追加発注する",
+   "職員を増やして内製する"
+  ],
+  "d7_basis": [],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_prohibition",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_chain_form",
+   "B_decision_date",
+   "B_seat_quantities",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "R2",
+   "R5c",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "GAMMA_COLLEGIAL",
+   "B2",
+   "B3",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "R18_INSTITUTIONAL",
+   "A23_PER_SEAT",
+   "A21_WILLING",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "入試広報課長",
+    [
+     "媒体費",
+     "広報外注費"
+    ]
+   ],
+   [
+    "法人事務局",
+    [
+     "人件費（専任）",
+     "業務委託費"
+    ]
+   ]
+  ],
+  "start_deadline": null,
+  "chain": [
+   [
+    "入試広報課長",
+    [
+     "実務性"
+    ],
+    [
+     "オープンキャンパス動員",
+     "出願件数",
+     "広報予算執行"
+    ],
+    "組織"
+   ],
+   [
+    "学部長会",
+    [
+     "説明可能性"
+    ],
+    [
+     "アドミッションポリシー",
+     "定員充足率",
+     "教育の質保証"
+    ],
+    "制度"
+   ]
+  ],
+  "talk_guide": [],
+  "findings": [
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "A:2027-05-31",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "A8_BINDER_NOT_ABOVE",
+    "level": "reject",
+    "ref": "A:2027-05-31 学内の入試委員会",
+    "msg": "棄却：その拘束者は買い手の上位にいない"
+   },
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "Ec:2027-06-30",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま自前の広報でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_NOT_REQUIRED",
+    "level": "info",
+    "ref": "",
+    "msg": "カテゴリ内比較は問われない局面"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "入試広報課長",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   },
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "法人事務局",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   }
+  ],
+  "seats": [
+   {
+    "name": "入試広報課長",
+    "kappa": [
+     "実務性"
+    ],
+    "chi": "現場で回るか",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "オープンキャンパス動員",
+     "出願件数",
+     "広報予算執行"
+    ],
+    "origin": "組織"
+   },
+   {
+    "name": "学部長会",
+    "kappa": [
+     "説明可能性"
+    ],
+    "chi": "教学の理念と整合するか",
+    "gamma": "合議",
+    "reads": true,
+    "form": [
+     "アドミッションポリシー",
+     "定員充足率",
+     "教育の質保証"
+    ],
+    "origin": "制度"
+   },
+   {
+    "name": "理事会",
+    "kappa": [
+     "財源"
+    ],
+    "chi": "帰属収支差額",
+    "gamma": "合議",
+    "reads": false,
+    "form": [
+     "予算科目",
+     "学生生徒等納付金",
+     "帰属収支差額"
+    ],
+    "origin": "制度"
+   }
+  ],
+  "veto": [],
+  "gamma_own": {
+   "①": "訪問時のヒアリングで、現在の体制・件数・工数は既に双方で確認済み"
+  },
+  "prod": {
+   "nu": "使っても分からない",
+   "theta": "段階分割",
+   "sigma_p": "低",
+   "omega": 3,
+   "alpha_m": "低",
+   "alpha_c": "低",
+   "beta1_cap": "費用処理",
+   "beta1_hard": "変動",
+   "beta2": "予算計上済"
+  }
+ },
+ {
+  "id": "E1-P2",
+  "業界": "学校法人",
+  "セグメント": "私立大学（合議・非単調な座席列）",
+  "商材": "ITソリューション",
+  "generate": true,
+  "sigma": [
+   "⑤",
+   "⑥"
+  ],
+  "j_star": "学部長会",
+  "kappa_n": [
+   "財源"
+  ],
+  "form_n": [
+   "予算科目",
+   "学生生徒等納付金",
+   "帰属収支差額"
+  ],
+  "tau_ok": [
+   [
+    "Ec",
+    "2027-06-30",
+    "契約",
+    "未知"
+   ]
+  ],
+  "delta": [
+   [
+    "職員を増やして内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    {
+     "D5": "法人事務局"
+    }
+   ],
+   [
+    "現在の広告代理店に追加発注する",
+    "既存外注",
+    [
+     "D2"
+    ],
+    {}
+   ],
+   [
+    "他社のシステム",
+    "競合",
+    [
+     "D7a",
+     "D7b",
+     "D7c"
+    ],
+    {}
+   ]
+  ],
+  "five_mentions": [
+   "現在の広告代理店に追加発注する",
+   "職員を増やして内製する"
+  ],
+  "d7_basis": [
+   "D7a",
+   "D7b",
+   "D7c"
+  ],
+  "blocks": [
+   "B_compare_current",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_liability_matrix",
+   "B_opportunity_cost",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_seat_quantities",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "R2",
+   "R5c",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "GAMMA_COLLEGIAL",
+   "B2",
+   "B3",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "R18_INSTITUTIONAL",
+   "A23_PER_SEAT",
+   "A21_WILLING"
+  ],
+  "executors": [
+   [
+    "入試広報課長",
+    [
+     "媒体費",
+     "広報外注費"
+    ]
+   ],
+   [
+    "法人事務局",
+    [
+     "人件費（専任）",
+     "業務委託費"
+    ]
+   ]
+  ],
+  "start_deadline": null,
+  "chain": [
+   [
+    "入試広報課長",
+    [
+     "実務性"
+    ],
+    [
+     "オープンキャンパス動員",
+     "出願件数",
+     "広報予算執行"
+    ],
+    "組織"
+   ],
+   [
+    "学部長会",
+    [
+     "説明可能性"
+    ],
+    [
+     "アドミッションポリシー",
+     "定員充足率",
+     "教育の質保証"
+    ],
+    "制度"
+   ]
+  ],
+  "talk_guide": [],
+  "findings": [
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "A:2027-05-31",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "A8_BINDER_NOT_ABOVE",
+    "level": "reject",
+    "ref": "A:2027-05-31 学内の入試委員会",
+    "msg": "棄却：その拘束者は買い手の上位にいない"
+   },
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "Ec:2027-06-30",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま自前の広報でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7a,D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "入試広報課長",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   },
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "法人事務局",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   }
+  ],
+  "seats": [
+   {
+    "name": "入試広報課長",
+    "kappa": [
+     "実務性"
+    ],
+    "chi": "現場で回るか",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "オープンキャンパス動員",
+     "出願件数",
+     "広報予算執行"
+    ],
+    "origin": "組織"
+   },
+   {
+    "name": "学部長会",
+    "kappa": [
+     "説明可能性"
+    ],
+    "chi": "教学の理念と整合するか",
+    "gamma": "合議",
+    "reads": true,
+    "form": [
+     "アドミッションポリシー",
+     "定員充足率",
+     "教育の質保証"
+    ],
+    "origin": "制度"
+   },
+   {
+    "name": "理事会",
+    "kappa": [
+     "財源"
+    ],
+    "chi": "帰属収支差額",
+    "gamma": "合議",
+    "reads": false,
+    "form": [
+     "予算科目",
+     "学生生徒等納付金",
+     "帰属収支差額"
+    ],
+    "origin": "制度"
+   }
+  ],
+  "veto": [],
+  "gamma_own": {
+   "①": "訪問時のヒアリングで、現在の体制・件数・工数は既に双方で確認済み",
+   "②": "買い手自身が『今の数え方では出てこない負荷がある』と先に述べている",
+   "③": "買い手がその現象を自社の言葉で既に名指ししている",
+   "④": "買い手は他社の提案も受けており、今期中に決める必要を既に認めている"
+  },
+  "prod": {
+   "nu": "使えば分かる",
+   "theta": "段階分割",
+   "sigma_p": "高",
+   "omega": 6,
+   "alpha_m": "高",
+   "alpha_c": "低",
+   "beta1_cap": "資産計上",
+   "beta1_hard": "固定",
+   "beta2": "予算外"
+  }
+ },
+ {
+  "id": "E2-P1",
+  "業界": "学校法人",
+  "セグメント": "専修学校（オーナー系・単独決裁）",
+  "商材": "広告・募集支援",
+  "generate": true,
+  "sigma": [
+   "①",
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "j_star": "理事長",
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "form_n": [
+   "手元資金",
+   "支払",
+   "納付金収入"
+  ],
+  "tau_ok": [
+   [
+    "A",
+    "2027-06-30",
+    "公的暦",
+    "未知"
+   ]
+  ],
+  "delta": [
+   [
+    "現在の広告代理店に追加発注する",
+    "既存外注",
+    [
+     "D2"
+    ],
+    {}
+   ],
+   [
+    "他社の広告会社",
+    "競合",
+    [
+     "D7a",
+     "D7d"
+    ],
+    {}
+   ]
+  ],
+  "five_mentions": [
+   "現在の広告代理店に追加発注する",
+   "他社の広告会社"
+  ],
+  "d7_basis": [
+   "D7a",
+   "D7d"
+  ],
+  "blocks": [
+   "B_visualize",
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_liability_matrix",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_decision_date",
+   "B_seat_quantities",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R2",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "A23_PER_SEAT",
+   "A21_WILLING",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "理事長",
+    [
+     "人件費（専任）",
+     "媒体費",
+     "業務委託費"
+    ]
+   ]
+  ],
+  "start_deadline": "2026-12-28",
+  "chain": [
+   [
+    "教務主任",
+    [
+     "実務性"
+    ],
+    [
+     "募集説明会",
+     "担任工数"
+    ],
+    "個人"
+   ],
+   [
+    "理事長",
+    [
+     "価格",
+     "財源"
+    ],
+    [
+     "手元資金",
+     "支払",
+     "納付金収入"
+    ],
+    "個人"
+   ]
+  ],
+  "talk_guide": [],
+  "findings": [
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "A:2027-06-30",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま自前の広報でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7a,D7d",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "理事長",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   }
+  ],
+  "seats": [
+   {
+    "name": "教務主任",
+    "kappa": [
+     "実務性"
+    ],
+    "chi": "現場で回るか",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "募集説明会",
+     "担任工数"
+    ],
+    "origin": "個人"
+   },
+   {
+    "name": "理事長",
+    "kappa": [
+     "価格",
+     "財源"
+    ],
+    "chi": "手元資金",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "手元資金",
+     "支払",
+     "納付金収入"
+    ],
+    "origin": "個人"
+   }
+  ],
+  "veto": [],
+  "gamma_own": {},
+  "prod": {
+   "nu": "使っても分からない",
+   "theta": "段階分割",
+   "sigma_p": "低",
+   "omega": 3,
+   "alpha_m": "低",
+   "alpha_c": "低",
+   "beta1_cap": "費用処理",
+   "beta1_hard": "変動",
+   "beta2": "予算計上済"
+  }
+ },
+ {
+  "id": "E2-P2",
+  "業界": "学校法人",
+  "セグメント": "専修学校（オーナー系・単独決裁）",
+  "商材": "ITソリューション",
+  "generate": true,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "j_star": "理事長",
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "form_n": [
+   "手元資金",
+   "支払",
+   "納付金収入"
+  ],
+  "tau_ok": [
+   [
+    "A",
+    "2028-06-30",
+    "公的暦",
+    "未知"
+   ]
+  ],
+  "delta": [
+   [
+    "現在の広告代理店に追加発注する",
+    "既存外注",
+    [
+     "D2"
+    ],
+    {}
+   ],
+   [
+    "他社のシステム",
+    "競合",
+    [
+     "D7a",
+     "D7b",
+     "D7c"
+    ],
+    {}
+   ]
+  ],
+  "five_mentions": [
+   "現在の広告代理店に追加発注する",
+   "他社のシステム"
+  ],
+  "d7_basis": [
+   "D7b",
+   "D7c"
+  ],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_liability_matrix",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_decision_date",
+   "B_seat_quantities",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R2",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "A23_PER_SEAT",
+   "A21_WILLING",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "理事長",
+    [
+     "人件費（専任）",
+     "媒体費",
+     "業務委託費"
+    ]
+   ]
+  ],
+  "start_deadline": "2027-06-28",
+  "chain": [
+   [
+    "教務主任",
+    [
+     "実務性"
+    ],
+    [
+     "募集説明会",
+     "担任工数"
+    ],
+    "個人"
+   ],
+   [
+    "理事長",
+    [
+     "価格",
+     "財源"
+    ],
+    [
+     "手元資金",
+     "支払",
+     "納付金収入"
+    ],
+    "個人"
+   ]
+  ],
+  "talk_guide": [],
+  "findings": [
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "A:2028-06-30",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま自前の広報でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "理事長",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   }
+  ],
+  "seats": [
+   {
+    "name": "教務主任",
+    "kappa": [
+     "実務性"
+    ],
+    "chi": "現場で回るか",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "募集説明会",
+     "担任工数"
+    ],
+    "origin": "個人"
+   },
+   {
+    "name": "理事長",
+    "kappa": [
+     "価格",
+     "財源"
+    ],
+    "chi": "手元資金",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "手元資金",
+     "支払",
+     "納付金収入"
+    ],
+    "origin": "個人"
+   }
+  ],
+  "veto": [],
+  "gamma_own": {
+   "①": "訪問時のヒアリングで、現在の体制・件数・工数は既に双方で確認済み"
+  },
+  "prod": {
+   "nu": "使えば分かる",
+   "theta": "段階分割",
+   "sigma_p": "高",
+   "omega": 6,
+   "alpha_m": "高",
+   "alpha_c": "低",
+   "beta1_cap": "資産計上",
+   "beta1_hard": "固定",
+   "beta2": "予算外"
+  }
+ },
+ {
+  "id": "R1-P1",
+  "業界": "小売（食品スーパー）",
+  "セグメント": "チェーン本部（分業・単調な座席列）",
+  "商材": "広告・販促支援",
+  "generate": true,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "j_star": "商品本部バイヤー",
+  "kappa_n": [
+   "財源"
+  ],
+  "form_n": [
+   "営業利益",
+   "設備投資枠",
+   "販管費"
+  ],
+  "tau_ok": [
+   [
+    "A",
+    "2027-09-30",
+    "契約",
+    "未知"
+   ]
+  ],
+  "delta": [
+   [
+    "パートを増やして内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    {
+     "D5": "店舗運営部"
+    }
+   ],
+   [
+    "主要卸の販促支援を使う",
+    "取引上位者の指定",
+    [
+     "D6c"
+    ],
+    {
+     "D6c": "主要卸（一次問屋）"
+    }
+   ],
+   [
+    "他社の広告会社",
+    "競合",
+    [
+     "D7a",
+     "D7d"
+    ],
+    {}
+   ]
+  ],
+  "five_mentions": [
+   "主要卸の販促支援を使う",
+   "パートを増やして内製する"
+  ],
+  "d7_basis": [
+   "D7a",
+   "D7d"
+  ],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_decision_date",
+   "B_seat_quantities",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "A23_PER_SEAT",
+   "A21_WILLING",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE",
+   "VETO:労働組合"
+  ],
+  "executors": [
+   [
+    "店舗運営部",
+    [
+     "パート人時",
+     "販促費"
+    ]
+   ],
+   [
+    "商品本部バイヤー",
+    [
+     "仕入原価",
+     "廃棄"
+    ]
+   ]
+  ],
+  "start_deadline": "2027-05-28",
+  "chain": [
+   [
+    "店舗運営部",
+    [
+     "実務性"
+    ],
+    [
+     "人時売上高",
+     "作業時間",
+     "発注精度"
+    ],
+    "組織"
+   ],
+   [
+    "商品本部バイヤー",
+    [
+     "価格"
+    ],
+    [
+     "原価率",
+     "取引条件",
+     "粗利率"
+    ],
+    "組織"
+   ]
+  ],
+  "talk_guide": [],
+  "findings": [
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "A:2027-09-30",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "A:2027-09-30",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "D:2027-04-01",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "TD_ALONE",
+    "level": "reject",
+    "ref": "D",
+    "msg": "棄却：T-D は単独では④を立てられない。B または C と重ねる"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人海戦術でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7a,D7d",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "主要卸の販促支援を使う",
+    "msg": "承認取得実績あり"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "店舗運営部",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   },
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "商品本部バイヤー",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   }
+  ],
+  "seats": [
+   {
+    "name": "店舗運営部",
+    "kappa": [
+     "実務性"
+    ],
+    "chi": "店で回るか",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "人時売上高",
+     "作業時間",
+     "発注精度"
+    ],
+    "origin": "組織"
+   },
+   {
+    "name": "商品本部バイヤー",
+    "kappa": [
+     "価格"
+    ],
+    "chi": "原価と条件",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "原価率",
+     "取引条件",
+     "粗利率"
+    ],
+    "origin": "組織"
+   },
+   {
+    "name": "社長",
+    "kappa": [
+     "財源"
+    ],
+    "chi": "営業利益",
+    "gamma": "単独",
+    "reads": false,
+    "form": [
+     "営業利益",
+     "設備投資枠",
+     "販管費"
+    ],
+    "origin": "個人"
+   }
+  ],
+  "veto": [
+   "労働組合"
+  ],
+  "gamma_own": {
+   "①": "訪問時のヒアリングで、現在の体制・件数・工数は既に双方で確認済み"
+  },
+  "prod": {
+   "nu": "使えば分かる",
+   "theta": "完全分割",
+   "sigma_p": "低",
+   "omega": 1,
+   "alpha_m": "高",
+   "alpha_c": "高",
+   "beta1_cap": "費用処理",
+   "beta1_hard": "変動",
+   "beta2": "予算計上済"
+  }
+ },
+ {
+  "id": "R1-P2",
+  "業界": "小売（食品スーパー）",
+  "セグメント": "チェーン本部（分業・単調な座席列）",
+  "商材": "ITソリューション",
+  "generate": true,
+  "sigma": [
+   "⑤",
+   "⑥"
+  ],
+  "j_star": "商品本部バイヤー",
+  "kappa_n": [
+   "財源"
+  ],
+  "form_n": [
+   "営業利益",
+   "設備投資枠",
+   "販管費"
+  ],
+  "tau_ok": [
+   [
+    "A",
+    "2027-09-30",
+    "契約",
+    "未知"
+   ]
+  ],
+  "delta": [
+   [
+    "パートを増やして内製する",
+    "内製",
+    [
+     "D5"
+    ],
+    {
+     "D5": "店舗運営部"
+    }
+   ],
+   [
+    "主要卸の販促支援を使う",
+    "取引上位者の指定",
+    [
+     "D6c"
+    ],
+    {
+     "D6c": "主要卸（一次問屋）"
+    }
+   ],
+   [
+    "他社のシステム",
+    "競合",
+    [
+     "D7a",
+     "D7b",
+     "D7c"
+    ],
+    {}
+   ]
+  ],
+  "five_mentions": [
+   "主要卸の販促支援を使う",
+   "パートを増やして内製する"
+  ],
+  "d7_basis": [
+   "D7a",
+   "D7b",
+   "D7c"
+  ],
+  "blocks": [
+   "B_compare_current",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_opportunity_cost",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_seat_quantities",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot",
+   "B_downward"
+  ],
+  "rules": [
+   "R1_OK",
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "DOWNWARD",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "A23_PER_SEAT",
+   "A21_WILLING",
+   "VETO:労働組合"
+  ],
+  "executors": [
+   [
+    "店舗運営部",
+    [
+     "パート人時",
+     "販促費"
+    ]
+   ],
+   [
+    "商品本部バイヤー",
+    [
+     "仕入原価",
+     "廃棄"
+    ]
+   ]
+  ],
+  "start_deadline": "2026-09-28",
+  "chain": [
+   [
+    "店舗運営部",
+    [
+     "実務性"
+    ],
+    [
+     "人時売上高",
+     "作業時間",
+     "発注精度"
+    ],
+    "組織"
+   ],
+   [
+    "商品本部バイヤー",
+    [
+     "価格"
+    ],
+    [
+     "原価率",
+     "取引条件",
+     "粗利率"
+    ],
+    "組織"
+   ]
+  ],
+  "talk_guide": [],
+  "findings": [
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "A:2027-09-30",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "A:2027-09-30",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "D:2027-04-01",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "TD_ALONE",
+    "level": "reject",
+    "ref": "D",
+    "msg": "棄却：T-D は単独では④を立てられない。B または C と重ねる"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人海戦術でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7a,D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "主要卸の販促支援を使う",
+    "msg": "承認取得実績あり"
+   },
+   {
+    "code": "A19_ORG_COST_POSITIVE",
+    "level": "info",
+    "ref": "主要卸の販促支援を使う",
+    "msg": "A19_ORG_COST_POSITIVE"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "店舗運営部",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   },
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "商品本部バイヤー",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   }
+  ],
+  "seats": [
+   {
+    "name": "店舗運営部",
+    "kappa": [
+     "実務性"
+    ],
+    "chi": "店で回るか",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "人時売上高",
+     "作業時間",
+     "発注精度"
+    ],
+    "origin": "組織"
+   },
+   {
+    "name": "商品本部バイヤー",
+    "kappa": [
+     "価格"
+    ],
+    "chi": "原価と条件",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "原価率",
+     "取引条件",
+     "粗利率"
+    ],
+    "origin": "組織"
+   },
+   {
+    "name": "社長",
+    "kappa": [
+     "財源"
+    ],
+    "chi": "営業利益",
+    "gamma": "単独",
+    "reads": false,
+    "form": [
+     "営業利益",
+     "設備投資枠",
+     "販管費"
+    ],
+    "origin": "個人"
+   }
+  ],
+  "veto": [
+   "労働組合"
+  ],
+  "gamma_own": {
+   "①": "訪問時のヒアリングで、現在の体制・件数・工数は既に双方で確認済み",
+   "②": "買い手自身が『今の数え方では出てこない負荷がある』と先に述べている",
+   "③": "買い手がその現象を自社の言葉で既に名指ししている",
+   "④": "買い手は他社の提案も受けており、今期中に決める必要を既に認めている"
+  },
+  "prod": {
+   "nu": "使えば分かる",
+   "theta": "段階分割",
+   "sigma_p": "高",
+   "omega": 6,
+   "alpha_m": "高",
+   "alpha_c": "低",
+   "beta1_cap": "資産計上",
+   "beta1_hard": "固定",
+   "beta2": "予算外"
+  }
+ },
+ {
+  "id": "R2-P1",
+  "業界": "小売（食品スーパー）",
+  "セグメント": "地場単独店（社長直轄）",
+  "商材": "広告・販促支援",
+  "generate": true,
+  "sigma": [
+   "①",
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "j_star": "社長",
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "form_n": [
+   "仕入原価",
+   "手元資金",
+   "粗利"
+  ],
+  "tau_ok": [
+   [
+    "A",
+    "2027-09-30",
+    "契約",
+    "未知"
+   ]
+  ],
+  "delta": [
+   [
+    "主要卸の販促支援を使う",
+    "取引上位者の指定",
+    [
+     "D6c"
+    ],
+    {
+     "D6c": "主要卸（一次問屋）"
+    }
+   ],
+   [
+    "他社の広告会社",
+    "競合",
+    [
+     "D7a",
+     "D7d"
+    ],
+    {}
+   ]
+  ],
+  "five_mentions": [
+   "主要卸の販促支援を使う",
+   "他社の広告会社"
+  ],
+  "d7_basis": [
+   "D7d"
+  ],
+  "blocks": [
+   "B_visualize",
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_mechanism",
+   "B_certification",
+   "B_trial",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_decision_date",
+   "B_seat_quantities",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "A23_PER_SEAT",
+   "A21_WILLING",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "社長",
+    [
+     "パート人時",
+     "仕入原価",
+     "廃棄",
+     "販促費"
+    ]
+   ]
+  ],
+  "start_deadline": "2027-05-28",
+  "chain": [
+   [
+    "店長",
+    [
+     "実務性"
+    ],
+    [
+     "作業時間",
+     "廃棄率"
+    ],
+    "個人"
+   ],
+   [
+    "社長",
+    [
+     "価格",
+     "財源"
+    ],
+    [
+     "仕入原価",
+     "手元資金",
+     "粗利"
+    ],
+    "個人"
+   ]
+  ],
+  "talk_guide": [],
+  "findings": [
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "A:2027-09-30",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "D:2027-04-01",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "TD_ALONE",
+    "level": "reject",
+    "ref": "D",
+    "msg": "棄却：T-D は単独では④を立てられない。B または C と重ねる"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人海戦術でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7d",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "主要卸の販促支援を使う",
+    "msg": "承認取得実績あり"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "社長",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   }
+  ],
+  "seats": [
+   {
+    "name": "店長",
+    "kappa": [
+     "実務性"
+    ],
+    "chi": "店で回るか",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "作業時間",
+     "廃棄率"
+    ],
+    "origin": "個人"
+   },
+   {
+    "name": "社長",
+    "kappa": [
+     "価格",
+     "財源"
+    ],
+    "chi": "手元資金",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "仕入原価",
+     "手元資金",
+     "粗利"
+    ],
+    "origin": "個人"
+   }
+  ],
+  "veto": [],
+  "gamma_own": {},
+  "prod": {
+   "nu": "使えば分かる",
+   "theta": "完全分割",
+   "sigma_p": "低",
+   "omega": 1,
+   "alpha_m": "高",
+   "alpha_c": "高",
+   "beta1_cap": "費用処理",
+   "beta1_hard": "変動",
+   "beta2": "予算計上済"
+  }
+ },
+ {
+  "id": "R2-P2",
+  "業界": "小売（食品スーパー）",
+  "セグメント": "地場単独店（社長直轄）",
+  "商材": "ITソリューション",
+  "generate": true,
+  "sigma": [
+   "②",
+   "③",
+   "④",
+   "⑤",
+   "⑥"
+  ],
+  "j_star": "社長",
+  "kappa_n": [
+   "価格",
+   "財源"
+  ],
+  "form_n": [
+   "仕入原価",
+   "手元資金",
+   "粗利"
+  ],
+  "tau_ok": [
+   [
+    "A",
+    "2027-09-30",
+    "契約",
+    "未知"
+   ]
+  ],
+  "delta": [
+   [
+    "主要卸の販促支援を使う",
+    "取引上位者の指定",
+    [
+     "D6c"
+    ],
+    {
+     "D6c": "主要卸（一次問屋）"
+    }
+   ],
+   [
+    "他社のシステム",
+    "競合",
+    [
+     "D7a",
+     "D7b",
+     "D7c"
+    ],
+    {}
+   ]
+  ],
+  "five_mentions": [
+   "主要卸の販促支援を使う",
+   "他社のシステム"
+  ],
+  "d7_basis": [
+   "D7a",
+   "D7b",
+   "D7c"
+  ],
+  "blocks": [
+   "B_what_is_it",
+   "B_form_mapping",
+   "B_case_numbers",
+   "B_trial",
+   "B_migration",
+   "B_deadline",
+   "B_why_now",
+   "B_scope_of_date",
+   "B_third_party",
+   "B_intra_category",
+   "B_kappa_quantity",
+   "B_realize",
+   "B_self_check",
+   "B_own_check",
+   "B_decision_date",
+   "B_seat_quantities",
+   "B_coverage_table",
+   "B_draft_reason",
+   "B_summary_sheet",
+   "B_human_slot"
+  ],
+  "rules": [
+   "R7",
+   "A2",
+   "N2_WRITE_CONCLUSION",
+   "B1",
+   "B2",
+   "A5_KAPPA_QUANTITY",
+   "R13_REALIZE",
+   "R14_TYPE",
+   "R16_SELF_APPLY",
+   "R17_NOT_INSULT",
+   "A16_CHAIN",
+   "A23_PER_SEAT",
+   "A21_WILLING",
+   "R11_FORM_MAPPING",
+   "R10c_COVERAGE"
+  ],
+  "executors": [
+   [
+    "社長",
+    [
+     "パート人時",
+     "仕入原価",
+     "廃棄",
+     "販促費"
+    ]
+   ]
+  ],
+  "start_deadline": "2026-09-28",
+  "chain": [
+   [
+    "店長",
+    [
+     "実務性"
+    ],
+    [
+     "作業時間",
+     "廃棄率"
+    ],
+    "個人"
+   ],
+   [
+    "社長",
+    [
+     "価格",
+     "財源"
+    ],
+    [
+     "仕入原価",
+     "手元資金",
+     "粗利"
+    ],
+    "個人"
+   ]
+  ],
+  "talk_guide": [],
+  "findings": [
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "A:2027-09-30",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "A:2027-09-30",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "A22_SCOPE_UNSOURCED",
+    "level": "demote",
+    "ref": "D:2027-04-01",
+    "msg": "降格：適用対象を誰がいつどの条文から取ったかが未記入。主位置には使えない（値の真偽は機械では確かめられない）"
+   },
+   {
+    "code": "A1_RECAST_DECLARED",
+    "level": "info",
+    "ref": "D:2027-04-01",
+    "msg": "両替経路を同枚に明記済み"
+   },
+   {
+    "code": "TD_ALONE",
+    "level": "reject",
+    "ref": "D",
+    "msg": "棄却：T-D は単独では④を立てられない。B または C と重ねる"
+   },
+   {
+    "code": "M0_EXCLUDED",
+    "level": "info",
+    "ref": "現状のまま人海戦術でしのぐ",
+    "msg": "M_0 は⑤で扱わない。消すのは④の日付"
+   },
+   {
+    "code": "A2_SATISFIED",
+    "level": "info",
+    "ref": "D7a,D7b,D7c",
+    "msg": "カテゴリ内の残余が一つに絞れている"
+   },
+   {
+    "code": "R7_D6c_OK",
+    "level": "info",
+    "ref": "主要卸の販促支援を使う",
+    "msg": "承認取得実績あり"
+   },
+   {
+    "code": "A19_ORG_COST_POSITIVE",
+    "level": "info",
+    "ref": "主要卸の販促支援を使う",
+    "msg": "A19_ORG_COST_POSITIVE"
+   }
+  ],
+  "needs_judgment": [
+   {
+    "code": "A21_WILLING_UNKNOWN",
+    "ref": "社長",
+    "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+   }
+  ],
+  "seats": [
+   {
+    "name": "店長",
+    "kappa": [
+     "実務性"
+    ],
+    "chi": "店で回るか",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "作業時間",
+     "廃棄率"
+    ],
+    "origin": "個人"
+   },
+   {
+    "name": "社長",
+    "kappa": [
+     "価格",
+     "財源"
+    ],
+    "chi": "手元資金",
+    "gamma": "単独",
+    "reads": true,
+    "form": [
+     "仕入原価",
+     "手元資金",
+     "粗利"
+    ],
+    "origin": "個人"
+   }
+  ],
+  "veto": [],
+  "gamma_own": {
+   "①": "訪問時のヒアリングで、現在の体制・件数・工数は既に双方で確認済み"
+  },
+  "prod": {
+   "nu": "使えば分かる",
+   "theta": "段階分割",
+   "sigma_p": "高",
+   "omega": 6,
+   "alpha_m": "高",
+   "alpha_c": "低",
+   "beta1_cap": "資産計上",
+   "beta1_hard": "固定",
+   "beta2": "予算外"
+  }
+ }
+]

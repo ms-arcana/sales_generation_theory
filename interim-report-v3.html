@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>途中経過 ― ④の時制と⑤の消去次元</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EFF0EC;--paper-2:#F7F8F5;--ink:#1A2420;--ink-soft:#5C6862;--ink-faint:#8B958F;--rule:#CDD1C9;
+--accent:#473AA0;--accent-soft:#E5E2F6;--accent-line:#B4ACE4;--ochre:#8E6410;--ochre-soft:#F1E9D6;--ochre-line:#D8C48C;
+--crim:#8F2B2B;--crim-soft:#F6E6E6;--crim-line:#DDABAB;--teal:#1F5F5B;--teal-soft:#DCEBEA;--teal-line:#9CC4C1;
+--fd:"Shippori Mincho",serif;--fb:"Zen Kaku Gothic New",sans-serif;--fm:"Roboto Mono",monospace}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--fb);-webkit-font-smoothing:antialiased}
+body{min-height:100vh;display:flex;flex-direction:column}
+.stage{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:36px 32px 20px}
+.slide{display:none;width:100%;max-width:1080px}
+.slide.is-active{display:block}
+@media (prefers-reduced-motion:no-preference){.slide.is-active{animation:rise .3s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.14em;color:var(--ink-faint);margin:0 0 14px;display:flex;align-items:center;gap:12px}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
+h1{font-family:var(--fd);font-weight:700;font-size:clamp(28px,4.2vw,48px);line-height:1.34;margin:0 0 26px}
+h2{font-family:var(--fd);font-weight:700;font-size:clamp(22px,3vw,34px);line-height:1.42;margin:0 0 20px}
+h3{font-weight:700;font-size:15px;letter-spacing:.04em;margin:0 0 10px}
+p{line-height:1.85;margin:0 0 16px;font-size:16px}
+.lead{font-size:17.5px;color:var(--ink-soft);max-width:66ch}
+.note{font-size:13.5px;color:var(--ink-faint);line-height:1.78}
+.pull{font-family:var(--fd);font-size:clamp(19px,2.4vw,27px);line-height:1.68;border-left:3px solid var(--accent);padding:6px 0 6px 22px;margin:0 0 26px;max-width:50ch}
+.cols{display:grid;gap:22px}.cols-2{grid-template-columns:1fr 1fr}.cols-3{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--paper-2);border:1px solid var(--rule);border-radius:3px;padding:18px 20px}
+.card p:last-child{margin-bottom:0}
+.title-meta{font-family:var(--fm);font-size:12.5px;letter-spacing:.1em;color:var(--ink-faint);display:flex;gap:22px;flex-wrap:wrap;border-top:1px solid var(--rule);padding-top:16px;margin-top:32px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.tabs button{font-family:var(--fb);font-size:13.5px;font-weight:500;background:var(--paper-2);color:var(--ink-soft);border:1px solid var(--rule);border-radius:3px;padding:9px 15px;cursor:pointer;text-align:left;line-height:1.5}
+.tabs button:hover{background:#E8E9E4}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tabs button .k{display:block;font-family:var(--fm);font-size:10.5px;letter-spacing:.1em;opacity:.75;margin-bottom:2px}
+.panel{border:1px solid var(--rule);border-radius:3px;background:var(--paper-2);padding:20px 22px}
+.panel .ph{font-family:var(--fd);font-size:21px;font-weight:700;margin-bottom:6px}
+.panel .logic{font-family:var(--fm);font-size:12.5px;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:2px;padding:6px 10px;display:inline-block;margin-bottom:14px}
+.kv{font-size:14.5px;line-height:1.82;margin:0 0 14px}
+.kv b{display:block;font-family:var(--fm);font-size:11.5px;letter-spacing:.08em;color:var(--ink-faint);margin-bottom:3px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.65}
+thead th{font-family:var(--fm);font-size:12px;letter-spacing:.06em;font-weight:500;color:var(--ink-faint);border-bottom:1px solid var(--ink)}
+tbody th{font-weight:500;color:var(--ink-soft);width:170px}
+td.hit{color:var(--accent);font-weight:500}
+td.miss{color:var(--ink-faint)}
+td.bad{color:var(--crim);font-weight:500}
+.dtag{font-family:var(--fm);font-size:11px;letter-spacing:.06em;padding:2px 7px;border-radius:2px;border:1px solid;display:inline-block;white-space:nowrap}
+.d1{color:var(--ink-soft);border-color:var(--rule);background:#fff}
+.d2{color:var(--crim);border-color:var(--crim-line);background:var(--crim-soft)}
+.d3{color:var(--teal);border-color:var(--teal-line);background:var(--teal-soft)}
+.d4{color:var(--ochre);border-color:var(--ochre-line);background:var(--ochre-soft)}
+.d5{color:#2F2570;border-color:var(--accent-line);background:var(--accent-soft)}
+ul.plain{margin:0;padding:0;list-style:none}
+ul.plain li{padding:11px 0 11px 20px;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.75;position:relative}
+ul.plain li::before{content:"";position:absolute;left:0;top:20px;width:8px;height:1px;background:var(--accent)}
+ul.plain li:last-child{border-bottom:0}
+.asym{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin-bottom:24px}
+.asym>div{padding:22px 24px}
+.asym>div:first-child{background:var(--teal-soft);border-right:1px solid var(--rule)}
+.asym>div:last-child{background:var(--ochre-soft)}
+.asym .t{font-family:var(--fm);font-size:11.5px;letter-spacing:.1em;margin-bottom:8px}
+.asym>div:first-child .t{color:var(--teal)}
+.asym>div:last-child .t{color:var(--ochre)}
+.asym .s{font-family:var(--fd);font-size:clamp(18px,2.2vw,24px);line-height:1.55;font-weight:700;margin-bottom:10px}
+.asym>div:first-child .s{color:#123C39}
+.asym>div:last-child .s{color:#6B4C0C}
+.asym p{font-size:13.5px;line-height:1.78;margin:0}
+.asym>div:first-child p{color:#2C514E}
+.asym>div:last-child p{color:#6B4C0C}
+.rule-row{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:13px 0;border-bottom:1px solid var(--rule);font-size:14.5px;line-height:1.75}
+.rule-row:last-child{border-bottom:0}
+.rule-row .rid{font-family:var(--fm);font-size:12px;color:var(--accent);padding-top:3px}
+.nav{display:flex;align-items:center;gap:16px;padding:14px 32px 22px;border-top:1px solid var(--rule);background:var(--paper)}
+.dots{display:flex;gap:7px;flex:1;flex-wrap:wrap}
+.dots button{width:22px;height:3px;padding:0;border:0;border-radius:2px;background:var(--rule);cursor:pointer}
+.dots button[aria-current="true"]{background:var(--accent)}
+.nav .counter{font-family:var(--fm);font-size:12px;color:var(--ink-faint)}
+.nav .move{font-family:var(--fm);font-size:13px;background:transparent;border:1px solid var(--rule);border-radius:3px;color:var(--ink-soft);padding:6px 12px;cursor:pointer}
+.nav .move:hover{background:var(--paper-2)}
+button:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+@media (max-width:900px){.cols-2,.cols-3{grid-template-columns:1fr}.asym{grid-template-columns:1fr}
+.asym>div:first-child{border-right:0;border-bottom:1px solid var(--rule)}
+.stage{padding:22px 16px 14px}.nav{padding:10px 16px 14px}tbody th{width:auto}}
+</style>
+
+<div class="stage">
+
+<section class="slide is-active" aria-label="表紙">
+  <p class="eyebrow">途中経過 / 2026-08-06 / 第3版</p>
+  <h1>「今」は問題からは出てこない。<br>制度の暦を指差すしかない。<br>消去は、次元を誤ると侮辱になる</h1>
+  <p class="lead">6領域の制度調査と2領域の構造調査（計8本）から、④の「今」に5つの論理形式、⑤の消去に5つの次元があることが判明。中心命題に2つの追記、軸を2本入れ替え、依存規則を6本追加しました。ページ数制限は解除。</p>
+  <div class="title-meta">
+    <span>制度調査 6領域</span><span>構造調査 2領域</span><span>「今」の形式 5</span><span>消去次元 5</span><span>全10枚</span>
+  </div>
+</section>
+
+<section class="slide" aria-label="④の非対称">
+  <p class="eyebrow">01 — ④の破綻の真因</p>
+  <h2>実在と持続は買い手の世界から立つ。<br>「今」だけは、そこに材料がない</h2>
+  <p class="pull">人手不足は5年前から社長方針に書いてある。実在も持続も要らない。俺が答えられないのは『なぜ今期の設備予算でやるのか』だけだよ。</p>
+  <p class="note" style="margin-bottom:22px">— ROB-TIER1（自動車Tier1 生産技術部）。製造業の制度調査も独立に同じ結論に到達した：「人手不足は『買う理由』を作るが『買う時期』を作らない。期限を持つのは、SOP・補助金締切・税制手続き・EOL具体日の4つだけ」。</p>
+
+  <div class="asym">
+    <div>
+      <div class="t">② 否定の内在</div>
+      <div class="s">否定は内から</div>
+      <p>欠如は S のうちに既にあったものとして引き出す（explicate）。外挿された否定は「まだ困っていないのに問題にされた」を生む。</p>
+    </div>
+    <div>
+      <div class="t">④ 必然化の「今」</div>
+      <div class="s">暦は外から</div>
+      <p>「今」は買い手の世界の中にない。制度の暦を指差すしかない。ただし外から持ち込めるのは<b>日付だけ</b>。評価や効果を持ち込めば②の違反に戻る。</p>
+    </div>
+  </div>
+
+  <div class="cols cols-2">
+    <div class="card">
+      <h3>発話行為の種類が違う</h3>
+      <p class="note" style="margin:0">①〜③は記述と主張。④の「今」は<b style="color:var(--ink)">指示（deixis）</b>である。買い手の世界について語るのではなく、その外にある暦を指差す行為。原モデルはこれを同じ「主張」の箱に入れていたので、生成器は「今」を記述で書こうとし、必ず失敗した。</p>
+    </div>
+    <div class="card" style="border-color:var(--accent-line);background:var(--accent-soft)">
+      <h3 style="color:#2F2570">機械判定できる帰結</h3>
+      <p class="note" style="margin:0;color:#5F55A8"><b>日付のない「今」は、「今」ではない。</b>層2.5の棄却条件として直接実装できる。日付・期日・サイクル名を1つも含まない「今」の文は棄却する。</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" aria-label="今の5形式">
+  <p class="eyebrow">02 — 「今」の5形式 / タブで切替</p>
+  <h2 style="margin-bottom:16px">J軸3値は源泉の分類だった。効くのは論理形式</h2>
+  <div class="tabs" id="ttabs"></div>
+  <div class="panel" id="tpanel"></div>
+</section>
+
+<section class="slide" aria-label="形式の一覧">
+  <p class="eyebrow">03 — 5形式の対比</p>
+  <h2>原モデルが表現できたのは1つ半だった</h2>
+  <table>
+    <thead><tr><th>形式</th><th>必要な日付</th><th>逃した場合</th><th>原モデルでの扱い</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">A 閉扉</th><td>終端日</td><td>不可逆</td><td class="hit">J=外から期限が来る（唯一表現できていた）</td></tr>
+      <tr><th scope="row">B 開扉</th><td>次の窓の開閉日／待ち時間</td><td>次の周回まで待つ</td><td class="bad">表現できない</td></tr>
+      <tr><th scope="row">C 逆算</th><td>着手期限日（終端−LT）</td><td>終端に間に合わない</td><td class="bad">表現できない</td></tr>
+      <tr><th scope="row">D 漸増</th><td>次の段の日付</td><td>段が上がる</td><td class="miss">J=放っておくと悪化（段の日付を要求していない）</td></tr>
+      <tr><th scope="row">E 禁制</th><td>解禁日</td><td>損失を被る</td><td class="bad">表現できない。しかも符号が逆</td></tr>
+    </tbody>
+  </table>
+  <div class="cols cols-2" style="margin-top:22px">
+    <div class="card" style="border-color:var(--crim-line);background:var(--crim-soft)">
+      <h3 style="color:var(--crim)">E 禁制 ― 負の「今」の発見</h3>
+      <p class="note" style="margin:0;color:#5E1F1F">中小企業調査の結論：<b>補助金は「今買う理由」ではなく「今はまだ買うな、という理由」として機能している。</b>買い手が「補助金を使いたい」と言った瞬間、受注時期は交付決定日に固定され、売り手のコントロールを離れる。ものづくり補助金なら本日検討開始→合法的に発注できるのは2027年春。</p>
+    </div>
+    <div class="card">
+      <h3>C 逆算 ― ④が最も頻繁に失敗する形式</h3>
+      <p class="note" style="margin:0">期限そのものは遠い。買い手は遠い終端日を見て「まだ先だ」と言う。示すべきは<b style="color:var(--ink)">着手期限日</b>。SAP ECC（2027年12月末）は移行に2〜3年かかるため、2026年8月時点で<b style="color:var(--crim)">すでに徒過している</b>。</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" aria-label="消去次元の定義">
+  <p class="eyebrow">04 — ⑤の統合 / 消去次元とは何か</p>
+  <h2>「できる」と「解ける」の乖離</h2>
+  <p style="max-width:64ch">内製・帰責・権限に共通するのは、いずれも<b>技術的にはできる</b>ことです。だが内製は「今その手が他に必要とされている」、帰責は「やっても責めが移らない」、権限は「決めてよい人が違う」。手段 M が Q に作用しても Q が消えない。理由は M の性能ではなく、<b>M から Q への到達経路に、性能とは別の関門があるから</b>です。</p>
+  <p class="pull" style="max-width:56ch">消去次元 D とは、手段 M が問題 Q を解けない理由の型である。より正確には、M から Q への到達を阻む拘束が、どこに所在するか。</p>
+  <div class="card" style="border-color:var(--accent-line);background:var(--accent-soft)">
+    <p style="margin:0;font-size:16px;line-height:1.85;color:#2F2570"><b>⑤の失敗は、届かないことを立証できないことではない。次元を取り違えることである。</b><br>そして次元を誤った消去は、単に通じないのではなく——<b>侮辱として届く</b>。内製組織にD1（能力）を向けたときに起きるのがこれです。</p>
+  </div>
+</section>
+
+<section class="slide" aria-label="5つの消去次元">
+  <p class="eyebrow">05 — 消去次元 / タブで切替</p>
+  <h2 style="margin-bottom:16px">拘束はどこに所在するか</h2>
+  <div class="tabs" id="dtabs"></div>
+  <div class="panel" id="dpanel"></div>
+</section>
+
+<section class="slide" aria-label="逆転">
+  <p class="eyebrow">06 — 二つの逆転</p>
+  <h2>D2とD3では、能力の証明が採用を妨げる</h2>
+  <div class="cols cols-2" style="margin-bottom:22px">
+    <div class="card" style="border-color:var(--crim-line);background:var(--crim-soft)">
+      <h3 style="color:var(--crim)">D2 帰責 ― 性能が上がるほど不利</h3>
+      <p class="note" style="margin:0;color:#5E1F1F">障害時に当局へ「直ちに」報告する義務は金融機関にある（監督指針 III-3-7-1-3）。顧客苦情の処理主体も銀行（銀行法施行規則13条の6の8）。<b>ベンダーの技術力が高いほど中身がブラックボックス化し、買い手は説明できなくなる。</b>だから性能の証拠を積むほど通らない。効くのは責任分界表と監査権条項。</p>
+    </div>
+    <div class="card" style="border-color:var(--teal-line);background:var(--teal-soft)">
+      <h3 style="color:var(--teal)">D3 権限 ― 精度が上がるほど不利</h3>
+      <p class="note" style="margin:0;color:#2C514E">判断代替に近づくほど独占業務規制に触れる（医師法17条、建築士法3条、弁護士法72条）。だから製品仕様が<b>「判断しない」方向に設計される</b>。税理士法52条には報酬要件がなく、<b>無償でも税理士業務は行えない</b>ためフリーミアム設計が制度的に成立しない。</p>
+    </div>
+  </div>
+  <p class="pull" style="max-width:58ch">責任は外部化できないが、作業は外部化できる。日本の業法・監督法はほぼ例外なく、実行行為の委譲と責任・判断権限の保持を分離して設計されている。</p>
+  <div class="card">
+    <h3>突破が起きた条件</h3>
+    <p class="note" style="margin:0">ISMAP、法務省のリーガルテック・ガイドライン、個情委Q&amp;A Q7-53のクラウド例外、金融庁の責任共有モデル明記、特定行為研修制度、監理技術者補佐制度——<b style="color:var(--ink)">いずれも「行政が責任分界を先に引いた」ことが採用の条件になっている</b>。ベンダーが優秀だったから通ったのではない。</p>
+  </div>
+</section>
+
+<section class="slide" aria-label="業界マトリクス">
+  <p class="eyebrow">07 — 業界 × 消去次元</p>
+  <h2>どの業界に、どの経緯で、どの次元が立つか</h2>
+  <table>
+    <thead><tr><th>業界</th><th style="width:150px">支配 / 従</th><th>発生の経緯</th></tr></thead>
+    <tbody id="matrix"></tbody>
+  </table>
+</section>
+
+<section class="slide" aria-label="中心命題の追記">
+  <p class="eyebrow">08 — 中心命題への追記</p>
+  <h2>2つ足す。既存は保存する</h2>
+  <div class="card" style="margin-bottom:18px;border-color:var(--ochre-line);background:var(--ochre-soft)">
+    <div class="note" style="font-family:var(--fm);font-size:11.5px;letter-spacing:.1em;color:var(--ochre);margin-bottom:8px">追記1 — ④より</div>
+    <p style="margin:0 0 10px;font-family:var(--fd);font-size:22px;line-height:1.6;font-weight:700;color:#6B4C0C">否定は内から、暦は外から。</p>
+    <p class="note" style="margin:0;color:#6B4C0C">②の欠如は買い手の世界の内から引き出さねばならない。④の「今」は買い手の世界の外から持ち込まねばならない。ただし持ち込めるのは日付だけ。したがって④の「今」は①〜③と発話行為の種類が違う——記述でも主張でもなく、指示である。</p>
+  </div>
+  <div class="card" style="border-color:var(--accent-line);background:var(--accent-soft)">
+    <div class="note" style="font-family:var(--fm);font-size:11.5px;letter-spacing:.1em;color:var(--accent);margin-bottom:8px">追記2 — ⑤より</div>
+    <p style="margin:0 0 10px;font-family:var(--fd);font-size:22px;line-height:1.6;font-weight:700;color:#2F2570">合意が資本であるなら、資本には通貨の単位がある。</p>
+    <p class="note" style="margin:0;color:#5F55A8">D1（能力）の証拠は、D2（帰責）の買い手には支払えない。D3（権限）の買い手には、精度の証拠がむしろ負債になる。⑤の失敗は立証の失敗ではなく、通貨の取り違えである。</p>
+  </div>
+</section>
+
+<section class="slide" aria-label="軸の改訂">
+  <p class="eyebrow">09 — 軸の改訂と依存規則</p>
+  <h2>J軸を廃止しT軸へ。D軸を新設。依存規則を6本</h2>
+  <div class="cols cols-2" style="margin-bottom:20px">
+    <div class="card">
+      <h3>T軸 ―「その日を過ぎるとどうなりますか」</h3>
+      <p class="note" style="margin:0">A閉扉／B開扉／C逆算／D漸増／E禁制。複数選択可。<b style="color:var(--ink)">各値は必須の日付フィールドを伴い、空欄なら値を選べない。</b>これで「日付のない今」を構造的に排除する。</p>
+    </div>
+    <div class="card">
+      <h3>D軸 ―「その手段は、なぜこの問題を解けないのですか」</h3>
+      <p class="note" style="margin:0">D1能力／D2帰責／D3権限／D4手続／D5資源配分。複数選択可。<b style="color:var(--ink)">既定は業界から自動推定</b>し、営業は上書きのみ。</p>
+    </div>
+  </div>
+  <h3 style="margin-bottom:6px">依存規則</h3>
+  <div class="rule-row"><div class="rid">R1</div><div><b>D5 を選んだら、T軸の値と日付が必須。</b>D5の消去は時限つきでしか成立しない（「できる。ただし今期はできない」）。日付のないD5は「外注しませんか」に落ちる</div></div>
+  <div class="rule-row"><div class="rid">R2</div><div>D2 → 責任分界表ブロックが必須点灯し、<b>性能訴求ブロックが減格</b>される</div></div>
+  <div class="rule-row"><div class="rid">R3</div><div>D3 → 「最終判断は資格者が行う」仕様固定ブロックが必須点灯。<b>精度訴求は禁止</b></div></div>
+  <div class="rule-row"><div class="rid">R4</div><div>D4 → <b>5b（前例・実績）が必須点灯</b>。前例が空欄なら生成を停止し、営業に棚卸を要求する</div></div>
+  <div class="rule-row"><div class="rid">R5</div><div>T-E（禁制）→ ⑥のクロージングを「発注」から<b>「申請／計画認定／交付決定待ち」に置換</b>。禁制の明示ブロックを点灯</div></div>
+  <div class="rule-row"><div class="rid">R6</div><div>T軸のいずれの値も必須フィールドを満たさないとき、<b>④の生成を停止</b>（第2版のゼロ検出警告を形式レベルに引き上げ）</div></div>
+  <p class="note" style="margin-top:18px"><b style="color:var(--ink)">ページ数制限は解除。</b>生成範囲を「全19ページ中のページ1〜7」に限る制約を撤廃し、ブロックは必要な数だけ立て、ページ数は従属変数とする。新設ブロックは 19禁制の明示／20責任分界表／21判断権の所在／22機会費用、および 5b前例・実績の格上げ。</p>
+</section>
+
+<section class="slide" aria-label="次の工程">
+  <p class="eyebrow">10 — 次に走らせていること</p>
+  <h2>リクナビ25業種 × 5商材のマルチエージェント検証</h2>
+  <p class="lead" style="margin-bottom:20px">改訂した中心命題・T軸・D軸によって生成されるソリューション営業（IT／広告／コンサル／人材／オフィス用品）の文言が、25の業種区分それぞれで妥当かを、業種ごとのエージェントで検証します。</p>
+  <div class="cols cols-3">
+    <div class="card"><h3>見るところ 1</h3><p class="note" style="margin:0">その業種にT軸のどの形式が実在するか。日付が本当に取れるか。取れない業種があれば、その業種では④が成立しない</p></div>
+    <div class="card"><h3>見るところ 2</h3><p class="note" style="margin:0">D軸の業界既定が正しいか。5商材のうちどれかで次元が変わるか（同じ業種でも、人材サービスを売るときとオフィス用品を売るときで拘束の所在は違うはず）</p></div>
+    <div class="card"><h3>見るところ 3</h3><p class="note" style="margin:0">オフィス用品のような低単価・低関与商材で、6段の階段そのものが過剰にならないか。縮退規則が商材側の軸でも働く必要があるか</p></div>
+  </div>
+  <p class="note" style="margin-top:22px">この途中経過は、使用量の区切りとして出力したものです。検証の結果は別レポートで報告します。</p>
+</section>
+
+</div>
+
+<nav class="nav" aria-label="スライド操作">
+  <button type="button" class="move" id="prev">← 前</button>
+  <button type="button" class="move" id="next">次 →</button>
+  <div class="dots" id="dots"></div>
+  <span class="counter" id="counter"></span>
+</nav>
+
+<script>
+var TFORMS=[
+{k:"A",nm:"閉扉",en:"Foreclosure",logic:"∃t*: t > t* → ¬possible(P)",sub:"その日を過ぎると、もう入れない",body:"不可逆な扉が閉まる。最強で、反論不能。日付が外部で固定されている。",ev:"終端日そのもの。それ以上の論証を要さない。",ex:[["Windows Server 2012/R2 ESU 完全終了","2026年10月13日（以後、有償延命手段もない）"],["Windows Server 2016 延長サポート終了","2027年1月12日"],["SAP ERP 6.0 EhP6-8 標準保守終了","2027年12月31日（有償で2030年末まで）"],["三菱電機 MELSEC-Q 一部機種 修理対応終了","2029年9月28日"],["インボイス経過措置 80%→50%","2026年10月1日（2029年10月1日に特例消滅）"],["令和8年度診療報酬改定 経過措置 第一波","2026年9月30日"],["電子処方箋 導入補助の導入期限","2026年9月30日"],["全銀システム RC17利用機関の移行必須","2027年11月"],["事業承継税制 特例承継計画の提出期限","2027年9月30日"]]},
+{k:"B",nm:"開扉",en:"Window",logic:"possible(P) only if t ∈ [t₁, t₂]（窓は周期的に再来）",sub:"その期間しか入れない。逃せば次の周回まで待つ",body:"原モデルに完全に欠けていた形式。強さは終端日ではなく〈次の窓までの距離〉で決まる。公共なら12か月、小売なら6か月、届出なら1か月。",ev:"次の窓の開閉日と、逃した場合の待ち時間。待ち時間の長さが、そのまま「今」の強さになる。",ex:[["自治体の予算編成（位相A＝仕様形成期）","前年度7月〜11月中旬 / 逃すと12か月待ち"],["3月決算企業の設備投資（概算見積）","7〜9月、12月に役員承認確定 / 12か月"],["診療報酬の施設基準届出","毎月（月末受理→翌月1日算定）/ 1か月"],["地域医療介護総合確保基金 事業提案","都道府県により6〜9月 / 12か月"],["小売・物流の本番切替","1月中旬〜2月／5月中旬〜7月中旬／9〜10月 / 6か月"],["補助金の公募回次","ものづくり系は約3か月ごと / 3か月"]],note:"制度事実：「入札の公告等又は契約の締結は予算執行の手続に含まれるものであり、事業執行年度の前年度において予算の根拠なくこれを行うことはできない」（規制改革会議に対する国の回答）。予算がないは交渉上の言い訳ではなく権限の不存在である。"},
+{k:"C",nm:"逆算",en:"Backward induction",logic:"goal(T) ∧ leadtime(L) → start ≤ T − L",sub:"ゴールが遠いので、着手はこの日",body:"④が最も頻繁に失敗する形式。期限そのものは遠い。買い手は遠い期限を見て「まだ先だ」と言う。売り手が示すべきは終端日ではなく着手期限日。",ev:"終端日 − リードタイム = 着手期限日。リードタイムの根拠を同時に示さないと成立しない。",ex:[["自動車SOP逆算","AS −24M／FS −18M／CV −12M／MPT −2M。発注はSOP−12〜18か月"],["SAP ECC → S/4HANA","終端2027年12月31日、LT 2〜3年 → すでに徒過"],["FATF第5次対日相互審査","オンサイト2028年6月、書面審査は2027年秋"],["物流効率化法 初回定期報告","2027年7月末に前年度実績 → 2026年度中に改善しないと数字が出ない"],["Windows Server 2016 更改","2027年1月12日、基幹刷新12〜18か月＋繁忙期切替不可 → 着手2026年10〜11月"],["統合ものづくり補助金を使う設備","締切10/30→採択2027年1月→交付決定 → 発注は2027年春以降"]]},
+{k:"D",nm:"漸増",en:"Ratchet",logic:"cost(t+1) > cost(t)（変化は離散的）",sub:"毎年悪くなる。ただし段になっている",body:"原モデルの「放っておくと悪化」はこれだが、連続的悪化として扱っていた。実際に効くのは〈次の段の日付〉。段の日付が言えなければ、形式Dは背景に落ちる。",ev:"次の段が来る日付と、そこでの増分。「毎年悪化します」だけでは形式Dではない。",ex:[["最低賃金","毎年10月発効。2026年度目安は全国加重平均1,176円（+55円、+4.9%）"],["化学物質規制（リスクアセスメント対象物）","毎年4月1日に拡大。2025年 約1,600 → 2026年 約2,300（+約700）"],["インボイス経過措置","2026年10月1日 80%→50%、2029年10月1日 特例消滅"],["GX-ETS","2026年度＝計測期間 → 2027年度＝最初の義務的割当 → 2028年度＝賦課金"],["育成就労制度（技能実習廃止）","2027年4月1日施行。本人意向の転籍が可能に"],["技能者の定年退職","段の日付を持たない → 形式Dとして成立しない"]]},
+{k:"E",nm:"禁制",en:"Prohibition",logic:"¬permitted(buy at t) ∨ penalty(buy at t)",sub:"今は買えない／今買うと損をする",body:"原モデルが持たなかった、負の「今」。④を「必然化」としてしか設計していないため、制度が命じる「今であってはならない」を表現できない。中小企業向け商談で⑥が凍結する構造の正体。",ev:"解禁日と、禁制を破った場合の損失。隠すと後で信用を失い、正直に書くと信用を作る。",ex:[["補助金全般","交付決定日前の発注・契約に係る費用は補助対象外（手引き原文）"],["中小企業経営強化税制","設備の取得前に経営力向上計画の認定が必要"],["特定生産性向上設備等投資促進税制","設備取得前に経済産業大臣の確認が必要"],["地域医療介護総合確保基金","交付決定前の発注は補助対象外"],["公共調達","予算の根拠なく公告・契約はできない（法的不能）"],["小売・物流の繁忙期","11月中旬〜1月上旬／2月下旬〜4月上旬は本番切替不可"],["経済安全保障（基幹インフラ）","事前届出＋30日〜最大4か月の導入等禁止期間"]]}
+];
+
+var DIMS=[
+{k:"D1",nm:"能力",en:"capacity",cls:"d1",loc:"手段の内部",sub:"人海戦術では量が足りない",body:"原モデルが唯一持っていた次元。反論のされ方は「もっと人を入れれば」「もっと頑張れば」。",ev:"スケールの数字、限界の構造（なぜ頭打ちなのか）",no:"—",inst:"改善基準告示により、トラック運転者の拘束時間は労使協定でも連続3か月までしか延長できない。2024年4月以降、物流の繁忙期は法的に「気合いで乗り切る」ことが不可能になった。D1が制度に裏打ちされた稀な例。"},
+{k:"D2",nm:"帰責",en:"accountability",cls:"d2",loc:"手段と買い手の関係",sub:"外に出しても、当局に説明するのは私",body:"手段の性能が上がるほど拘束が強まる。ベンダーの技術力が高いほど中身がブラックボックス化し、買い手は当局・顧客に説明できなくなる。能力の証拠を積むほど不利になる。",ev:"責任分界表、監査権条項、報告義務の履行可能性、第三者認証、データ廃棄の取決め",no:"性能・精度（積むほど不利）",inst:"銀行法施行規則13条の6の8（苦情処理は銀行の義務）／主要行等向け監督指針 III-3-7-1-2(8)③（二段階以上の再委託まで管理対象）／同 III-3-7-1-3（障害は直ちに当局報告）／個人情報保護法25条（委託先監督義務。25条は委託を禁じていない、監督責任が委託元に発生するだけ）／同28条（越境移転）／医療法15条／37号告示。突破の設計＝個情委Q&amp;A Q7-53のクラウド例外、金融庁ガイドライン2.3.4.5の責任共有モデル、IPAアジャイル開発版モデル契約。"},
+{k:"D3",nm:"権限",en:"authority",cls:"d3",loc:"決定の主体",sub:"先生に聞かないと",body:"精度が上がるほど採用可能性が下がる。判断代替に近づくほど独占業務規制に触れる。だから製品仕様が「判断しない」方向に設計される。買い手の意思決定者が購買担当ではなく顧問弁護士・顧問税理士・管理建築士・医師になる。",ev:"「最終判断は資格者が行う」という仕様の固定、手順書というインターフェース、資格者を介在させたハイブリッド",no:"精度・判定能力",inst:"医師法17条（医業独占）／保助看法37条「医師の指示があつた場合を除くほか」／同37条の2（特定行為でさえ医師が作成する手順書の枠内。タスクシフトは責任を分散させる制度ではなく、責任は医師のまま実行者を増やす制度）／医療法1条の4第2項（説明義務の名宛人は医療の担い手）／建築士法3条・24条（外注か内製かの判断自体が管理建築士の法定職務）／建設業法7条2号・26条、宅建業法31条の3（専任義務。人数が減らないのでROIが構造的に成立しない）／弁護士法72条／税理士法52条（報酬要件なし＝無償でも不可）／公認会計士法47条の2。"},
+{k:"D4",nm:"手続",en:"procedure",cls:"d4",loc:"決定の正当化",sub:"前例がない",body:"買い手にとっての合理性が「効果最大化」ではなく「事後に説明できること」に置き換わる。怠慢でも保守性でもなく、審査構造の合理的帰結。これがブロック5b（前例・実績）の正体。",ev:"他社事例＝前例そのもの、制度上の後ろ盾（ISMAP登録、ガイドライン条項番号、認定制度）",no:"効果の主張のみ",inst:"会計法29条の3・地方自治法234条（随契は法定の例外）／同施行令167条の2第1項第2号「契約の性質又は目的が競争入札に適しない」——これを職員が文書で立証しなければならない。「前例がない」の正体は保守性ではなく、随意契約の法的根拠を書けないこと／会計検査院の検査の観点は正確性・合規性・経済性・効率性・有効性で、合規性が筆頭。突破の入口＝施行令167条の2第1項第4号（新商品生産者・新役務提供者の認定）は「前例のなさ」を随契根拠に変える唯一の入口。"},
+{k:"D5",nm:"資源配分",en:"allocation",cls:"d5",loc:"手段の外部（買い手の資源）",sub:"作れないとは言わせない。作らない判断をするのは我々だ",body:"内製に対する唯一の非侮辱的な消去次元。D1で内製を消去すると、吸収能力論により〈提案を評価する能力そのものを否定する自己矛盾〉に陥る。D5なら内製の正しさを一切否定しない。「代替→加速」の正体は、消去次元をD1からD5へ移すこと。",ev:"機会費用（要員を競争領域／SDVへ）、人材需給、内製化の未達データ、維持保守比率",no:"能力の否定（自己矛盾を起こす）",inst:"IPA DX動向2025：「内製化済み」は日本16.7% / 米34.8% / 独34.0%。「内製化を進めている」は日本45.8% / 米52.9%で大差ない → 日本企業は内製を志向しているが到達していない状態に滞留。障害は「人材の確保や育成」が突出。DX人材の質「過不足なし」は日本3.8% / 米52.9%。IT人材は事業会社34.6万 vs IT企業107.9万。2030年に最大79万人不足。新規:維持保守は地域銀行3:7、信用金庫1:9。理論的根拠＝Cohen &amp; Levinthal の吸収能力／ロックアウト、羽田(2016)「能力構築としての内部化」。<b>依存：D5による消去は必ず時限つき。T軸の日付がなければ「外注しませんか」に落ちる。</b>"}
+];
+
+var MATRIX=[
+["大手製造（自動車・電機・機械）","D5","D1","内製主義はTPSの「自工程完結」＝品質責任の思想から来た（トヨタ公式の生産方式説明に自前主義・内製比率の記述はない）。だから外部委託の提案はコスト論では反論されず「品質責任を誰が持つのか」の形で反論される。近年SDVで「競争領域と協調領域の再設計」が業界の公式語彙になり、D5による消去が正統化された"],
+["情報システム（大企業情シス）","D5","D2","IT人材のベンダー偏在（34.6万 vs 107.9万）。内製は未達の目標であり、障害は方針ではなく人。D1で攻めると目標そのものの否定になる"],
+["金融（銀行・保険・証券）","D2","D4","銀行法施行規則13条の6の8で苦情処理が銀行の義務。二段階以上の再委託まで管理対象。障害は直ちに当局報告。加えて減点主義と監査指摘でD4が重畳。信金はIT予算の9割が維持保守で新規の余地が構造的にない"],
+["医療・病院","D3","D2","医師法17条の医業独占。保助看法37条「医師の指示がある場合を除くほか」。特定行為でさえ医師が作成する手順書の枠内。説明義務の名宛人は「医療の担い手」。外部者は診療プロセスの内側に法的接点を持てない"],
+["建設・修理・メンテナンス／不動産","D3","D4","建築士法3条の設計・工事監理独占、24条で外注か内製かの判断自体が管理建築士の法定職務。建設業法・宅建業法の専任義務により効率化しても人数が減らない＝ROIが構造的に成立しない"],
+["官公庁・行政・教育・警察","D4","D5","会計法29条の3・地方自治法234条で随契は法定の例外。「前例がない」＝施行令167条の2第1項第2号を職員が文書で立証できない。会計検査院の観点で合規性が筆頭。担当職員に決めてよい範囲がほぼない"],
+["法律／会計・税務","D3","—","弁護士法72条、税理士法52条（報酬要件なし＝無償でも不可）、公認会計士法47条の2。精度が上がるほど採用可能性が下がる逆転。製品仕様が「判断しない」方向に設計される"],
+["小売・卸売・商社","D5","D3","商社は「ものを作らない代わりに経営を内製する」。事業投資に人を送り込み経営に入ることが投資ファンドとの差別化。「オペレーションを代行します」は差別化の否定"],
+["運輸・交通・物流／飲食／生活関連サービス","D1","契約制約","珍しくD1が素直に効く。改善基準告示で繁忙は連続3か月までしか延長できず、法的に「気合いで乗り切る」が不可能。ただし3PLは契約期間（1〜2年＋自動更新）＜償却期間（5〜10年）の非対称があり、消去できても買えない"],
+["人事・人材サービス","D2","D3","37号告示：発注者は請負労働者に直接指示できない。業務遂行方法・労働時間・配置の指示は請負事業主が行わなければならない。伴走型・アジャイル型ほど指揮命令の外形を帯びる＝サービス品質を上げる努力がそのままリスクを上げる"],
+["中小企業一般","D1","D5(資金)","決裁権限は社長単独でも、制度が第三者を挟む（商工会の様式4、工業会証明書、税理士の事前確認、経済産業局、信用保証協会、50万円以上は相見積2社必須）"]
+];
+
+(function(){
+var slides=[].slice.call(document.querySelectorAll('.slide'));
+var dots=document.getElementById('dots'),counter=document.getElementById('counter'),idx=0;
+slides.forEach(function(s,i){var b=document.createElement('button');b.type='button';
+  b.setAttribute('aria-label',(i+1)+'枚目へ');b.addEventListener('click',function(){go(i);});dots.appendChild(b);});
+function go(n){idx=Math.max(0,Math.min(slides.length-1,n));
+  slides.forEach(function(s,i){s.classList.toggle('is-active',i===idx);});
+  [].forEach.call(dots.children,function(d,i){d.setAttribute('aria-current',i===idx?'true':'false');});
+  counter.textContent=String(idx+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+  window.scrollTo(0,0);}
+document.getElementById('prev').addEventListener('click',function(){go(idx-1);});
+document.getElementById('next').addEventListener('click',function(){go(idx+1);});
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='BUTTON'&&(e.key===' '||e.key==='Enter'))return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(idx+1);}
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(idx-1);}});
+go(0);
+
+/* T形式タブ */
+var tt=document.getElementById('ttabs'),tp=document.getElementById('tpanel'),tcur=0;
+TFORMS.forEach(function(f,i){var b=document.createElement('button');b.type='button';
+  b.innerHTML='<span class="k">形式 '+f.k+'</span>'+f.nm;
+  b.addEventListener('click',function(){tcur=i;trender();});tt.appendChild(b);});
+function trender(){
+  [].forEach.call(tt.children,function(c,i){c.setAttribute('aria-pressed',i===tcur?'true':'false');});
+  var f=TFORMS[tcur];
+  var rows=f.ex.map(function(e){return '<tr><th scope="row">'+e[0]+'</th><td>'+e[1]+'</td></tr>';}).join('');
+  tp.innerHTML='<div class="ph">'+f.k+'｜'+f.nm+' — '+f.sub+'</div>'+
+    '<div class="logic">'+f.logic+'</div>'+
+    '<p class="kv"><b>性質</b>'+f.body+'</p>'+
+    '<p class="kv"><b>証拠の型</b>'+f.ev+'</p>'+
+    (f.note?'<p class="kv" style="color:var(--crim)"><b style="color:var(--crim)">制度事実</b>'+f.note+'</p>':'')+
+    '<table><thead><tr><th>実例</th><th>日付</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+trender();
+
+/* D次元タブ */
+var dt=document.getElementById('dtabs'),dp=document.getElementById('dpanel'),dcur=0;
+DIMS.forEach(function(d,i){var b=document.createElement('button');b.type='button';
+  b.innerHTML='<span class="k">'+d.k+'</span>'+d.nm;
+  b.addEventListener('click',function(){dcur=i;drender();});dt.appendChild(b);});
+function drender(){
+  [].forEach.call(dt.children,function(c,i){c.setAttribute('aria-pressed',i===dcur?'true':'false');});
+  var d=DIMS[dcur];
+  dp.innerHTML='<div class="ph">'+d.k+'｜'+d.nm+'（'+d.en+'）</div>'+
+    '<div class="logic">拘束の所在 ＝ '+d.loc+'</div>'+
+    '<p class="kv"><b>現場での言い方</b>「'+d.sub+'」</p>'+
+    '<p class="kv"><b>性質</b>'+d.body+'</p>'+
+    '<p class="kv"><b>効く証拠</b>'+d.ev+'</p>'+
+    '<p class="kv" style="color:var(--crim)"><b style="color:var(--crim)">効かない証拠</b>'+d.no+'</p>'+
+    '<p class="kv" style="margin-bottom:0"><b>制度的根拠 / データ</b>'+d.inst+'</p>';
+}
+drender();
+
+/* マトリクス */
+var mb=document.getElementById('matrix');
+MATRIX.forEach(function(r){
+  var tr=document.createElement('tr');
+  var cls=r[1].toLowerCase();
+  var sub=r[2].indexOf('D')===0?'<span class="dtag '+r[2].substring(0,2).toLowerCase()+'">'+r[2]+'</span>':'<span class="note">'+r[2]+'</span>';
+  tr.innerHTML='<th scope="row">'+r[0]+'</th>'+
+    '<td><span class="dtag '+cls+'">'+r[1]+'</span> '+sub+'</td>'+
+    '<td class="miss">'+r[3]+'</td>';
+  mb.appendChild(tr);
+});
+})();
+</script>
+</html>
