@@ -213,7 +213,13 @@ class Declared:
     s3_form_mapping: Optional[str] = None        # A11：新語 ↔ κ_n 側の既存語
     s4_declares_repetition: Optional[bool] = None
     s4_period_months: Optional[int] = None
-    s6_period_months: Optional[int] = None
+    s6_period_months: Optional[int] = None        # ⑥の課金・工数の周期。A26 以降 R10a では使わない
+    # A26（第12.3版）：R10a が比べるべきは課金周期ではなく〈提案後に④の問題が残る周期〉である。
+    # 第12.2版の再走行で、8体中6体が課金周期ではなくこちらで答えていた。機械だけが課金周期を見ていた。
+    #   偽陰性：単発（課金 0）と申告すれば比較対象外になり、翌年問題が戻るかを一切検査しない
+    #   偽陽性：毎年止め続けるサービスは課金が年額というだけで停止する
+    # 仕組み・様式・型が買い手側に残って再発しないなら 0。
+    s6_residual_period_months: Optional[int] = None
     s5_is_constraint_disclosure: Optional[bool] = None
     s6_ends_imperative: Optional[bool] = None
     s6_contains_promise: Optional[bool] = None
@@ -1303,19 +1309,36 @@ def check_declared(dec: Declared, kn: Set[Kappa], kept_unit: bool,
     EXPR = expr if expr is not None else EXPR_OK      # 第12.1版：商材座標の表を受け取れる
     has4, has2, has3 = "④" in stages, "②" in stages, "③" in stages
 
-    # R10a 反復の再生産（0 は「反復しない」。比較の定義域に入れない）
+    # R10a 反復の再生産（A26：比較対象は課金周期ではなく〈提案後に問題が残る周期〉）
+    #
+    # 旧実装は s6_period_months（課金周期）と s4_period_months を比べていた。
+    # 課金周期は「問題が残るか」と直交しているので、両方向に誤った。第12.2版の実測：
+    #   ・単発と申告した4件は比較対象外（info）になり、問題の再発は一切検査されなかった
+    #   ・E2-P2・R2-P2 は本文で「翌年以降に同じ手数を積み直しません」と書いているのに停止した
+    # 指示文（「同じ周期で同じ問題を作り直さない」）のほうが正しかったので、直すのは検査側である。
     if has4:
         if dec.s4_declares_repetition is None:
             j.append(Judgment("S4_REPETITION_UNDECLARED"))
         elif dec.s4_declares_repetition:
-            if dec.s4_period_months is None or dec.s6_period_months is None:
+            s4p, res = dec.s4_period_months, dec.s6_residual_period_months
+            if s4p is None:
                 f.append(Finding("R10a_PERIOD_UNDECLARED", "stop"))
-            elif dec.s6_period_months == 0 or dec.s4_period_months == 0:
-                f.append(Finding("R10a_NOT_PERIODIC", "info",
-                                 f"s4={dec.s4_period_months}m s6={dec.s6_period_months}m"))
-            elif dec.s6_period_months <= dec.s4_period_months:
+            elif s4p == 0:
+                # ④が反復を宣言しているのに周期が 0＝反復しない。矛盾ではなく未定義（N2）
+                f.append(Finding("R10a_NOT_PERIODIC", "info", f"s4={s4p}m"))
+            elif res is None:
+                # 旧欄（課金周期）へは落とさない。落ちる先が誤った物差しだから（A25 の教訓）
+                j.append(Judgment("R10a_RESIDUAL_UNDECLARED", f"s4={s4p}m"))
+            elif res == 0 or res > s4p:
+                f.append(Finding("R10a_RESIDUAL_OK", "info", f"s4={s4p}m 残存={res}m"))
+                # 旧 R10a なら止まっていた形＝偽陽性の正体。数えられるように残す
+                s6p = dec.s6_period_months
+                if s6p is not None and 0 < s6p <= s4p:
+                    f.append(Finding("R10a_CHARGE_PERIODIC", "info",
+                                     f"課金={s6p}m ≤ s4={s4p}m だが残存={res}m"))
+            else:
                 f.append(Finding("R10a_REPRODUCES_PROBLEM", "stop",
-                                 f"s4={dec.s4_period_months}m s6={dec.s6_period_months}m"))
+                                 f"s4={s4p}m 残存={res}m"))
 
     # R10b 単位。A6：禁じるのは置換であって併記ではない
     # A25b：「⑥に単位が無い」の停止は check_unit_presence 側の ABSENT 一本に寄せた。

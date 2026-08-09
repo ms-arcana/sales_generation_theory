@@ -82,6 +82,7 @@ COPY = {"②": "人日で数え直します", "③": "切替こぼれ（御社�
         "⑥": "180〜260人日のうち110人日。手元資金は初年度820万円減、回収3.1年"}
 BASE = dict(s2_unit="人日", s2_from_unit="人", s3_form_mapping="切替こぼれ＝応援労務費",
             s4_declares_repetition=True, s4_period_months=6, s6_period_months=0,
+            s6_residual_period_months=0,          # A26：提案後に問題は残らない
             s5_is_constraint_disclosure=True, s6_ends_imperative=False,
             s6_contains_promise=False, s6_recasts_unit=True,
             s6_kappa="財源", s6_coverage_full=False, s6_coverage_disclosed=True)
@@ -96,8 +97,9 @@ v = val()
 check("A6 単位を保持したまま κ_n の量を併記すれば通る（第6版の検査に限る）",
       not [f for f in v["findings"] if f.level == "stop"],
       [f.code for f in v["findings"] if f.level == "stop"])
-check("R10a 単発は反復の再生産にしない",
-      any(f.code == "R10a_NOT_PERIODIC" for f in v["findings"]))
+check("R10a 提案後に問題が残らないなら通る（A26 以降）",
+      any(f.code == "R10a_RESIDUAL_OK" for f in v["findings"]),
+      [f.code for f in v["findings"]])
 
 v = val(s6_kappa="実務性")
 check("A5 ⑥が κ_n で読めなければ停止",
@@ -119,8 +121,8 @@ v = val(s6_kappa=None)
 check("A5 未宣言は停止ではなく要判断へ",
       any(j.code == "A5_KAPPA_UNDECLARED" for j in v["needs_judgment"]))
 
-v = val(s4_period_months=12, s6_period_months=12)
-check("R10a 同周期で反復させるなら停止",
+v = val(s4_period_months=12, s6_residual_period_months=12)
+check("R10a 同周期で問題が戻るなら停止",
       "R10a_REPRODUCES_PROBLEM" in [f.code for f in v["findings"]])
 
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
@@ -616,6 +618,51 @@ check("A25c 英数字に埋もれた D5 は誤検出しない",
       not any(_re.search(p, "型番 SD500 の話") for p in V0_RE))
 check("A25c 従来どおり空白区切りでも検出される",
       any(_re.search(p, "これは D7a です") for p in V0_RE))
+
+print("\n── 第12.3版 A26：R10a が比べるのは課金周期ではなく〈提案後に問題が残る周期〉")
+# 第12.2版の実測：旧 R10a は両方向に誤っていた。両方向とも回帰に入れる。
+
+# 偽陰性側 ── 単発（課金 0）でも、問題が翌年戻るなら止まらねばならない
+v = val(s4_period_months=12, s6_period_months=0, s6_residual_period_months=12)
+check("A26 単発の契約でも、問題が同じ周期で戻るなら停止する（旧 R10a は素通りさせていた）",
+      "R10a_REPRODUCES_PROBLEM" in [f.code for f in v["findings"]],
+      [f.code for f in v["findings"]])
+
+# 偽陽性側 ── 毎年課金でも、問題が残らないなら通らねばならない
+v = val(s4_period_months=12, s6_period_months=12, s6_residual_period_months=0)
+check("A26 毎年課金でも、問題が残らないなら通る（旧 R10a はここで停止していた）",
+      "R10a_REPRODUCES_PROBLEM" not in [f.code for f in v["findings"]],
+      [f.code for f in v["findings"]])
+check("A26 その場合は、旧 R10a の偽陽性だったことが註記に残る",
+      "R10a_CHARGE_PERIODIC" in [f.code for f in v["findings"]],
+      [f.code for f in v["findings"]])
+
+# 問題の周期より長い周期でしか戻らないなら通る
+v = val(s4_period_months=6, s6_period_months=1, s6_residual_period_months=24)
+check("A26 ④より長い周期でしか戻らないなら通る",
+      "R10a_REPRODUCES_PROBLEM" not in [f.code for f in v["findings"]],
+      [f.code for f in v["findings"]])
+
+# 未宣言のとき、旧欄（課金周期）へ落ちてはならない ── 落ちる先が誤った物差しだから
+v = val(s4_period_months=12, s6_period_months=12, s6_residual_period_months=None)
+check("A26 残存周期が未宣言なら、課金周期で代用せず要判断へ（A25 の教訓）",
+      "R10a_REPRODUCES_PROBLEM" not in [f.code for f in v["findings"]]
+      and any(x.code == "R10a_RESIDUAL_UNDECLARED" for x in v["needs_judgment"]),
+      ([f.code for f in v["findings"]], [x.code for x in v["needs_judgment"]]))
+
+v = val(s4_period_months=0, s6_residual_period_months=None)
+check("A26 ④の周期が 0（反復しない）なら、残存周期を問わず検査対象外",
+      "R10a_NOT_PERIODIC" in [f.code for f in v["findings"]]
+      and not any(x.code == "R10a_RESIDUAL_UNDECLARED" for x in v["needs_judgment"]),
+      [f.code for f in v["findings"]])
+
+v = val(s4_declares_repetition=False)
+check("A26 ④が反復を問題化していなければ、そもそも検査しない",
+      not [f for f in v["findings"] if f.code.startswith("R10a")],
+      [f.code for f in v["findings"] if f.code.startswith("R10a")])
+
+check("A26 R10a の指示文が『何が残るからか』を求めている（指示と検査の文言を揃えた）",
+      "残る" in _msg["rules"]["R10a_NO_REPRODUCE"], _msg["rules"]["R10a_NO_REPRODUCE"])
 
 print("\n── 第12.1版 G4：ν の二重の真実（旧 A と商材座標）")
 from sales_logic import (nu_of, check_axis_values, iso_norm, iso_date, blocks_on,

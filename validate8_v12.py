@@ -69,6 +69,7 @@ def to_declared(dd):
         s4_declares_repetition=dd.get("s4_declares_repetition"),
         s4_period_months=dd.get("s4_period_months"),
         s6_period_months=dd.get("s6_period_months"),
+        s6_residual_period_months=dd.get("s6_residual_period_months"),
         s5_is_constraint_disclosure=dd.get("s5_is_constraint_disclosure"),
         s6_ends_imperative=dd.get("s6_ends_imperative"),
         s6_contains_promise=dd.get("s6_contains_promise"),

@@ -37,6 +37,7 @@ const GEN_SCHEMA = {
         s4_declares_repetition: { type: ['boolean', 'null'], description: '④が「毎年」「都度」など反復性を問題化しているか' },
         s4_period_months: { type: ['integer', 'null'], description: '④で問題化した反復の周期（月）。反復しないなら 0' },
         s6_period_months: { type: ['integer', 'null'], description: '⑥の課金・工数が発生する周期（月）。単発なら 0' },
+        s6_residual_period_months: { type: ['integer', 'null'], description: '④で問題化した事象が、本提案の実施後も再発する周期（月）。仕組み・様式・型が買い手側に残って再発しないなら 0。課金周期とは別物' },
         s5_is_constraint_disclosure: { type: 'boolean', description: '⑤が能力の否定ではなく、条件下での不成立の形になっているか' },
         s6_ends_imperative: { type: 'boolean' },
         s6_contains_promise: { type: 'boolean' },
