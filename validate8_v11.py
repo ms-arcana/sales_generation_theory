@@ -7,6 +7,7 @@
   python3 validate8_v11.py run8_v11.json
 """
 import json
+from stamp import load as _load, assert_fresh as _assert_fresh   # 第12.5版：刻みの入口
 import re
 import sys
 from collections import Counter
@@ -101,7 +102,7 @@ def to_declared(dd):
 
 def main(runfile):
     run = json.load(open(runfile, encoding="utf-8"))
-    dec = {r["id"]: r for r in json.load(open(DECFILE, encoding="utf-8"))}
+    dec = {r["id"]: r for r in _load(DECFILE)}
     msgs = json.load(open("messages.json", encoding="utf-8"))
     out = []
     for cell in run:

@@ -10,9 +10,10 @@
   ・**予測は生成器に出させない**（第5版で系統的に楽観へ寄った）
 """
 import json
+from stamp import load as _load, assert_fresh as _assert_fresh   # 第12.5版：刻みの入口
 from cells8_v10 import CELLS, SELLERS, TODAY
 
-DEC = json.load(open("decisions8_v10.json", encoding="utf-8"))
+DEC = _load("decisions8_v10.json")
 MSG = json.load(open("messages.json", encoding="utf-8"))
 
 STAGE_SPEC = {

@@ -5,6 +5,7 @@
 （前回それで欠損した）。段の対応も、Σ の順序に対して位置で合わせる。
 """
 import json, re, sys
+from stamp import load as _load, assert_fresh as _assert_fresh   # 第12.5版：刻みの入口
 from sales_logic import Declared, validate_copy
 
 STAGES = ("①", "②", "③", "④", "⑤", "⑥")
@@ -33,7 +34,7 @@ OUT = "verified8_v10.json"
 
 def main(runfile):
     run = json.load(open(runfile, encoding="utf-8"))
-    dec = {r["id"]: r for r in json.load(open(DECFILE, encoding="utf-8"))}
+    dec = {r["id"]: r for r in _load(DECFILE)}
     msgs = json.load(open("messages.json", encoding="utf-8"))
     out = []
     for cell in run:

@@ -15,14 +15,14 @@ import json
 import difflib
 
 import cells8_v10 as C
-from stamp import version
+from stamp import version, load as _load, dump_stamped, assert_fresh
 
 
 def main():
-    # ── 決定表を作り直す
+    # ── 決定表を作り直す（第12.5版：刻みは C.run() の中で掛かる）
     out = C.run("decisions8_v12.json")
-    dec_new = json.load(open("decisions8_v12.json", encoding="utf-8"))
-    dec_old = json.load(open("decisions8_v10.json", encoding="utf-8"))
+    dec_new = _load("decisions8_v12.json")
+    dec_old = _load("decisions8_v10.json")
 
     print("\n══ 決定表の差分（as-run → いまのコード）")
     fields = set()
@@ -47,6 +47,8 @@ def main():
                       f"  →  {json.dumps(bo, ensure_ascii=False)[:120]}")
 
     # ── 指示文を新しい決定表から組み直す
+    # 第12.5版：組む前に、この決定表がいまのコードで計算されたものかを突き合わせる
+    assert_fresh("decisions8_v12.json")
     import prompts8_v11 as P
     P.DEC = dec_new
     for arm in P.ARMS:
@@ -56,15 +58,12 @@ def main():
             built.append({"id": rec["id"], "sigma": rec["sigma"], "arm": arm,
                           "persona": P.PERSONA[rec["id"][:2]],
                           "prompt": P.build(rec, cell, arm)})
-        json.dump(built, open(f"prompts8_v12_arm{arm}.json", "w", encoding="utf-8"),
-                  ensure_ascii=False, indent=1)
+        dump_stamped(built, f"prompts8_v12_arm{arm}.json")
 
     print("\n══ 指示文の差分（arm ごと・全8セルの行単位）")
     for arm in P.ARMS:
-        old = {p["id"]: p["prompt"] for p in
-               json.load(open(f"prompts8_v11_arm{arm}.json", encoding="utf-8"))}
-        new = {p["id"]: p["prompt"] for p in
-               json.load(open(f"prompts8_v12_arm{arm}.json", encoding="utf-8"))}
+        old = {p["id"]: p["prompt"] for p in _load(f"prompts8_v11_arm{arm}.json")}
+        new = {p["id"]: p["prompt"] for p in _load(f"prompts8_v12_arm{arm}.json")}
         added, removed, cells = [], [], 0
         for cid in old:
             d = list(difflib.unified_diff(old[cid].splitlines(), new[cid].splitlines(), n=0))
@@ -81,11 +80,7 @@ def main():
             print(f"      － {line.strip()}")
 
     v = version()
-    for path in ["decisions8_v12.json"] + [f"prompts8_v12_arm{a}.json" for a in P.ARMS]:
-        d = json.load(open(path, encoding="utf-8"))
-        json.dump({"_stamp": v, "data": d}, open(path, "w", encoding="utf-8"),
-                  ensure_ascii=False, indent=1)
-    print(f"\n══ 版を刻んだ： {v}")
+    print(f"\n══ 版を刻んだ（書き出しの側で刻まれている）： {v}")
     print("   ※ 走らせていない。生成物は run8_v11.json（as-run の指示文で作られたもの）のまま。")
 
 

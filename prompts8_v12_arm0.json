@@ -1,9 +1,9 @@
 {
  "_stamp": {
-  "git": "2d65deb",
-  "tag": "v12.3",
+  "git": "d38f240",
+  "tag": "v12.4-1-gd38f240",
   "dirty": true,
-  "sales_logic_sha256_12": "1c36203273de"
+  "sales_logic_sha256_12": "f46e6fb20d8f"
  },
  "data": [
   {

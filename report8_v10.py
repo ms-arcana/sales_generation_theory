@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import json, html
+from stamp import load as _load, assert_fresh as _assert_fresh   # 第12.5版：刻みの入口
 
 V = json.load(open("verified8_v10.json", encoding="utf-8"))
-D = {r["id"]: r for r in json.load(open("decisions8_v10.json", encoding="utf-8"))}
-OLD = json.load(open("decisions8_v10.json", encoding="utf-8"))
+D = {r["id"]: r for r in _load("decisions8_v10.json")}
+OLD = _load("decisions8_v10.json")
 e = html.escape
 VC = {"通過": "ok", "揺らぐ": "mid", "棄却": "ng"}
 

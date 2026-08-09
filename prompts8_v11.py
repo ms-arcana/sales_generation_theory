@@ -22,12 +22,17 @@
 使い方：  python3 prompts8_v11.py        → prompts8_v11_arm{0,1,2}.json
 """
 import json
+from stamp import load as _load, assert_fresh as _assert_fresh   # 第12.5版：刻みの入口
 import sys
 from cells8_v10 import CELLS, SELLERS, TODAY
 from prompts8_v10 import (STAGE_SPEC, BAN, DIM_PLAIN, FORM_KIND,
                           SELLER_DESC, PERSONA)
 
-DEC = json.load(open("decisions8_v10.json", encoding="utf-8"))
+# 第12.5版：これは as-run（アーム実験に実際に使われた表）なので古くて当然。
+# 組み直すときは regen_v12.py が `P.DEC` を差し替え、そこで assert_fresh が掛かる。
+# 直接 import して使う経路のために、ここでは警告だけ出す（止めない）。
+DEC = _load("decisions8_v10.json")
+_assert_fresh("decisions8_v10.json", strict=False)
 MSG = json.load(open("messages.json", encoding="utf-8"))
 
 ARMS = (0, 1, 2)

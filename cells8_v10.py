@@ -118,7 +118,11 @@ def run(dump="decisions8_v10.json"):
         rec["gamma_own"]=c["nu"].gamma_pre
         rec["prod"]=vars(c["nu"].prod)
         out.append(rec)
-    json.dump(out, open(dump,"w",encoding="utf-8"), ensure_ascii=False, indent=1)
+    # 第12.5版：刻むのを呼び出し側に任せていたので、run() を直接叩くと刻まれなかった。
+    # 第12版で踏んだ配管の罠（古い決定表が指示文へ入る）がそのまま踏み直せる状態だった。
+    # **書き出す側で刻む。** 読む側は stamp.load() で両方の形を受ける。
+    from stamp import dump_stamped
+    dump_stamped(out, dump)
     iso=sum(1 for r in out if any(j["code"]=="ISO_CONTEXT_MISSING" for j in r["needs_judgment"]))
     for r in out:
         st=[f"{f['code']}({f['ref']})" for f in r["findings"] if f["level"]=="stop"]

@@ -33,9 +33,7 @@ PREDICT = {"stop": 3, "R10a": 3, "A16": 0, "R10b": 0, "SEATWORD": 0,
            "pass": 4, "s4_false": 2, "by_seat_declared": 8}
 
 
-def unwrap(path):
-    d = json.load(open(path, encoding="utf-8"))
-    return d["data"] if isinstance(d, dict) and "data" in d else d
+from stamp import load as unwrap, stamp_of   # 第12.5版：刻みを受ける入口を一本化
 
 
 def norm_stage(s, sigma, idx):

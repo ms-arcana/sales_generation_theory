@@ -848,3 +848,65 @@ check("G2 Σ の申し送りは生成後には付けない（生成前の話だ�
       [j.code for j in _v["needs_judgment"]])
 
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
+
+print("\n── 第12.5版 モデルの残余（C_move / S1・S2・S3 / cost 単調性 / START）")
+from dataclasses import replace as _rep
+from sales_logic import (compute_sigma, sigma_prod, trial_of, migration_of,
+                         is_suffix, check_staircase, check_axis_values, STAGES)
+import cells8_v10 as C10
+
+# ── (1) C_move → ⟨ν, θ, σp⟩
+_n0 = C10.CELLS[0]["nu"]
+check("残余1 C_move を外しても8セルの点灯が変わらない",
+      all(set(compile_deal(c["nu"], C10.SELLERS[c["seller"]], C10.TODAY)["blocks"])
+          == set(compile_deal(_rep(c["nu"], C_move="＿壊した＿"),
+                              C10.SELLERS[c["seller"]], C10.TODAY)["blocks"])
+          for c in C10.CELLS))
+_p = _rep(_n0.prod, nu="使えば分かる", theta="完全分割", sigma_p="低")
+check("残余1 θ=完全分割 なら C_move が『大仕事』でも試用が立つ",
+      trial_of(_rep(_n0, C_move="大仕事", prod=_p)))
+_p2 = _rep(_n0.prod, nu="買う前に分かる", theta="不可分", sigma_p="高")
+check("残余1 θ=不可分・σp=高 なら C_move が『すぐ試せる』でも移行支援が立つ",
+      migration_of(_rep(_n0, C_move="すぐ試せる", prod=_p2))
+      and not trial_of(_rep(_n0, C_move="大仕事", prod=_p2)))
+check("残余1 旧 C_move と座標が食い違えば申し送る（ν と同じ形）",
+      any(j.code == "C_MOVE_AXIS_CONFLICT"
+          for j in check_axis_values(_rep(_n0, C_move="大仕事", prod=_p))))
+check("残余1 8セルでは食い違わない（だから点灯が変わらない）",
+      not any(j.code == "C_MOVE_AXIS_CONFLICT"
+              for c in C10.CELLS for j in check_axis_values(c["nu"])))
+
+# ── (2)(3) S1/S2/S3 と Π₁ 第2式（cost 単調性＝Σ が接尾辞であること）
+check("残余3 Σ が接尾辞なら Π₁ 第2式は満たされる", is_suffix(["④", "⑤", "⑥"])
+      and not is_suffix(["①", "④", "⑥"]) and not is_suffix(["①", "②"]))
+_small = _rep(_n0, S1="〜10万", S2="年次以下", S3=False)
+check("残余2 sigma_prod は削除されていない（低額×低頻度で発火する）",
+      sigma_prod(_small)[0] == {"①", "④", "⑥"}, sorted(sigma_prod(_small)[0]))
+_S, _by, _oos, _sj = compute_sigma(_small)
+check("残余3 段を飛ばす縮退は採らず、読み手側の Σ に戻す（導出 > 較正）",
+      _by == "sigma_read" and is_suffix(_S)
+      and any(j.code == "PI1_SIGMA_NOT_SUFFIX" for j in _sj), (_by, "".join(_S)))
+check("残余3 Σ を作る経路が増えたときに鳴る番人",
+      [f.code for f in check_staircase(["①", "④", "⑥"])] == ["PI1_STAIRCASE_BROKEN"]
+      and not check_staircase(list(STAGES)))
+check("残余3 8セルでは番人は鳴らない",
+      not any(f.code == "PI1_STAIRCASE_BROKEN"
+              for c in C10.CELLS
+              for f in compile_deal(c["nu"], C10.SELLERS[c["seller"]], C10.TODAY)["findings"]))
+
+# ── (4) START（較正表）を未較正の業界へ持ち込まない
+_c = C10.CELLS[0]
+_dc = compile_deal(_c["nu"], C10.SELLERS[_c["seller"]], C10.TODAY, industry="学校法人")
+_du = compile_deal(_c["nu"], C10.SELLERS[_c["seller"]], C10.TODAY, industry="化学")
+check("残余4 較正済みの業界では従来どおり縮退する",
+      _dc["sigma_by"] == "sigma_read" and _dc["sigma"] != list(STAGES),
+      (_dc["sigma_by"], "".join(_dc["sigma"])))
+check("残余4 未較正の業界では Σ を縮退させない（知らない業界で断定しない）",
+      _du["sigma"] == list(STAGES) and _du["sigma_by"] == "sigma_full_uncalibrated",
+      (_du["sigma_by"], "".join(_du["sigma"])))
+check("残余4 未較正では『対面で飛ばしてよい段』も出さない", _du["talk_guide"] == [])
+check("残余4 縮退しないので、落ちた段の Γ^pre 不足で止まることもない",
+      not any(f.code == "R8_PRE_MISSING" for f in _du["findings"]))
+check("残余4 未較正でも接尾辞であることは保たれる", is_suffix(_du["sigma"]))
+
+print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
