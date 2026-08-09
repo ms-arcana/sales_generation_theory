@@ -1,0 +1,127 @@
+[
+ {
+  "code": "I01",
+  "industry_id": "製造・メーカー",
+  "bytes": 22611
+ },
+ {
+  "code": "I02",
+  "industry_id": "製薬・バイオテクノロジー",
+  "bytes": 23236
+ },
+ {
+  "code": "I03",
+  "industry_id": "農業・林業・水産業",
+  "bytes": 19591
+ },
+ {
+  "code": "I04",
+  "industry_id": "retail_wholesale_trading",
+  "bytes": 26005
+ },
+ {
+  "code": "I05",
+  "industry_id": "観光・旅行・宿泊（旅行代理店、ホテル・旅館）",
+  "bytes": 27438
+ },
+ {
+  "code": "I06",
+  "industry_id": "芸術・娯楽・レクリエーション",
+  "bytes": 24005
+ },
+ {
+  "code": "I07",
+  "industry_id": "飲食",
+  "bytes": 23684
+ },
+ {
+  "code": "I08",
+  "industry_id": "生活関連サービス（冠婚葬祭・イベント／理容・美容・エステ／ペットケア・獣医／洗濯・クリーニング／家事代行）",
+  "bytes": 23746
+ },
+ {
+  "code": "I09",
+  "industry_id": "不動産（不動産仲介・不動産管理）",
+  "bytes": 19874
+ },
+ {
+  "code": "I10",
+  "industry_id": "運輸・交通・物流",
+  "bytes": 18002
+ },
+ {
+  "code": "I11",
+  "industry_id": "インフラ・鉱業（電力・ガス・水道・エネルギー、鉱業・採石業、砂利採取業）",
+  "bytes": 18881
+ },
+ {
+  "code": "I12",
+  "industry_id": "construction-repair-maintenance",
+  "bytes": 25486
+ },
+ {
+  "code": "I13",
+  "industry_id": "組織マネジメント・シンクタンク（経営コンサルティング／社団・連盟／廃棄物管理／研究開発／セキュリティー・警備サービス）",
+  "bytes": 26220
+ },
+ {
+  "code": "I14",
+  "industry_id": "HR-STAFFING（人事・人材サービス：人事コンサルティング／人材派遣／職業紹介）",
+  "bytes": 18661
+ },
+ {
+  "code": "I15",
+  "industry_id": "法律",
+  "bytes": 24542
+ },
+ {
+  "code": "I16",
+  "industry_id": "医療・病院",
+  "bytes": 17984
+ },
+ {
+  "code": "I17",
+  "industry_id": "航空宇宙・防衛",
+  "bytes": 22131
+ },
+ {
+  "code": "I18",
+  "industry_id": "金融",
+  "bytes": 25589
+ },
+ {
+  "code": "I19",
+  "industry_id": "INSURANCE",
+  "bytes": 25844
+ },
+ {
+  "code": "I20",
+  "industry_id": "広告・メディア・マスコミ（広告・宣伝、放送・テレビ局、ゲーム制作・販売、映画制作・配給、写真、音楽制作、出版社・新聞社、翻訳・通訳）",
+  "bytes": 22207
+ },
+ {
+  "code": "I21",
+  "industry_id": "通信・インターネット",
+  "bytes": 21997
+ },
+ {
+  "code": "I22",
+  "industry_id": "情報技術（インターネット・Webサービス／ITサービス／ハードウェア開発／ソフトウェア開発）",
+  "bytes": 20705
+ },
+ {
+  "code": "I23",
+  "industry_id": "教育・学校",
+  "bytes": 23685
+ },
+ {
+  "code": "I24",
+  "industry_id": "官公庁・行政・警察（gov_public_police）",
+  "bytes": 25280
+ },
+ {
+  "code": "I25",
+  "industry_id": "welfare_iaa_ngo_npo",
+  "bytes": 23005
+ }
+]
