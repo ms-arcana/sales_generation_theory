@@ -968,7 +968,6 @@ try:
 except FileNotFoundError:
     print("--  指示1 指示文ファイルが無いので走査は省略（regen_v12.py で作れる）")
 
-print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
 
 print("\n── 第12.7版 N₆ 要求の四つ組（型1 と型4 をまとめて潰す規定）")
 from sales_logic import REQS, Req, audit_requirements
@@ -988,3 +987,26 @@ check("N₆ 未解決の順序は A29 の一件だけ", _codes.count("N6_ENTRENC
 check("N₆ s3_form_mapping は座席ごとなのに単数（実測でも3座席を連結していた）",
       any("s3_form_mapping" in x.ref for x in _a if x.code == "N6_FIELD_SCALAR"))
 check("N₆ 監査の総件数を固定する（新しい欄を黙って足せない）", len(_a) == 9, len(_a))
+
+print("\n── 第12.8版 A34：記入欄の照合が浅かった（型2・A25 と同型）")
+import re as _re2
+from sales_logic import SLOT_RE as _SR
+_yes = ["【　　　ポイント】", "【　　　円】", "【店舗運営部・同意：　　　】", "【パート平均時給：　　　】",
+        "【原価率の見込み（ポイント）：　　　】", "【　　　】", "【　】", "［　　］", "[  ]", "（　　）", "____"]
+_no = ["【確定】", "【重要】", "（注）", "本文に括弧は無い"]
+check("A34 ラベルを括弧の中に入れた記入欄も拾う（R1-P1K が9つ置いて0だった形）",
+      all(_re2.search(_SR, s) for s in _yes), [s for s in _yes if not _re2.search(_SR, s)])
+check("A34 ただの強調の括弧は記入欄にしない",
+      not any(_re2.search(_SR, s) for s in _no), [s for s in _no if _re2.search(_SR, s)])
+_d = Declared(**{**BASE7, "s6_kappa_by_seat": {"店舗運営部": "実務性", "商品本部バイヤー": "価格"},
+                "s6_quantity_sources": {"店舗運営部": "試算", "商品本部バイヤー": "営業記入"},
+                "s6_to_sales": ("原価率の見込みを埋めてほしい",)})
+_ch = [("店舗運営部", ["実務性"], ["作業時間"], "組織"), ("商品本部バイヤー", ["価格"], ["原価率"], "組織")]
+_f, _j = check_quantity_sources({"⑥": "見込みは【　　　ポイント】。試算です。"}, _d, _ch)
+check("A34 ラベル入りの記入欄があれば A28_SLOT_ABSENT は出ない",
+      not any(x.code == "A28_SLOT_ABSENT" for x in _f), [x.code for x in _f])
+_f2, _ = check_quantity_sources({"⑥": "見込みは【確定】です。試算です。"}, _d, _ch)
+check("A34 記入欄が本当に無ければ従来どおり停止する",
+      any(x.code == "A28_SLOT_ABSENT" for x in _f2), [x.code for x in _f2])
+
+print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
