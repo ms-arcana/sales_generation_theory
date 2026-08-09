@@ -159,7 +159,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
 <p class="sub">営業資料生成モデル 第12.1版 ／ 流れの図解 ／ 2026-08-09 更新（git <code>ec8a218</code> ・ tag v12.1）</p>
 
 <p class="sub" style="margin:-32px 0 40px">
-<b>いま開いている問題だけ見たい場合は</b> → <a href="#now" style="color:var(--model)">NOW 現在地</a>／<a href="#open" style="color:var(--chk)">OPEN いま開いている問題</a>
+<b>近道</b> → <a href="#method" style="color:var(--gen)">METHOD 方法の出典</a>（なぜこの形なのか）／<a href="#now" style="color:var(--model)">NOW 現在地</a>／<a href="#open" style="color:var(--chk)">OPEN いま開いている問題</a>
 </p>
 
 <div class="lede">
@@ -986,6 +986,80 @@ s6_contains_promise false</pre>
 </div>
 </details>
 
+<h2 id="method"><span class="n">METHOD</span>方法の出典 ― なぜこの形をしているのか</h2>
+
+<p>ここまで、①〜⑥という段の並びと、「予測を先に置く」「3役を分ける」「アノマリー」という言葉を説明なしに使ってきました。<b>どちらも既存の方法論から来ています。</b></p>
+
+<div class="callout">
+<p><b>Timmermans, S. &amp; Tavory, I. (2012)</b> 「Theory Construction in Qualitative Research: From Grounded Theory to Abductive Analysis」<i>Sociological Theory</i> 30(3), 167–186<br>
+<b>Tavory, I. &amp; Timmermans, S. (2014)</b> <i>Abductive Analysis: Theorizing Qualitative Research</i>, University of Chicago Press<br>
+<b>Timmermans, S. &amp; Tavory, I. (2022)</b> <i>Data Analysis in Qualitative Research: Theorizing with Abductive Analysis</i>, University of Chicago Press（2014年版の実務編）</p>
+<p style="margin-bottom:0"><small>詳細は <code>claude/abductive-analysis組み込み.md</code>。以下は本文書に効く部分だけの要約です。</small></p>
+</div>
+
+<h3>1. 生成モデルの①〜⑥は、パースの探究過程である</h3>
+
+<p>T&amp;T が依拠しているのはパースです。そして<b>①〜⑥は独立に組み立てたのに、パースの探究過程（habit → breach → doubt → inquiry → new habit）と一致していました</b>。後付けの比喩ではなく、だから T&amp;T の技法がそのまま段の手続きとして使えます。</p>
+
+<table>
+<tr><th style="width:130px">段</th><th style="width:210px">パース／T&amp;T での対応</th><th>そこから来ている設計</th></tr>
+<tr><td><b>① 現状 S</b></td><td><b>habit の措定</b></td><td>買い手が無編集に頷ける＝疑われていない状態。だから売り手も問題も出してはならない</td></tr>
+<tr><td><b>② 否定の内在</b></td><td><b>breach ＝ surprise の生成</b><br>defamiliarization</td><td><b>②で許されるのは①の事実の再記述だけ</b>（別の単位で数え直す／別の形式で書き出す）。新しい事実が要るなら①のスコープを広げて①に置き直す。<b>これが「内在的否定」の工学的定義</b></td></tr>
+<tr><td><b>③ 問題化 Q</b></td><td><b>casing</b>「これは何の事例か」</td><td>「問題の切り分け方」は文字どおり alternative casing の選択</td></tr>
+<tr><td><b>④ 必然化</b></td><td><b>index</b>（記号三分法）による時間的係留</td><td>日付は買い手の行動可能集合が変化する点。「今」は記述ではなく指示</td></tr>
+<tr><td><b>⑤ 消去</b></td><td>仮説空間の絞り込み</td><td>アブダクションは新観念を導入する唯一の推論だが、それ単独では閉じない。消去が候補を狭める</td></tr>
+<tr><td><b>⑥ 提案 P</b></td><td>買い手自身が引く<b>abductive conclusion</b></td><td>命令法で締めない理由。結論を言わせるのは買い手側</td></tr>
+</table>
+
+<div class="formula">驚くべき事実 C が観察される　　　　　←　② 否定の内在（S の中に欠如がある）
+しかし A が真であれば C は当然である　←　⑥ 提案 P
+ゆえに A が真であると疑う理由がある　←　買い手が自分で引く結論（エンテュメーメ）</div>
+
+<p><b>エンテュメーメとは、パース図式の第3行を買い手に言わせる装置である。</b>④⑤は A の候補を絞る作業で、④が時間的に（今）、⑤が空間的に（既存手段の消去）絞ります。</p>
+
+<p>T&amp;T の一文が、そのまま②の棄却条件になります——<b>「既存の理論が経験的現象を完全に説明してしまうなら、研究者は既存理論を検証したにすぎない」</b>。営業に訳すと、<b>買い手の既存の枠組みで完全に説明できてしまう②は、②ではない。①の言い換えである。</b>そして「通過しても合意が増えない」という現象に、これが理論的説明を与えます。</p>
+
+<p>パースの2種類の驚き（<b>novelty</b>＝見たことのない経験／<b>anomaly</b>＝期待に反する経験）も、そのまま②の判定に落ちます。原モデルの規範「否定性は注入されてはならない」は、<b>〈novelty 型を禁じ、anomaly 型のみを許す〉</b>と言い直せます。</p>
+
+<h3>2. 我々自身の改訂プロセスも、同じ方法で動かしている</h3>
+
+<p><b>買い手の探究過程をパース的に設計しているのだから、我々自身の探究過程もパース的に設計できる</b>——これがこのプロジェクトの背骨です。「方法についての約束事」は、思いつきの作法ではなく、ここから導かれています。</p>
+
+<table>
+<tr><th style="width:290px">約束事（引き継ぎ書 §5）</th><th>T&amp;T のどこから来ているか</th></tr>
+<tr><td><b>予測を先に置く</b><br><small>走る前に数値の予測を書き、外れたものをアノマリーとして扱う</small></td><td><b>驚きは関係的である。</b>「予期せぬ観察が戦略的でありうるのは、その潜在的な関連性を認識する<b>理論的に感作された観察者</b>に依存するからである」。<b>驚きはデータに内在せず、明示された期待に対する不一致としてのみ成立する</b></td></tr>
+<tr><td><b>生成器・独立予測器・盲検買い手の3役を分ける</b></td><td>期待を書かずに集めた「破綻」は〈真のアノマリー／未踏／誤用〉の3つが混ざった袋になる。<b>突合してアノマリーだけを次へ送る</b>ための分離。第1版で140件中76件を却下したのは、これをしていなかったため</td></tr>
+<tr><td><b>アノマリーを立てる前に「この欄は誰かが既に測っていないか」を先に引く</b></td><td><b>informed theoretical agnosticism。</b>理論なし（無神論者）でも単一理論（一神論者）でもなく、複数の伝統に通じつつどれにも与しない。文献との対話は研究の最後ではなく<b>最初から全段階で</b>行う</td></tr>
+<tr><td><b>業界固有のバイアスを他業界へ伝播させない</b><br><small>導出表と較正表を分ける</small></td><td><b>alternative casing。</b>「小さなデータ断片を、見出しうる限り多くの理解の仕方で検討する」。一つの事例化（この場合は一つの業界の事情）に固着しないための規律</td></tr>
+<tr><td><b>停止規則</b><br><small>（まだ採っていない）</small></td><td>T&amp;T はグラウンデッド・セオリーの saturation を拒否する。アノマリーが出なくなることは「理論が正しくなった」ではなく<b>「この驚きは汲み尽くした。次は驚きを探す場所を変えろ」</b>を意味する</td></tr>
+</table>
+
+<div class="callout warn">
+<p><b>そしてここが、いちばん効いた一行です。</b></p>
+<p>第12.1版の §4-1（物差しの検分）は、<code>sales_logic.py</code> の比較演算を <b>AST で全数走査して書き出す</b>ところから始めました。これは T&amp;T の <b>defamiliarization（異化）</b>そのものです——「方法論的連鎖を通じた<b>書き付け（inscription）という行為そのものが異化の技法として機能する</b>」。テキスト化は「非テキスト的説明では見落とすものを問題化し結晶化させ」ます。</p>
+<p>実際、5走行のあいだ誰も気づかなかった <code>\b</code> の穴も、<code>hit</code> を捨てている R17 も、<b>コードを読んでいたときには見えず、比較演算だけを機械的に並べた瞬間に見えました。</b>そして「予測を先に置く」を守っていたので、直したあとの採点が的中したことを確認できました（<code>predict_v12_1.md</code>）。</p>
+</div>
+
+<h3 id="asym">3. ★ 我々のデータは、データではない</h3>
+
+<p><b>この節はこの文書でいちばん重要な留保です。</b>T&amp;T のデータは実在の人間のフィールド観察です。我々のは LLM による買い手のシミュレーションです。この差は方法論上、致命的になりえます。</p>
+
+<table>
+<tr><th style="width:230px"></th><th>T&amp;T</th><th>本プロジェクト</th></tr>
+<tr><td>データの出所</td><td>実在の人間のフィールド観察</td><td>LLM エージェントによる買い手のシミュレーション</td></tr>
+<tr><td>「驚き」の対象</td><td>世界についての驚き</td><td><b>LLM の事前分布についての驚きでありうる</b></td></tr>
+<tr><td>T&amp;T の用語では</td><td>data</td><td><b>theoretically-informed conjecture</b>（理論に基づく推測）</td></tr>
+<tr><td>使える用途</td><td>アブダクションの材料 ＋ 帰納の場</td><td><b>アブダクションの材料としては使える。帰納の場にはならない</b></td></tr>
+</table>
+
+<p>これを混同すると<b>「25業種で検証した」が「25業種で確認した」に化けます</b>。走行レポートに付けている「本レポートは思考実験であり実顧客の反応の実測ではない」という注記は、礼儀ではなく<b>方法論上の必須条件</b>です。</p>
+
+<div class="callout warn">
+<p><b>この留保は、次の一手にそのまま効きます。</b></p>
+<p>「第2段（盲検買い手16体）が本丸」と書いてきましたが、<b>それも帰納ではありません。</b>盲検買い手は依然として LLM です。第2段が測れるのは「仕様を満たした資料が、<b>モデルの想定する買い手像</b>を通るか」であって、実在の買い手を通るかではない。</p>
+<p><b>帰納の場は、このプロジェクトのもう半分にあります</b>——<code>claude/営業ウェブアプリ要求.md</code> の<b>ページ単位の閲覧ログ</b>です。モデルは「どのページがどれだけ読まれるか」を予測しており、アプリはそれを実測します。この二つはまだ接続されていません。演繹（モデル → 検証可能な帰結）と帰納（閲覧ログ）を閉じて初めて、パース後期の三段構え（アブダクション → 演繹 → 帰納）が一周します。</p>
+</div>
+
 <h2><span class="n">SUMMARY</span>誰が何を決めているか</h2>
 <p>同じことを、責任の分界として一枚に。<b>ここがこの文書のいちばんの要点です。</b></p>
 
@@ -1158,7 +1232,8 @@ Arm 2（上限900）  885 889 894 895 903 905 908 911   ← 全部が新しい�
 <div class="band b-gen">
 <div class="bandlab">買い手<span>まだ測っていない</span></div>
 <div class="nodes">
-<div class="node n-open" style="flex:1 1 100%"><b>仕様を満たした資料が、実際に買い手を通るか</b>ここまで測ってきたのは <code>validate_copy</code> が「仕様を満たす」と言うかどうかだけ。<b>12版分のあいだ、一度も測っていない。</b>次は Arm 1 の生成物に予測者と盲検買い手を付ける（16体）<div class="stwrap"><span class="st st-open">最重要・未着手</span></div></div>
+<div class="node n-open"><b>仕様を満たした資料が、買い手を通るか</b>ここまで測ってきたのは <code>validate_copy</code> が「仕様を満たす」と言うかどうかだけ。<b>12版分のあいだ、一度も測っていない。</b>次は Arm 1 の生成物に予測者と盲検買い手を付ける（16体）<div class="stwrap"><span class="st st-open">最重要・未着手</span></div></div>
+<div class="node n-open"><b>そしてその第2段も、帰納ではない</b>盲検買い手は依然として LLM ＝ <b>theoretically-informed conjecture</b>。帰納の場は<b>閲覧ログ</b>（<code>営業ウェブアプリ要求.md</code>）にあり、モデルとまだ接続されていない → <a href="#asym" style="color:var(--chk)">METHOD §3</a><div class="stwrap"><span class="st st-open">未接続</span></div></div>
 </div>
 </div>
 
@@ -1205,7 +1280,8 @@ Arm 2（上限900）  885 889 894 895 903 905 908 911   ← 全部が新しい�
 <tr><td>1</td><td><b>Arm 1 の8体だけ再走行して R10a を測り直す</b><br><small><code>prompts8_v12_arm1.json</code> は生成済み</small></td><td>指示文が渡っていなかったので、<b>いちばん安い未知</b>。ここが片づかないと A26 の要否が決まらない</td></tr>
 <tr><td>2</td><td><b>A26 を立てるか決める</b><br><small>〈提案後に問題が残る周期〉を宣言欄へ／指示と検査の文言を揃える</small></td><td>1 で再現したら直す。再現しなければ配管の問題で終わる</td></tr>
 <tr><td>3</td><td><b>Arm 1 を確定させる</b> → <code>prompts8_v12.py</code><br><small>あわせて<b>⑥の申告欄を割る</b>（型1 の処置）</small></td><td>基準の連結は照合側で吸収したが、<b>本筋は欄を割ること</b>。A24 と同じ</td></tr>
-<tr><td>4</td><td><b>第2段を走らせる</b><br><small>Arm 1 の生成物に予測者と盲検買い手（16体）</small></td><td><b>本丸。</b>同時に G1（様式語の照合を全座席に掛けてよいか）も測れる</td></tr>
+<tr><td>4</td><td><b>第2段を走らせる</b><br><small>Arm 1 の生成物に予測者と盲検買い手（16体）</small></td><td><b>本丸。</b>同時に G1（様式語の照合を全座席に掛けてよいか）も測れる。<b>ただしこれも帰納ではない</b>（<a href="#asym" style="color:var(--chk)">METHOD §3</a>）</td></tr>
+<tr><td>5</td><td><b>閲覧ログとモデルを接続する</b><br><small>カスタム資料に軸の値をメタデータで持たせる</small></td><td><b>ここで初めて帰納の場ができる。</b>モデルは「どのページがどれだけ読まれるか」を予測しており、アプリはそれを実測する。両者がまだ繋がっていない</td></tr>
 </table>
 
 <h2><span class="n">SCALE</span>規模と実測</h2>
@@ -1227,7 +1303,7 @@ Arm 2（上限900）  885 889 894 895 903 905 908 911   ← 全部が新しい�
 
 <div class="foot">
 <p>営業資料生成モデル 第12.1版 ／ 数値はすべて <code>decisions8_v10.json</code>（as-run）・<code>run8_v11.json</code>・<code>verified8_v11.json</code>・<code>sales_logic.py</code> の実測値から。<br>
-関連文書：<code>claude/引き継ぎ書-第12.1版.md</code>（<b>新しいスレッドはここから</b>）、<code>claude/第12.1版-物差しの検分.md</code>（§4-1 の全結果と根拠）、<code>claude/モデルv11-仕様.md</code>（形式系の本体）、<code>claude/第12版-アーム実験レポート.md</code>（アーム実験の詳細・<b>stop の数字は訂正前</b>）、<code>claude/統合検討-既存理論と本モデル.md</code>（既存研究との対応）。</p>
+関連文書：<code>claude/引き継ぎ書-第12.1版.md</code>（<b>新しいスレッドはここから</b>）、<code>claude/第12.1版-物差しの検分.md</code>（§4-1 の全結果と根拠）、<code>claude/abductive-analysis組み込み.md</code>（<b>方法の出典。METHOD 節の全文</b>）、<code>claude/モデルv11-仕様.md</code>（形式系の本体）、<code>claude/第12版-アーム実験レポート.md</code>（アーム実験の詳細・<b>stop の数字は訂正前</b>）、<code>claude/統合検討-既存理論と本モデル.md</code>（既存研究との対応）。</p>
 <p style="margin-top:10px;color:var(--sub);font-size:12.5px">この文書で<b>取り消した記述</b>：「R10a は提示の問題ではない」（指示文に渡っていなかった）／「Arm 1 が A16 を消した」（A16 は物差しの誤りだった）／Arm 0 の stop 10・A16 2・R10b 2（正しくは 6・0・0）。</p>
 </div>
 
