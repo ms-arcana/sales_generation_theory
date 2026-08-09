@@ -969,3 +969,22 @@ except FileNotFoundError:
     print("--  指示1 指示文ファイルが無いので走査は省略（regen_v12.py で作れる）")
 
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
+
+print("\n── 第12.7版 N₆ 要求の四つ組（型1 と型4 をまとめて潰す規定）")
+from sales_logic import REQS, Req, audit_requirements
+_a = audit_requirements()
+_codes = [x.code for x in _a]
+check("N₆ すべての要求に充足条件が書かれている", "N6_SATISFY_MISSING" not in _codes,
+      [x.ref for x in _a if x.code == "N6_SATISFY_MISSING"])
+check("N₆ 濃度1と置いた要求には理由が書かれている", "N6_CARD_UNJUSTIFIED" not in _codes,
+      [x.ref for x in _a if x.code == "N6_CARD_UNJUSTIFIED"])
+check("N₆ 申告欄はすべて要求として書かれている（漏れが無い）", "N6_REQ_MISSING" not in _codes,
+      [x.ref for x in _a if x.code == "N6_REQ_MISSING"])
+check("N₆ 監査は現に型1 を見つける（走らせずに8件）",
+      _codes.count("N6_FIELD_SCALAR") + _codes.count("N6_VALUE_SCALAR") == 8,
+      [x.ref for x in _a if x.code in ("N6_FIELD_SCALAR", "N6_VALUE_SCALAR")])
+check("N₆ 未解決の順序は A29 の一件だけ", _codes.count("N6_ENTRENCH_TIE") == 1,
+      [x.ref for x in _a if x.code == "N6_ENTRENCH_TIE"])
+check("N₆ s3_form_mapping は座席ごとなのに単数（実測でも3座席を連結していた）",
+      any("s3_form_mapping" in x.ref for x in _a if x.code == "N6_FIELD_SCALAR"))
+check("N₆ 監査の総件数を固定する（新しい欄を黙って足せない）", len(_a) == 9, len(_a))
