@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第13.3版）</title>
+<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第13.4版）</title>
 <style>
 :root{
   --ink:#1a1c22; --sub:#5d6470; --line:#d8dbe2; --bg:#fbfbfc;
@@ -158,7 +158,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
 <div class="wrap">
 
 <h1>公理から営業メッセージまで、何がどう決まっているか</h1>
-<p class="sub">営業資料生成モデル 第13.3版 ／ 流れの図解 ／ 2026-08-10 更新（tag v13.3 ／ <b>対照を混ぜた ―― 買い手は区別していた。⑥全滅はモデルについての情報である</b> ／ A26・A27・A28 は実装済み・<b>効果は未測定</b>）</p>
+<p class="sub">営業資料生成モデル 第13.4版 ／ 流れの図解 ／ 2026-08-10 更新（tag v13.4 ／ <b>対照で買い手が区別していることを確認。そして形式（散文か表か）が較正でしかないことに気づいた</b> ／ A26・A27・A28 は実装済み・<b>効果は未測定</b>）</p>
 
 <p class="sub" style="margin:-32px 0 40px">
 <b>近道</b> → <a href="#method" style="color:var(--gen)">METHOD 方法の出典</a>（なぜこの形なのか）／<a href="#now" style="color:var(--model)">NOW 現在地</a>／<a href="#open" style="color:var(--chk)">OPEN いま開いている問題</a>
@@ -1299,6 +1299,8 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="node n-open"><b>監査が、走らせずに型1 を6件見つけた</b><code>audit_requirements()</code> が出したもの ―― <code>s3_form_mapping</code>（∀ 読む座席なのに単数。<b>第12.6版の実測で3座席分を一つの文字列に連結していた</b>）／<code>s6_coverage_full,_disclosed,_subset</code>（∀ ④で数えた量なのに bool 単数）／<code>s6_kappa_type</code>／<code>s5_denies_own</code>。加えて <code>s6_kappa_by_seat</code>・<code>s6_quantity_sources</code> は<b>担体が〈量〉なのにキーが〈座席〉で値が単数</b><div class="stwrap"><span class="st st-open">型1 の6〜11例目・未修正</span></div></div>
 <div class="node n-wait"><b>解決策：9件は3つに畳める（第13.1版・設計のみ）</b>第2段の5件と入力側の4件は、<b>新しい原理を要さない</b>。既にある N₂・N₃・N₄ の適用漏れだった<div class="stwrap"><span class="st st-wait">設計済み・未実装</span></div></div>
 <div class="node n-wait"><b>N₄′ 量は〈単位〉と〈比較の相手〉を持つ</b>⑥棄却の第一理由「空欄」と第二理由「幅」は<b>同じ一つのこと</b> ―― 〈戻る − 払う〉の符号が幅の全域で決まらない、ということ。<br><b>幅の上限は発明しなくてよい。</b>180万〜900万に対して戻りが年50万なら全域で負＝「採らない」と<b>決定できる</b>（実際 R2-P1 店長はそう言った）。1,400万〜3,200万に対して戻りが空欄なら符号が決まらない＝<b>決定できない</b>。閾値を決めると<b>較正表を一つ増やす</b>ことになる。<br>これで A23紙側の強化も同じ規則から出る ―― 様式語で書かれていても<b>分母が無ければ通らない</b>。新設 <code>R20 決定可能性</code>。<b>A28 は壊さない</b>（営業記入は対の片方までなら許す）<em>A35・A36・A23紙側を吸収</em><div class="stwrap"><span class="st st-wait">設計済み・未実装</span></div></div>
+<div class="node n-wait"><b>N₄′ の出力側 ―― 形式は較正であって、導出ではない</b><b>生成ゴールはスライドである。すべてを文章にする必要はない。</b>ところが提示仕様は3つの規定で<b>散文を強制していた</b> ―― 「各枚 200〜450字の日本語本文」「見出し語だけの箇条書きにしない」「<b>そのままスライドに貼れる文章にすること</b>」（表は arm2 の⑥末尾3点だけ許可）。<b>3つとも SPEC のどこからも導かれていない較正表</b>で、450字は実態と4.5倍ずれている（⑥は平均2029字）。<br><b>記法は「成分を潰すな」と言っている。散文は成分を潰す形式である。</b><code>N₃</code> の三つ組はそのまま3列、<code>N₄′</code> の量はそのまま5列、A23 の座席は行になる。そして<b>型1 の5例（費目・単位・基準・κ_n・出所）は、すべて「散文が集合を連結する」現象</b>だった ―― 表ならセルが分かれているので<b>連結できない</b>。<b>型1 の根本原因は出力形式そのものかもしれない</b><br>第2段の⑥棄却理由6つのうち<b>5つは「表なら気づく」種類</b>（金額が二通り／桁違い／単位不整合／空欄／日付）。<b>私が手で改善版を書いて4つの欠陥を入れたのも、散文だったから</b>である。<br>生成器はすでに代用している ―― <b>⑥の見出しブロック【…】が最大27個</b>（表は arm1 で許可していないので 0〜2）。<b>規定と実態がずれている</b><em>第13.4版</em><div class="stwrap"><span class="st st-wait">設計済み・N₄′ と同時に実装する</span></div></div>
+<div class="node n-done"><b>ただし ①〜⑤ は散文のままにする</b>Π₁ は<b>承認を積む段</b>であり、<b>論証は表にならない</b>。とくに②は「揺らぐで止まる」設計（8/8 でそうなった）で、表にすると断定に見えて<b>設計が壊れる</b>。⑤も条件の開示であって表ではない（分界表は既に生成器が自発的に表にしている）。<b>⑥だけが、運搬の道具を多く含むので形式が混ざる枚である。</b>なお第12.3版の「⑥を分ける」案は <b>Σ の枚として割るか</b>の話で A27 決着済み ―― 今回は<b>同じ⑥の中の形式</b>の話なので、<b>Σ の約束は破らない。枚は増えない</b><div class="stwrap"><span class="st st-done">境界を決めた</span></div></div>
 <div class="node n-wait"><b>N₃′ 行為の三つ組は四つ組 ⟨誰が・いつ・どの費目・<u>どの様相で</u>⟩</b><code>willing=True</code> なら断定形、<code>None</code> なら「確認します」しか書けない、<code>False</code> ならそもそも⑥に置けない。<b>副作用として A21 が初めて生成に効く</b><em>A38 を吸収</em><div class="stwrap"><span class="st st-wait">設計済み・未実装</span></div></div>
 <div class="node n-wait"><b>申告だけで通さない ―― A23紙側と同じ処置を R17 へ</b>Γ^own の4項を⑤の本文から走査する（候補を並べる。完全一致では取れない）。<b>ただし A35 を直すと一部は自動的に消える</b> ―― R2-P2 社長の「判断の軸を移せと要求している」は、⑥が空欄だらけだったことの帰結でもある。<b>順序は A35 が先</b><em>A39 を吸収</em><div class="stwrap"><span class="st st-wait">設計済み・未実装</span></div></div>
 <div class="node n-open"><b>A29 出所の定義域</b>「読む座席」なのか「⑥に置いた量すべて」なのか。<b>監査が名指しした唯一の未解決の順序。</b>機械は <code>s6_kappa_by_seat</code> に無い座席の申告を<b>一度も読んでいない</b>（E1-P1 は理事会の出所を申告したのに <code>A28_GROUNDED</code> に入らない）<div class="stwrap"><span class="st st-open">開いている</span></div></div>
@@ -1421,7 +1423,7 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <tr><td>4</td><td><b>R2 8体をもう一度走らせて振れ幅を測る</b><br><small>引き継ぎ書 §4 の宿題。8体・20分</small></td><td>n=1 の結論すべてに掛かる。一致すべきもの（構造的な遵守）と振れてよいもの（字数）を<b>先に分けて置いてから</b>測る</td></tr>
 <tr style="background:#fbf2e2"><td><b>1</b></td><td><b>A37（LT を⑥の日付へ）だけ実装して走らせる</b><br><small>検査に下限を1つ足すだけ。<code>validate_copy</code> に <code>lt_months</code> を渡す</small></td><td><b>最も安く、最も確実。</b>12/15 が挙げた理由が消えるかを、他を動かさずに測れる。約20分・35万トークン。<b>走行前に「日程を理由にした棄却 12 → 0〜3」を置いてある</b></td></tr>
 <tr style="background:#fbf2e2"><td><b>2</b></td><td><b>改善版を作り直して R1 をもう一度回す</b><br><small>今回の4欠陥を機械で検査してから出す</small></td><td><b>N₄′ の当否は、まだ測れていない。</b>改善版が改善版でなかったから</td></tr>
-<tr><td>3</td><td><b>N₄′ ＋ <code>R20</code> 決定可能性を実装する</b><br><small><code>s6_kappa_by_seat</code> → <code>s6_quantities</code>（座席→〈基準・払う・戻る・分母〉）</small></td><td>15/15＋9/15＋8/8 が掛かる<b>本命</b>。⑥の構造を変えるので、走行前に予測・決定表の不変・指示文への到達を確認する。<b>判定条件：<code>R20_UNDECIDABLE</code> 6〜8/8、⑥棄却 15 → 6〜10人。戻らなければ診断が誤り</b></td></tr>
+<tr><td>3</td><td><b>N₄′ ＋ <code>R20</code> ＋ <u>形式変更</u>をまとめて実装する</b><br><small><code>s6_kappa_by_seat</code> → <code>s6_quantities</code>（座席→〈基準・払う・戻る・分母・出所〉）。<b>申告欄がそのまま表の列定義になる</b>。字数は散文部分だけに掛ける</small></td><td>15/15＋9/15＋8/8 が掛かる<b>本命</b>。<b>形式は N₄′ と同時に変える</b>（切り離すとどちらが効いたか分からない）。走行前に予測・決定表の不変・指示文への到達を確認する。<b>判定条件：<code>R20_UNDECIDABLE</code> 6〜8/8、⑥棄却 15 → 6〜10人、型1 の再発 0、⑥の散文字数 2029 → 600〜900、②が「揺らぐ」8/8 のまま。戻らなければ診断が誤り</b></td></tr>
 <tr><td>3</td><td><b>N₃′ 様相</b><br><small><code>s6_realize</code> に第4成分</small></td><td>10/15。A21 が初めて生成に効く</td></tr>
 <tr><td>4</td><td><b>R17 の紙側</b></td><td>6/16。ただし 2 の後で減っているはず</td></tr>
 <tr><td>5</td><td><b>入力側 ―― <code>d</code> に精度と確度／定義域は必ず ⊥ を含む／<code>cost_to_buyer</code> に単位</b></td><td>16業界の256件。<b>25業界の記入がどこまで通るか</b>で測る</td></tr>
