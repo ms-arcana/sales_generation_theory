@@ -144,7 +144,7 @@ function draw(){
    <span class="tag ${r.判定==='差し戻す'?'t-bad':'t-warn'}">買い手 ${esc(r.判定)}</span>
    <span class="tag">読む座席 ${r.座席}</span>
    <span class="tag">要素 ${r.ブロック}</span>
-   <span class="tag">⑥ ${r.⑥字数}字</span>
+   <span class="tag">⑥ ${r["⑥字数"]}字</span>
    <span class="tag">営業へ ${r.営業へ}件</span>
   </div>
   ${r.停止コード.length?`<div class="mono" style="color:var(--bad);margin-bottom:8px">停止 ${r.停止コード.map(esc).join(' / ')}</div>`:''}
