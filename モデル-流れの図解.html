@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第12.9版）</title>
+<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第13.1版）</title>
 <style>
 :root{
   --ink:#1a1c22; --sub:#5d6470; --line:#d8dbe2; --bg:#fbfbfc;
@@ -158,7 +158,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
 <div class="wrap">
 
 <h1>公理から営業メッセージまで、何がどう決まっているか</h1>
-<p class="sub">営業資料生成モデル 第12.9版 ／ 流れの図解 ／ 2026-08-09 更新（tag v12.9 ／ <b>8体を揃えて A26・A27・A28 を測った（予測21項目中19的中）</b> ／ A26・A27・A28 は実装済み・<b>効果は未測定</b>）</p>
+<p class="sub">営業資料生成モデル 第13.1版 ／ 流れの図解 ／ 2026-08-09 更新（tag v13.1 ／ <b>第2段を走らせた ―― 仕様を満たした資料は、買い手を一つも通らなかった</b> ／ A26・A27・A28 は実装済み・<b>効果は未測定</b>）</p>
 
 <p class="sub" style="margin:-32px 0 40px">
 <b>近道</b> → <a href="#method" style="color:var(--gen)">METHOD 方法の出典</a>（なぜこの形なのか）／<a href="#now" style="color:var(--model)">NOW 現在地</a>／<a href="#open" style="color:var(--chk)">OPEN いま開いている問題</a>
@@ -1229,6 +1229,10 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="nodes">
 <div class="node n-done"><b>構造キーが自由文の完全一致</b>句読点1つで実名事例が全滅する。第10版の「16/16→0/8」は、買い手側と事例側を<b>同じファイルに同じ文字列で書いた</b>から成立していた<div class="stwrap"><span class="st st-done">正規化＋申し送りへ</span></div></div>
 <div class="node n-done"><b>表引きが黙って既定値に落ちる</b>誤字の <code>E_judge</code> で Σ が変わる／<code>q_source</code> の表記ゆれで実効LTが縮む<em>N₂</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-open"><b>16業界の入力記入で、規定の穴が256件</b>25業界の入力 ν を記入するマルチエージェント（16/25 完了）。<b>一度も走らせず、入力を記入するだけ</b>で出た。N₆ で分けると <b>定義域30／濃度1が25／充足条件14／強さ7／型・精度・単位10</b>。<code>src</code> の定義域に「買い手自身の暦」が無い／<code>seats</code> は1本しか書けない／<code>D2</code>・<code>D6a〜D7d</code> が何を指すのか定義が無い／<code>executors</code> と <code>seats</code> の境界が無い<em>第13版・並行実験</em><div class="stwrap"><span class="st st-open">開いている</span></div></div>
+<div class="node n-open"><b><code>d</code> が幅を取れないせいで、中心機構が ν に書けない</b>「要確認：2026年11月中旬」と旬でしか与えられていない期日を、<code>d</code> が ISO 単一日付を要求するため <b>τ に入れられなかった</b>。結果として I01 は<b>「T-C の着手期限は T-B の予算窓へ丸める」という製造業の中心機構を、この ν では表現できていない</b>と書いた。記入者は作り話を避けて<b>τ ごと除外</b>した ―― <b>分からないものが、無いものとして落ちた</b>。検査側で潰した型2 の、入力側での同型<div class="stwrap"><span class="st st-open">最重要（入力側）</span></div></div>
+<div class="node n-open"><b>入力に ⊥ を書く場所が無い</b>「不明」を書く欄が無い／受領日が不明なときの規定が無い／日付の確度を τ に運ぶ欄が無い（<code>ind</code> は「確実」と「要確認」を区別しているのに）。<b><code>N₂</code> は「⊥ はいかなる値とも比較できない」と言うだけで、⊥ を置ける欄を要求していない</b><div class="stwrap"><span class="st st-open">開いている</span></div></div>
+<div class="node n-done"><b>入力側の穴と、買い手の棄却理由は同じ欄を指している</b><code>d</code> の精度・<code>cost_to_buyer</code> の単位・<code>LT_months</code> の濃度・<code>executors</code> の境界 ―― この4つは、<b>記入者が「書けない」と言い、買い手が「これでは決められない」と言った同じ場所</b>である<div class="stwrap"><span class="st st-done">突き合わせた</span></div></div>
 </div>
 </div>
 <div class="vsep">▾</div>
@@ -1274,6 +1278,9 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="node n-wait"><b>⑥に置く量に出所を要求していなかった</b>④には受領記録まで要求し、⑥にはゼロ欄。試算は禁じず、<b>分からないものは営業へ回す出口</b>を作った<em>A28</em><div class="stwrap"><span class="st st-done">8体で決着 ―― 19座席中 裏づけ無し 12（診断は予測より強く支持された）</span></div></div>
 <div class="node n-hold"><b>様式語の照合が全座席に掛かる</b>Form が閉じているのは制度由来だけ（SPEC §10.1）。<b>アーム差はこの1本だけに乗っている</b><em>G1</em><div class="stwrap"><span class="st st-hold">据え置き（判断済）</span></div></div>
 <div class="node n-done"><b>記入欄の照合が「括弧の中は空白だけ」を仮定</b>生成器はラベルを括弧の<b>中</b>に入れる（【　　　ポイント】【パート平均時給：　　　】）。R1-P1K は記入欄を<b>9つ</b>置いていたのに一つも当たらず、<code>A28_SLOT_ABSENT</code> で<b>偽の停止</b>を出した。A25 と同型（型2）で処置も同じ<em>A34・第12.8版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-open"><b>⑥に置く量の「充足条件」が規定されていない</b>A28 は〈出所を書け／裏づけが無いなら隠すな〉までを規定したが、<b>買い手が決めるために何が確定していなければならないか</b>を規定していない。実データを走査すると8体すべてで<b>〈払う〉は幅つきで在り、〈戻る〉が本文に無い</b><em>A35・15/15</em><div class="stwrap"><span class="st st-open">解決策は設計済み</span></div></div>
+<div class="node n-open"><b><code>LT_months</code> が⑥の日付に掛かっていない</b>買い手が決めてから動き出すまでの月数は <code>start_deadline</code> の逆算にしか使われず、⑥に書く実施日・費目削減日は素通り。「うちは決めてから動くまで<b>半年</b>かかる。2月にパート人時を落とすと書いてあるが、その頃はまだ何も動いていない」<em>A37・12/15</em><div class="stwrap"><span class="st st-open">適用漏れ・実装は小さい</span></div></div>
+<div class="node n-open"><b>同意の無い費目削減を、断定形で書ける</b><code>Executor.willing</code> は8セルすべて <code>None</code>（未聞き取り）なのに、⑥は「◯◯が2027-04-01に媒体費を減らします」と書ける。<code>A21_WILLING_UNKNOWN</code> は要判断を出すだけで<b>生成には何も掛かっていない</b><em>A38・10/15</em><div class="stwrap"><span class="st st-open">開いている</span></div></div>
 <div class="node n-open"><b>⑥の字数上限450字が、実態と4.5倍ずれている</b>8体の実測は平均2029・最大2491。要素を優先させると必ずこうなる。上限は<b>較正表</b>（「そのままスライドに貼れる」という観測されていない前提）なので、<b>前提のほうが成り立たなくなった</b>。値そのものを見直す番<em>第12.9版</em><div class="stwrap"><span class="st st-open">開いている</span></div></div>
 <div class="node n-open"><b>名前の完全一致</b>実行者名・費目名・座席名。24体では不一致 0件だが、生成器は現に単位へ説明句を付けてきた<div class="stwrap"><span class="st st-lat">潜在</span></div></div>
 <div class="node n-done"><b>単位語の正規化が浅い</b>宣言が文になると照合語が取れない／1文字の単位は必ず停止<em>A25b</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
@@ -1290,6 +1297,10 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="nodes">
 <div class="node n-done"><b>アノマリーの個数は増えているが、種類は増えていない</b>第12版以降の新しいものは全部この二つ ―― <b>型1</b>（指示が複数を誘うのに欄が単数＝<b>量化子の潰れ</b>。Π₂ は ∀k と書いてあるのに欄がスカラー）と <b>型4</b>（衝突する要求に順序が無い・適用範囲が無い）。一件ずつ足すのをやめ、<b>記法を一つ足した</b> ―― <code>R = ⟨担体, 定義域, 充足条件, 強さ⟩</code>。定義域は N₂ を要求へ適用したもの（<b>未定義の定義域は ⊥ であって「たぶん一つ」ではない</b>）、強さは較正台帳〈導出 &gt; 較正〉の一般化（A27 の解き方）<em>N₆・第12.7版</em><div class="stwrap"><span class="st st-done">SPEC §13 に追加</span></div></div>
 <div class="node n-open"><b>監査が、走らせずに型1 を6件見つけた</b><code>audit_requirements()</code> が出したもの ―― <code>s3_form_mapping</code>（∀ 読む座席なのに単数。<b>第12.6版の実測で3座席分を一つの文字列に連結していた</b>）／<code>s6_coverage_full,_disclosed,_subset</code>（∀ ④で数えた量なのに bool 単数）／<code>s6_kappa_type</code>／<code>s5_denies_own</code>。加えて <code>s6_kappa_by_seat</code>・<code>s6_quantity_sources</code> は<b>担体が〈量〉なのにキーが〈座席〉で値が単数</b><div class="stwrap"><span class="st st-open">型1 の6〜11例目・未修正</span></div></div>
+<div class="node n-wait"><b>解決策：9件は3つに畳める（第13.1版・設計のみ）</b>第2段の5件と入力側の4件は、<b>新しい原理を要さない</b>。既にある N₂・N₃・N₄ の適用漏れだった<div class="stwrap"><span class="st st-wait">設計済み・未実装</span></div></div>
+<div class="node n-wait"><b>N₄′ 量は〈単位〉と〈比較の相手〉を持つ</b>⑥棄却の第一理由「空欄」と第二理由「幅」は<b>同じ一つのこと</b> ―― 〈戻る − 払う〉の符号が幅の全域で決まらない、ということ。<br><b>幅の上限は発明しなくてよい。</b>180万〜900万に対して戻りが年50万なら全域で負＝「採らない」と<b>決定できる</b>（実際 R2-P1 店長はそう言った）。1,400万〜3,200万に対して戻りが空欄なら符号が決まらない＝<b>決定できない</b>。閾値を決めると<b>較正表を一つ増やす</b>ことになる。<br>これで A23紙側の強化も同じ規則から出る ―― 様式語で書かれていても<b>分母が無ければ通らない</b>。新設 <code>R20 決定可能性</code>。<b>A28 は壊さない</b>（営業記入は対の片方までなら許す）<em>A35・A36・A23紙側を吸収</em><div class="stwrap"><span class="st st-wait">設計済み・未実装</span></div></div>
+<div class="node n-wait"><b>N₃′ 行為の三つ組は四つ組 ⟨誰が・いつ・どの費目・<u>どの様相で</u>⟩</b><code>willing=True</code> なら断定形、<code>None</code> なら「確認します」しか書けない、<code>False</code> ならそもそも⑥に置けない。<b>副作用として A21 が初めて生成に効く</b><em>A38 を吸収</em><div class="stwrap"><span class="st st-wait">設計済み・未実装</span></div></div>
+<div class="node n-wait"><b>申告だけで通さない ―― A23紙側と同じ処置を R17 へ</b>Γ^own の4項を⑤の本文から走査する（候補を並べる。完全一致では取れない）。<b>ただし A35 を直すと一部は自動的に消える</b> ―― R2-P2 社長の「判断の軸を移せと要求している」は、⑥が空欄だらけだったことの帰結でもある。<b>順序は A35 が先</b><em>A39 を吸収</em><div class="stwrap"><span class="st st-wait">設計済み・未実装</span></div></div>
 <div class="node n-open"><b>A29 出所の定義域</b>「読む座席」なのか「⑥に置いた量すべて」なのか。<b>監査が名指しした唯一の未解決の順序。</b>機械は <code>s6_kappa_by_seat</code> に無い座席の申告を<b>一度も読んでいない</b>（E1-P1 は理事会の出所を申告したのに <code>A28_GROUNDED</code> に入らない）<div class="stwrap"><span class="st st-open">開いている</span></div></div>
 <div class="node n-done"><b>A30・A32 は監査に吸収された</b>一座席に複数の量が同居するときの出所欄（A30）と、費目を絞ってよいか（A32）は、<code>N6_VALUE_SCALAR</code> と定義域の明示で捕まる。<b>個別のアノマリーとして足す必要がなくなった</b><em>第12.7版</em><div class="stwrap"><span class="st st-done">吸収</span></div></div>
 </div>
@@ -1315,10 +1326,15 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="vsep">▾</div>
 
 <div class="band b-gen">
-<div class="bandlab">買い手<span>まだ測っていない</span></div>
+<div class="bandlab">買い手<span>測った（第13版）</span></div>
 <div class="nodes">
-<div class="node n-open"><b>仕様を満たした資料が、買い手を通るか</b>ここまで測ってきたのは <code>validate_copy</code> が「仕様を満たす」と言うかどうかだけ。<b>12版分のあいだ、一度も測っていない。</b>次は Arm 1 の生成物に予測者と盲検買い手を付ける（16体）<div class="stwrap"><span class="st st-open">最重要・未着手</span></div></div>
-<div class="node n-open"><b>そしてその第2段も、帰納ではない</b>盲検買い手は依然として LLM ＝ <b>theoretically-informed conjecture</b>。帰納の場は<b>閲覧ログ</b>（<code>営業ウェブアプリ要求.md</code>）にあり、モデルとまだ接続されていない → <a href="#asym" style="color:var(--chk)">METHOD §3</a><div class="stwrap"><span class="st st-open">未接続</span></div></div>
+<div class="node n-done"><b>仕様を満たした資料が、買い手を通るか</b>12版分のあいだ一度も測っていなかったものを、<b>予測器8＋盲検買い手16＝24体</b>で測った。資料は第12.9版の8体（<b>機械の側では停止 0/8・pass 7/8</b>）。<br><b>結果：⑥は16人中0人が通過。</b>①通過4/揺らぐ0/棄却0 ②4/8/0 ③3/8/1 ④4/8/0 ⑤3/4/<b>9</b> ⑥<b>0/1/15</b>。素通りしたセル 0/8、誰かが棄却したセル 8/8。<br>①〜④は設計どおり（②が「揺らぐ」で止まるのは正しい形で 8/8）。<b>破れたのは⑤と⑥である</b><em>第13版・47分・75.6万トークン</em><div class="stwrap"><span class="st st-done">測った</span> <span class="st st-open">⑥の全滅は未解決</span></div></div>
+<div class="node n-open"><b>⑥を落とした15人の理由</b><b>空欄・未記入のまま決められない 15/15</b>／<b>金額の幅が大きすぎて稟議に載らない 15/15</b>／決めてから動くまでの時間と日程が合わない 12／費目削減が実行座席の同意なしに断定形 10／自分の様式の語で読めない量がある 9／戻りが小さくて引き合わない 4<div class="stwrap"><span class="st st-open">解決策は設計済み・未実装</span></div></div>
+<div class="node n-done"><b>A28 の「三つ目の出口」が、買い手側では主因だった</b>第12.9版で「<code>s6_to_sales</code> が空でないセル 8/8。三つ目の出口は全セルで使われた」と書いたが、<b>その空欄が⑥を落とした15人全員の第一の理由</b>だった。機械は「空欄＋申し送り」を通し、買い手は通さない<em>A35</em><div class="stwrap"><span class="st st-done">正体が分かった</span></div></div>
+<div class="node n-done"><b>A16／Π₂ 通関律が、初めて測れた</b>手前の座席が⑥を棄却したセル <b>8/8</b>（予測1〜3）。機械は A23紙側 0/8・A16 0/8 で「全座席に量が届いている」と言っていた。「その360〜560時間はうちの年間パート人時の<b>コンマ0何%</b>です」<b>様式語で書かれていても、比較の相手が無ければ通らない</b><em>第8版の「上申は座席3つで 0/4」が再現</em><div class="stwrap"><span class="st st-done">対応物ができた</span></div></div>
+<div class="node n-open"><b>R17（侮辱）は、対応物ができた途端に外した</b><b>6/16</b> が「受け入れるには自分が決めてきたことを取り消さねばならない」と書いたのに、機械は8体すべて <code>R17_NO_INSULT</code>。<code>check_insult</code> が見ているのは <code>s5_denies_own</code> という<b>自己申告だけ</b>である<em>A39</em><div class="stwrap"><span class="st st-open">紙側が無い</span></div></div>
+<div class="node n-done"><b>予測を先に置いたから、外れの中身が読めた</b>予測8項目中4的中。<b>外れ4件のうち2件は私の照合の欠陥</b>だった ―― <code>own_retracted</code> は「取り消す必要は生じなかった」という<b>文章での否定</b>を非nullと数え、「タダ」の照合は接続詞「ただ、」に当たっていた。<b>A25・A34 と同じ型で本日3例目</b>。直して 6 と 2<div class="stwrap"><span class="st st-done">方法が働いた例</span></div></div>
+<div class="node n-open"><b>そしてこの第2段も、帰納ではない</b>盲検買い手は依然として LLM ＝ <b>theoretically-informed conjecture</b>。測れたのは「<b>モデルの想定する買い手像</b>を通るか」まで。実際、<code>cost_to_buyer</code> を渡していないのに「卸の販促支援はうちには<b>一円もかからない</b>」と2人が言った ―― <b>材料が無いのに出た</b>。予測器と買い手の一致は 63%（90%超なら同じ事前分布から出ている証拠になるところだった）。帰納の場は<b>閲覧ログ</b>にあり、まだ接続されていない → <a href="#asym" style="color:var(--chk)">METHOD §3</a><div class="stwrap"><span class="st st-open">未接続</span></div></div>
 </div>
 </div>
 
@@ -1328,7 +1344,7 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <span><span class="st st-open">開いている</span> 未解決</span>
 <span><span class="st st-hold">据え置き</span> 直せるが、直すと結論が変わるので判断待ち</span>
 <span><span class="st st-done">閉じた</span> 修正して回帰に入れた／実測で分かった（第12.1〜12.8版）</span>
-<span><span class="st st-wait">効果は未測定</span> コードには入ったが、走行で確かめていない</span>
+<span><span class="st st-wait">効果は未測定／設計済み</span> コードには入ったが走行で確かめていない、または設計だけで未実装</span>
 <span><span class="st st-lat">潜在</span> 実データでは未発生</span>
 </div>
 
@@ -1374,16 +1390,16 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <tr style="background:#e9f5ee"><td>済</td><td><b>N₆ 要求の四つ組を置いた</b><br><small>第12.7版・SPEC §13 ／ <code>REQS</code>・<code>audit_requirements()</code></small></td><td>型1 と型4 をまとめて潰す規定。<b>走らせずに型1 の6〜11例目が出た</b>。A30・A32 は吸収され、個別に足す必要がなくなった</td></tr>
 <tr style="background:#e9f5ee"><td>済</td><td><b>A34 を直した</b><br><small>第12.8版・記入欄の照合を緩めた</small></td><td>外れた予測1件の中身が、因子ではなく<b>物差しの欠陥</b>だった。直したら3体とも停止 0 で予測が全的中</td></tr>
 <tr style="background:#e9f5ee"><td>済</td><td><b>8体を揃えて A26・A27・A28 を測った</b><br><small>第12.9版・6体／17分／22.3万トークン。<b>停止 0/8・pass 7/8・予測21項目中19的中</b></small></td><td>外れた2件は<b>どちらも予測より強い方向</b> ―― 旧 R10a の偽陽性は予測より1件多く、裏づけの無い座席は 12/19（予測 6〜10）。<b>⑥の分離は採らないで決着</b></td></tr>
-<tr style="background:#fbf2e2"><td><b>1</b></td><td><b>第2段を走らせる</b><br><small>Arm 1 の生成物に予測者と盲検買い手（16体）</small></td><td><b>本丸。</b>ここまで測ったのは <code>validate_copy</code> が「仕様を満たす」と言うかどうかだけ。<b>ただし買い手ペルソナは Γ^own・τ の適用範囲・M・W を渡していない</b> ―― R17 侮辱検査は買い手側に対応物を持たない。先にペルソナ仕様を組み直す必要がある。<b>そしてこれも帰納ではない</b></td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><b>第2段を走らせた（予測器8＋盲検買い手16）</b><br><small>第13版・24体／47分／75.6万トークン。買い手ペルソナを再構築（Γ^own・τ の適用範囲と拘束者・M と費用・W と willing を渡す）</small></td><td><b>⑥は16人中0人が通過。</b>仕様の充足は通過の十分条件から遠い。A16／Π₂ が初めて測れ（手前の座席が⑥を棄却 8/8）、R17 に初めて対応物ができ（6/16）、そして両方とも機械は 0 と言っていた</td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><b>解決策を設計した</b><br><small>第13.1版・<code>claude/第13.1版-解決策の設計.md</code></small></td><td>9件は3つに畳めた。<b>新しい原理は要らない</b> ―― N₂・N₃・N₄ の適用漏れ。幅の上限は<b>符号で判定すれば発明しなくてよい</b></td></tr>
+<tr style="background:#fbf2e2"><td><b>1</b></td><td><b>A37（LT を⑥の日付へ）だけ実装して走らせる</b><br><small>検査に下限を1つ足すだけ。<code>validate_copy</code> に <code>lt_months</code> を渡す</small></td><td><b>最も安く、最も確実。</b>12/15 が挙げた理由が消えるかを、他を動かさずに測れる。約20分・35万トークン。<b>走行前に「日程を理由にした棄却 12 → 0〜3」を置いてある</b></td></tr>
+<tr><td>2</td><td><b>N₄′ ＋ <code>R20</code> 決定可能性を実装する</b><br><small><code>s6_kappa_by_seat</code> → <code>s6_quantities</code>（座席→〈基準・払う・戻る・分母〉）</small></td><td>15/15＋9/15＋8/8 が掛かる<b>本命</b>。⑥の構造を変えるので、走行前に予測・決定表の不変・指示文への到達を確認する。<b>判定条件：<code>R20_UNDECIDABLE</code> 6〜8/8、⑥棄却 15 → 6〜10人。戻らなければ診断が誤り</b></td></tr>
+<tr><td>3</td><td><b>N₃′ 様相</b><br><small><code>s6_realize</code> に第4成分</small></td><td>10/15。A21 が初めて生成に効く</td></tr>
+<tr><td>4</td><td><b>R17 の紙側</b></td><td>6/16。ただし 2 の後で減っているはず</td></tr>
+<tr><td>5</td><td><b>入力側 ―― <code>d</code> に精度と確度／定義域は必ず ⊥ を含む／<code>cost_to_buyer</code> に単位</b></td><td>16業界の256件。<b>25業界の記入がどこまで通るか</b>で測る</td></tr>
+<tr><td>6</td><td><b>入力側 ―― <code>LT_months</code>・<code>E_*</code>・<code>seats</code> を〈買い手×商材〉へ</b></td><td>型1 だが直し方は「配列にする」ではない。<b>ν・σp・β2 の置き場所問題と同じ形</b>なので、商材の6因子束と一緒に決める</td></tr>
 
-<tr><td>2</td><td><b>A29 の定義域を決める</b><br><small>出所は「読む座席」か「置いた量すべて」か</small></td><td>監査が名指しした<b>唯一の未解決の順序</b>。直すのは定義域の一行</td></tr>
-<tr><td>3</td><td><b>監査が出した型1 の6件を直す</b><br><small><code>s3_form_mapping</code>／<code>s6_coverage_*</code>／<code>s6_kappa_type</code>／<code>s5_denies_own</code>／写像の値2件</small></td><td>スキーマが6欄変わるので、<b>直すと次の走行が過去と比べられなくなる</b>。8体を揃えてからにする</td></tr>
-<tr><td>4</td><td><b>残りの交絡を割る</b><br><small>座席列の残り4本／商材の6因子束／<code>procedural</code> を True にする</small></td><td><code>procedural</code> は測定ではなく、<b>一度も点いたことのない <code>B_layer_a</code> を動かす</b>ため</td></tr>
-
-<tr><td>5</td><td><b>結果を見て A27 の次の手を決める</b><br><small>⑥を〈本文〉と〈運搬の道具〉に分けるか</small></td><td><code>A27_BLOCK_OMITTED</code> が複数出たら分離へ進む根拠になる。出なければ優先順位の規定だけで足りた</td></tr>
-<tr><td>6</td><td><b>Arm 1 を確定させる</b> → <code>prompts8_v12.py</code><br><small>あわせて<b>⑥の申告欄を割る</b>（型1 の処置）</small></td><td>基準の連結は照合側で吸収したが、<b>本筋は欄を割ること</b>。A24 と同じ</td></tr>
-<tr><td>7</td><td><b>第2段を走らせる</b><br><small>Arm 1 の生成物に予測者と盲検買い手（16体）</small></td><td><b>本丸。</b>同時に G1（様式語の照合を全座席に掛けてよいか）も測れる。<b>ただしこれも帰納ではない</b>（<a href="#asym" style="color:var(--chk)">METHOD §3</a>）</td></tr>
-<tr><td>8</td><td><b>閲覧ログとモデルを接続する</b><br><small>カスタム資料に軸の値をメタデータで持たせる</small></td><td><b>ここで初めて帰納の場ができる。</b>モデルは「どのページがどれだけ読まれるか」を予測しており、アプリはそれを実測する。両者がまだ繋がっていない</td></tr>
+<tr><td>7</td><td><b>閲覧ログとモデルを接続する</b><br><small>カスタム資料に軸の値をメタデータで持たせる</small></td><td><b>ここで初めて帰納の場ができる。</b>モデルは「どのページがどれだけ読まれるか」を予測しており、アプリはそれを実測する。両者がまだ繋がっていない</td></tr>
 </table>
 
 <h2><span class="n">SCALE</span>規模と実測</h2>
@@ -1405,7 +1421,7 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 
 <div class="foot">
 <p>営業資料生成モデル 第12.1版 ／ 数値はすべて <code>decisions8_v10.json</code>（as-run）・<code>run8_v11.json</code>・<code>verified8_v11.json</code>・<code>sales_logic.py</code> の実測値から。<br>
-関連文書：<code>claude/引き継ぎ書-第12.2版.md</code>（<b>新しいスレッドはここから</b>）、<code>claude/第12.6版-交絡の2体.md</code>・<code>claude/第12.5版-モデル残余.md</code>（<b>直近</b>）・<code>claude/第12.4版-A28設計.md</code>・<code>claude/第12.3版-A26A27実装.md</code>（直近の実装）、<code>claude/第12.2版-R10a再測定.md</code>（§4-2 の走行）、<code>claude/第12.1版-物差しの検分.md</code>（§4-1 の全結果と根拠）、<code>claude/abductive-analysis組み込み.md</code>（<b>方法の出典。METHOD 節の全文</b>）、<code>claude/モデルv11-仕様.md</code>（形式系の本体）、<code>claude/第12版-アーム実験レポート.md</code>（アーム実験の詳細・<b>stop の数字は訂正前</b>）、<code>claude/統合検討-既存理論と本モデル.md</code>（既存研究との対応）。</p>
+関連文書：<code>claude/引き継ぎ書-第12.2版.md</code>（<b>新しいスレッドはここから</b>）、<code>claude/第13.1版-解決策の設計.md</code>・<code>claude/第13版-第2段レポート.md</code>（<b>直近</b>）・<code>claude/第12.9版-8体で測る.md</code>・<code>claude/第12.6版-交絡の2体.md</code>・<code>claude/第12.5版-モデル残余.md</code>（<b>直近</b>）・<code>claude/第12.4版-A28設計.md</code>・<code>claude/第12.3版-A26A27実装.md</code>（直近の実装）、<code>claude/第12.2版-R10a再測定.md</code>（§4-2 の走行）、<code>claude/第12.1版-物差しの検分.md</code>（§4-1 の全結果と根拠）、<code>claude/abductive-analysis組み込み.md</code>（<b>方法の出典。METHOD 節の全文</b>）、<code>claude/モデルv11-仕様.md</code>（形式系の本体）、<code>claude/第12版-アーム実験レポート.md</code>（アーム実験の詳細・<b>stop の数字は訂正前</b>）、<code>claude/統合検討-既存理論と本モデル.md</code>（既存研究との対応）。</p>
 <p style="margin-top:10px;color:var(--sub);font-size:12.5px">この文書で<b>取り消した記述</b>：「R10a は提示の問題ではない」（<b>提示の問題だった</b>。第12.2版で測り直し 4→2）／「この商材では R10a は充足不能かもしれない」（道は2本あった）／「Arm 1 が A16 を消した」（A16 は物差しの誤りだった）／Arm 0 の stop 10・A16 2・R10b 2（正しくは 6・0・0）／「Arm 1 は必要な3セルだけが自分で上限を破った」（再走行では6セル。<b>⑥の字数は同じ指示で 450〜1506 に振れる</b>）／<b>⑥の字数をアームの差の根拠に使っていたこと自体</b>（検査対象ですらなかった。第12.3版で採点根拠から外した）。</p>
 </div>
 
