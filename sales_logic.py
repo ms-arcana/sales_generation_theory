@@ -202,6 +202,7 @@ class Nu:
     upstream: frozenset = frozenset()          # A7：買い手の上位にいる当事者
     downstream: frozenset = frozenset()        # A7：買い手が上位に立つ相手
     gamma_pre: Dict[str, str] = field(default_factory=dict)   # A10：資料の外で成立済みの段
+    busy_months: Tuple[int, ...] = ()          # A43：買い手の繁忙期（月の番号）。空＝未聞取り（⊥）
 
 
 @dataclass
@@ -272,6 +273,20 @@ class Declared:
     # 出口が無いから、作るか落とすかの二択になっていた。A28 は三つ目の出口を作る。
     s6_quantity_sources: Optional[Dict[str, str]] = None   # 座席名 → その座席へ置いた量の出所
     s6_to_sales: Optional[Tuple[str, ...]] = None          # 営業に算出・判断を仰ぐ項目
+    # N₄′（第13.5b版）：**量は〈単位〉だけでなく〈比較の相手〉を持つ。**
+    # N₄ は「量は単位を持つ」としか言っていない。だから s6_kappa_by_seat は
+    # 〈座席 → 基準〉の二つ組で足りているように見えた。ところが座席は基準を読むのではなく、
+    # **払うものと戻るものを、同じ単位で並べて**決める。単位が違えば並べられない。
+    # 第13版・第13.5版で買い手が繰り返し言ったのはこれである ――
+    #   「出ていく額だけ決まっていて、戻る額が全部空欄だ」（R2-P2／社長）
+    #   「時間の数字はうちの会議には載りません」（R1-P2／商品本部バイヤー）
+    # s6_kappa_by_seat（座席→基準）を s6_quantities（座席→五つ組）へ広げる。
+    #   ⟨基準, 払う, 戻る, 分母, 出所⟩
+    # 旧欄は残す（旧走行との突合のため）。新欄があればそちらを正とする。
+    s6_quantities: Optional[Tuple[Dict[str, object], ...]] = None
+    # 形式（第13.4版）：⑥は散文である必要が無い。生成ゴールはスライドである。
+    # 字数上限は**散文の部分にだけ**掛ける。表に入れた分は数えない。
+    s6_table_rows: Optional[int] = None        # ⑥に置いた表の行数（表を使っていなければ 0）
 
 
 @dataclass(frozen=True)
@@ -932,6 +947,90 @@ def add_months(d: date, m: int) -> date:
     return date(y, mo, min(d.day, 28))
 
 
+def decision_gates(n: Nu, today: date) -> List[TauItem]:
+    """A41（第13.5b版）：**④から落とした日付が、⑥の決定日をまだ縛る。**
+
+    A8 は「〈今やる理由〉の日付は、買い手より**上位**の当事者が握っていなければならない」
+    と言う。学内の入試委員会・購買委員会のような**買い手の内側**の座席が握る日は落ちる。
+    規則としては正しい。内側の委員会は外からの圧力を作らないからである。
+
+    ところが `persona12.py` は買い手に**生の τ をそのまま**渡すので、買い手はその日を知っている。
+    第13.5版で E1 の 4/4 が、この日を**決定的な**棄却理由に挙げた。
+
+      「学内の入試委員会が握る年1回の 2027-05-31 を18日過ぎて逃す
+        （**この日は資料に一言も出てこない**）」 ―― E1-P2／入試広報課長
+
+    **④から落とすことと、⑥で無視してよいことは別である。**
+    落とした日付は「なぜ今か」には使えないが、「いつなら決められるか」は依然として縛る。
+    A37・A37b と同じ形（一つの担体に二つの役）の三例目。
+
+    決定の窓とみなす条件：拘束者が居り、その誰もが上位に居らず、かつ決定が締まる日であること。
+    拘束者が空（＝誰も握っていない）ものは窓ではない。
+    """
+    out = []
+    for t in n.tau:
+        if t.d is None or t.d <= today:
+            continue
+        if not t.binders or any(b in n.upstream for b in t.binders):
+            continue
+        if t.decision is False:          # 結果が現れる日であって決定の日ではない（A18）
+            continue
+        out.append(t)
+    return sorted(out, key=lambda t: t.d)
+
+
+def check_gates(dec: Declared, gates: Sequence[Tuple[str, str, int]],
+                s4_text: str = "") -> Tuple[List[Finding], List[Judgment]]:
+    """A41：決定日が、買い手の内側の窓を越えていないか。④に持ち出していないか。
+
+    gates … (日付, 拘束者, 逃したときの待ち月数) の列。compile_deal が並べる。
+    """
+    f, j = [], []
+    if not gates:
+        return f, j
+    dcd = dec.s6_decide_date or dec.s6_start_date
+    d0 = iso_date(dcd) if dcd else None
+    first = min(iso_date(g[0]) for g in gates if iso_date(g[0]))
+    if d0 is None:
+        j.append(Judgment("A41_GATE_UNCHECKED", f"窓{first} 決定日の申告なし"))
+    elif d0 > first:
+        f.append(Finding("A41_DECIDE_AFTER_GATE", "stop", f"決定{d0} > 窓{first}"))
+    # ④に出してはならない（〈今やる理由〉の担体ではない）。出ていれば A8 の趣旨を破る
+    for gd, gb, _w in gates:
+        if s4_text and (gd in s4_text or (gb and gb in s4_text)):
+            f.append(Finding("A41_GATE_IN_S4", "stop", f"{gd}/{gb}"))
+    return f, j
+
+
+def audit_tau_forms(n: Nu) -> List[Judgment]:
+    """A42（第13.5b版）：**D（γ＝斜・逓増）と置いた項が、実は〈段・再来〉ではないか。**
+
+    D は境界が無い（費用がなだらかに増えるだけ）。だから単独では「なぜ今か」を作れず、
+    `TD_ALONE` で落ちる。規則としては正しい。
+
+    ところが第13.5版で、R の 2027-04-01（D 形）を買い手 4/4 が**年1回の硬い窓**として扱った。
+
+      「5月28日という締切は、私が以前から知っている **4月1日の窓を一年分越えている**」
+
+    春の定番改訂は逓増ではない。落としたら次は一年後である。
+    境界が無いはずのものに〈決定が締まる日〉や〈逃したときの待ち月数〉が付いていたら、
+    それは γ＝斜ではなく〈段・再来〉＝ B/C である。**入力側の型ずれ。**
+    機械は真偽を見られないので（A22）、停止ではなく要判断で出す。
+    """
+    out = []
+    for t in n.tau:
+        if t.form != "D":
+            continue
+        ref = f"D:{t.d}"
+        if t.decision:
+            out.append(Judgment("A42_D_WITH_DECISION", ref))
+        if t.wait_months is not None:
+            out.append(Judgment("A42_D_WITH_WAIT", f"{ref} 待ち{t.wait_months}m"))
+        if t.windows and t.windows > 1:
+            out.append(Judgment("A42_D_WITH_WINDOWS", f"{ref} x{t.windows}"))
+    return out
+
+
 def start_deadline(ok: List[TauItem], lt: int) -> Optional[date]:
     """④が示す**決定期限日**。A/C の終端日から実効リードタイムを引いた最小値。
 
@@ -1186,7 +1285,8 @@ def compile_deal(n: Nu, seller: Seller, today: date,
     r7 = check_R7(live, seller) + check_R4(n, live, seller)
     _, ij = iso_cases(n, seller)
     findings = pre + tf + df + [cf] + r7 + check_cost(n, live) + check_D5_binder(n, live)
-    judgments = tj + ij + wj + sj + check_axis_values(n)  # 第12.1版：表引きの定義域と ν の二重の真実
+    judgments = (tj + ij + wj + sj + check_axis_values(n)   # 第12.1版：表引きの定義域と ν の二重の真実
+                 + audit_tau_forms(n))                     # A42：D と置いた項の型ずれ
     findings, judgments = apply_calibration(findings, judgments, industry)
     stop = [x for x in findings if x.level == "stop"]
     return {
@@ -1212,6 +1312,11 @@ def compile_deal(n: Nu, seller: Seller, today: date,
                             if start_deadline(tau_ok, effective_LT(n)) else None),
         "lt_months": n.LT_months,          # A37：⑥の日付に掛ける（買い手が決めてから動くまで）
         "today": today.isoformat(),
+        # A41：④から落とした〈買い手の内側の窓〉。④には出さず、⑥の決定日を縛る
+        "decision_gates": [(t.d.isoformat(), "／".join(t.binders), t.wait_months)
+                           for t in decision_gates(n, today)],
+        "omega": n.prod.omega if n.prod else None,        # A43：効果発現ラグ（導出）
+        "busy_months": list(n.busy_months),               # A43：買い手の繁忙期（入力・空＝⊥）
         "talk_guide": talk_guide(n, S, uncal),
         "blocks": blocks_on(n, S, live, {t.form for t in tau_ok}),
         "rules": fire_rules(n, tau_ok, live, S),
@@ -1394,10 +1499,13 @@ def check_quantity_sources(copy: Dict[str, str], dec: Declared,
     """
     f, j = [], []
     body = copy.get("⑥", "")
-    seats = list(dec.s6_kappa_by_seat or {})
+    seats = list(quantities_by_seat(dec))   # N₄′：同上
     if not chain or not seats:
         return f, j                      # A23 側で既に要判断へ積まれている
     src = dec.s6_quantity_sources
+    if src is None and dec.s6_quantities:      # N₄′：五つ組が出所を持っている
+        src = {_q_seat(q): str(q.get('source', '')) for q in dec.s6_quantities if _q_seat(q)}
+        src = {k: v for k, v in src.items() if v}
     if src is None:
         j.append(Judgment("A28_SOURCE_UNDECLARED", ",".join(seats)))
         return f, j
@@ -1465,7 +1573,9 @@ def check_blocks(dec: Declared, blocks: Sequence[str]) -> Tuple[List[Finding], L
 
 def check_realize(dec: Declared, executors: Sequence[Tuple[str, Sequence[str]]],
                   unwilling: Sequence[str] = (),
-                  start: Optional[str] = None) -> Tuple[List[Finding], List[Judgment]]:
+                  start: Optional[str] = None,
+                  omega: Optional[int] = None,
+                  busy_months: Sequence[int] = ()) -> Tuple[List[Finding], List[Judgment]]:
     """R13（A12）：〈誰が・いつ・どの費目を〉の三つ組。両替は写像ではなく行為である。
 
     A24（第12版）：三つ組は**集合**である。単数の欄しか無かったので、
@@ -1512,12 +1622,100 @@ def check_realize(dec: Declared, executors: Sequence[Tuple[str, Sequence[str]]],
         elif actor in set(unwilling):
             f.append(Finding("A21_NAMED_ACTOR_REFUSES", "stop", actor))
     # A37（第13.5版）：費目は着手より前には減らない。N₃ の〈いつ〉に因果の下限を与える。
+    # A43（第13.5b版）：**順序を入れても、季節を入れていなかった。**
+    # 第13.5版で順序は 8/8 満たしたが、置かれた日は「お盆直前」「秋の繁忙期の直前」
+    # 「効果が出る前」だった。4体が挙げた。下限は二つある。
+    #
+    #   (a) 効果発現ラグ ω … 着手してから数字に出るまで。**導出**（prod.omega）。
+    #       出ていない効果の分を先に減らすことはできない。
+    #   (b) 買い手の繁忙期 … **入力**（busy_months）。空なら未聞取り（⊥）で判定しない。
     s0 = iso_date(start) if start else None
     if s0:
+        need = add_months(s0, omega) if omega is not None else None
         for _a, d_, c_ in acts:
             dd = iso_date(str(d_))
-            if dd and dd < s0:
+            if dd is None:
+                continue
+            if dd < s0:
                 f.append(Finding("A37_REALIZE_BEFORE_START", "stop", f"{c_} {dd} < 着手{s0}"))
+            elif need and dd < need:
+                f.append(Finding("A43_REALIZE_BEFORE_EFFECT", "stop",
+                                 f"{c_} {dd} < 着手{s0}+ω{omega}m={need}"))
+    if omega is None:
+        j.append(Judgment("A43_OMEGA_UNKNOWN", "効果発現ラグが渡されていない"))
+    if busy_months:
+        for _a, d_, c_ in acts:
+            dd = iso_date(str(d_))
+            if dd and dd.month in set(busy_months):
+                f.append(Finding("A43_REALIZE_IN_BUSY", "stop", f"{c_} {dd}（繁忙期）"))
+    else:
+        j.append(Judgment("A43_BUSY_UNKNOWN", "買い手の繁忙期が聞き取られていない"))
+    return f, j
+
+
+UNIT_UNKNOWN = ("", "―", "-", "未定", "不明", "⊥", "None", "null")
+
+
+def _q_seat(q: Dict[str, object]) -> str:
+    return str(q.get("seat", "")).strip()
+
+
+def quantities_by_seat(dec: Declared) -> Dict[str, str]:
+    """N₄′ の新欄から、旧 `s6_kappa_by_seat`（座席→基準）を作る。
+
+    A16・A23 の既存検査を書き換えずに済ませるための橋。新欄が無ければ旧欄をそのまま返す。
+    """
+    if not dec.s6_quantities:
+        return dec.s6_kappa_by_seat or {}
+    out = dict(dec.s6_kappa_by_seat or {})
+    for q in dec.s6_quantities:
+        s = _q_seat(q)
+        if s:
+            out.setdefault(s, str(q.get("kappa", "")))
+    return out
+
+
+def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Sequence[str], str]]
+                    ) -> Tuple[List[Finding], List[Judgment]]:
+    """R20（第13.5b版）：**その座席は、この紙だけで決められるか。**
+
+    N₄′ から直に出る。座席が決めるとは〈払う〉と〈戻る〉を**同じ単位で**並べて、
+    どちらが大きいかを言うことである。したがって決定可能であるためには
+
+      (1) 払う・戻るの両方が在る（どちらかが ⊥ なら比べられない ―― N₂）
+      (2) 二つの単位が一致する（違えば並べられない ―― N₄′）
+      (3) 分母が在る（「何あたり」が無ければ量ではなく数字である）
+
+    第13版・第13.5版で買い手が最も多く言ったのは (1) である。
+    「出ていく額だけ決まっていて、戻る額が全部空欄だ」。
+    機械はそれを一度も見ていなかった ―― **戻る額の欄が無かった**から。
+    """
+    f, j = [], []
+    if dec.s6_quantities is None:
+        j.append(Judgment("R20_QUANTITIES_UNDECLARED"))
+        return f, j
+    seats = {c[0] for c in chain}
+    got = {_q_seat(q) for q in dec.s6_quantities}
+    for name in sorted(seats - got):
+        f.append(Finding("R20_SEAT_NO_QUANTITY", "stop", name))
+    for q in dec.s6_quantities:
+        s = _q_seat(q) or "(座席なし)"
+        pay, ret = q.get("pay"), q.get("ret")
+        pu, ru = str(q.get("pay_unit", "")).strip(), str(q.get("ret_unit", "")).strip()
+        den = str(q.get("per", "")).strip()
+        if pay in (None, "") or str(pay).strip() in UNIT_UNKNOWN:
+            f.append(Finding("R20_PAY_MISSING", "stop", s))
+        if ret in (None, "") or str(ret).strip() in UNIT_UNKNOWN:
+            f.append(Finding("R20_RETURN_MISSING", "stop", s))
+        if pu in UNIT_UNKNOWN or ru in UNIT_UNKNOWN:
+            j.append(Judgment("R20_UNIT_UNDECLARED", f"{s} 払う={pu or '⊥'} 戻る={ru or '⊥'}"))
+        elif pu != ru:
+            f.append(Finding("R20_UNIT_MISMATCH", "stop", f"{s} {pu} vs {ru}"))
+        if den in UNIT_UNKNOWN:
+            j.append(Judgment("R20_DENOMINATOR_MISSING", s))
+        src = str(q.get("source", "")).strip()
+        if src in UNIT_UNKNOWN:
+            j.append(Judgment("R20_SOURCE_UNDECLARED", s))
     return f, j
 
 
@@ -1567,7 +1765,7 @@ def check_chain(dec: Declared,
         return f, j                      # A5 側で要判断に積まれている
     # A23（第11版）：⑥に置く量は単一ではなく、読む座席ごとの組である。
     # Π2 の ∀k から直に出るのに、第10版までの実装は s6_kappa 一つで全座席を賄おうとしていた。
-    by_seat = dec.s6_kappa_by_seat or {}
+    by_seat = quantities_by_seat(dec)      # N₄′：新欄があればそちらを正とする
     if chain and not by_seat:
         j.append(Judgment("A23_PER_SEAT_UNDECLARED", ",".join(c[0] for c in chain)))
     # ⑥に既に在る基準（②の単位を保持していれば実務性も在る＝A6 の併記）
@@ -1779,7 +1977,10 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
                   industry: Optional[str] = None,
                   blocks: Sequence[str] = (),
                   today: Optional[date] = None,
-                  lt_months: Optional[int] = None) -> dict:
+                  lt_months: Optional[int] = None,
+                  gates: Sequence[Tuple[str, str, int]] = (),
+                  omega: Optional[int] = None,
+                  busy_months: Sequence[int] = ()) -> dict:
     """第12.1版：商材座標と業界を受け取れるようにした。
 
     第10版は「較正表は業界の関数ではなく商材座標の関数である」と言い、`expr_ok_of` を入れたが、
@@ -1792,9 +1993,11 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
     f = check_v0(copy) + uf
     f2, j = check_declared(dec, set(kappa_final), kept, stages, n_seats, ex)
     f += f2; j += uj
-    f3, j3 = check_realize(dec, executors, unwilling,
-                           dec.s6_start_date); f += f3; j += j3   # A37：着手より前に減らない
+    f3, j3 = check_realize(dec, executors, unwilling, dec.s6_start_date,
+                           omega, busy_months); f += f3; j += j3   # A37・A43
     f4, j4 = check_dates_v7(dec, deadline, today, lt_months); f += f4; j += j4   # A37
+    fg, jg = check_gates(dec, gates, copy.get("④", "")); f += fg; j += jg        # A41
+    fq, jq = check_decidable(dec, chain); f += fq; j += jq                       # R20 / N₄′
     f5, j5 = check_insult(dec, gamma_own or {}); f += f5; j += j5
     f6, j6 = check_chain(dec, chain, kept, ex); f += f6; j += j6
     f += check_seat_words(copy, dec, chain)      # A23 の紙側（申告だけで通さない）
@@ -1868,12 +2071,14 @@ REQS: Tuple[Req, ...] = (
     Req("s6_residual_period_months", "周期", "④の事象が提案後に再発する周期", "1",
         "④の事象が一つだから（A26）", "-", "月数の申告。0 は再発しない", "導出", "R10a の比較対象。課金周期には落とさない（A26）"),
     Req("s5_is_constraint_disclosure", "書き方", "⑤の本文", "1", "⑤全体に掛かる一つの述語",
-        "-", "能力の否定でなく条件下の不成立の形か", "導出"),
+        "-", "能力の否定でなく条件下の不成立の形か", "導出",
+        "衝突しない（定義域が交わらない。第13.5b版に対で見るようにして出てきた三つ）"),
     Req("s6_ends_imperative", "書き方", "⑥の本文", "1", "⑥全体に掛かる一つの述語",
         "-", "命令法で締めていないこと", "較正"),
     Req("s6_contains_promise", "書き方", "⑥の本文", "1", "同上", "-", "約束法を使っていないこと", "較正"),
     Req("s6_recasts_unit", "書き方", "⑥における②の単位の扱い", "1", "単位が一つだから（s2_unit）",
-        "-", "換算したかの申告。併記でも真", "導出"),
+        "-", "換算したかの申告。併記でも真", "導出",
+        "衝突しない（定義域が交わらない。第13.5b版に対で見るようにして出てきた三つ）"),
     Req("s6_kappa", "基準", "最終裁定点の κ_n", "n", "", "-",
         "κ_n に挙がっている基準を、その数だけ配列で挙げること（第12.5b版）", "導出"),
     Req("s6_coverage_full", "被覆", "④で数えた量", "n", "", "-",
@@ -1895,18 +2100,28 @@ REQS: Tuple[Req, ...] = (
         "-", "ISO 形式で、決定日 ＋ LT_months 以降であること（A37）", "導出",
         "決定日と対（決定→LT→着手の順で、競合しない）"),
     Req("s6_self_check", "書き方", "⑤で他手段を落とした条件", "1",
-        "⑤の条件集合全体に掛かる一つの述語（A14）", "-", "自社案にも当てて確かめたか", "導出"),
+        "⑤の条件集合全体に掛かる一つの述語（A14）", "-", "自社案にも当てて確かめたか", "導出",
+        "衝突しない（定義域が交わらない。第13.5b版に対で見るようにして出てきた三つ）"),
     Req("s5_denies_own", "買い手の既承認", "Γ^own", "n", "", "-",
         "⑤が否定してしまっている既承認を挙げる。無ければ空（R17 の ∃）", "導出"),
     Req("s6_kappa_by_seat", "量", "資料を読む座席", "n", "", "n",
         "座席ごとに、その座席の様式語で読める量を置く（A23）。一座席に量が複数なら複数",
-        "導出"),
+        "導出", "s6_quantities に譲る（五つ組が基準を含む。旧走行との突合のために残す）"),
     Req("s6_omitted_blocks", "必須要素", "⑥に点灯した必須要素", "n", "", "-",
         "書けなかった要素を挙げる。空なら全部書いた（A27）", "導出"),
     Req("s6_quantity_sources", "量", "⑥に置いた量のすべて（読む座席の分だけではない）", "n", "", "n",
-        "量ごとに出所を挙げる。裏づけの無い出所には本文側の要求が付く（A28）", "導出"),
+        "量ごとに出所を挙げる。裏づけの無い出所には本文側の要求が付く（A28）", "導出",
+        "s6_quantities に譲る（五つ組が出所を含む。A29 の同順位対はここで解けた）"),
     Req("s6_to_sales", "申し送り", "自分で確定できなかった数字と判断", "n", "", "-",
         "営業が読んで動ける言葉で列挙。無ければ空（A28）", "導出"),
+    # N₄′（第13.5b版）。s6_kappa_by_seat の担体を広げたもの。両方が同じ担体に掛かるので、
+    # 強さは新欄を上に置く（衝突したら五つ組が勝つ）＝ N6_ENTRENCH_TIE を出させないため。
+    Req("s6_quantities", "量", "資料を読む座席", "n", "", "n",
+        "座席ごとに〈基準・払う・戻る・分母・出所〉を置く。"
+        "払うと戻るは同じ単位でなければ並べられない（N₄′・R20）", "導出＋"),
+    Req("s6_table_rows", "形式", "⑥に置いた表", "1",
+        "表の行数は一つの数である（表そのものは列で分かれているので連結が起きない）",
+        "-", "字数の判定から表を外すための数。表を使わなければ 0（第13.4版）", "較正"),
 )
 
 # 廃止した欄（A24 で三つ組へ畳んだ。監査の対象外）
@@ -1955,11 +2170,15 @@ def audit_requirements() -> List[Judgment]:
     by_carrier: Dict[str, List[Req]] = {}
     for r in REQS:
         by_carrier.setdefault(r.carrier, []).append(r)
+    # 第13.5b版：ここは**集合全体**を見ていたので、担体に3件目を足して強さを1段変えるだけで
+    # 判定が消えた。同順位の**対**が残っていれば衝突は残っている。対で見る。
+    # （N₄′ を足したとき、既にあった A29 の同順位対が黙って消えた ―― 監査自身の型3。）
     for carrier, rs in by_carrier.items():
         unresolved = [r for r in rs if not r.yields_to.strip()]
-        if len(rs) >= 2 and len({r.entrench for r in rs}) == 1 \
-                and len({r.domain for r in rs}) > 1 and len(unresolved) >= 2:
-            j.append(Judgment("N6_ENTRENCH_TIE",
-                              f"担体={carrier} 強さ={rs[0].entrench} "
-                              f"定義域={sorted(r.domain for r in unresolved)}"))
+        for i, a in enumerate(unresolved):
+            for b in unresolved[i + 1:]:
+                if a.entrench == b.entrench and a.domain != b.domain:
+                    j.append(Judgment("N6_ENTRENCH_TIE",
+                                      f"担体={carrier} 強さ={a.entrench} "
+                                      f"定義域={sorted((a.domain, b.domain))}"))
     return j

@@ -1,9 +1,9 @@
 {
  "_stamp": {
-  "git": "8f0cc26",
-  "tag": "v13.4",
+  "git": "65a1b22",
+  "tag": "v13.5",
   "dirty": true,
-  "sales_logic_sha256_12": "790f7e3949dc"
+  "sales_logic_sha256_12": "437c75dc9bb0"
  },
  "data": [
   {
@@ -165,6 +165,21 @@
    "lt_months": 3,
    "today": "2026-08-06",
    "decide_deadline": null,
+   "decision_gates": [
+    [
+     "2027-05-31",
+     "学内の入試委員会",
+     null
+    ]
+   ],
+   "omega": 3,
+   "busy_months": [
+    10,
+    11,
+    12,
+    1,
+    2
+   ],
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -422,6 +437,21 @@
    "lt_months": 6,
    "today": "2026-08-06",
    "decide_deadline": null,
+   "decision_gates": [
+    [
+     "2027-05-31",
+     "学内の入試委員会",
+     null
+    ]
+   ],
+   "omega": 6,
+   "busy_months": [
+    10,
+    11,
+    12,
+    1,
+    2
+   ],
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -673,6 +703,15 @@
    "lt_months": 3,
    "today": "2026-08-06",
    "decide_deadline": "2026-12-28",
+   "decision_gates": [],
+   "omega": 3,
+   "busy_months": [
+    10,
+    11,
+    12,
+    1,
+    2
+   ],
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -886,6 +925,15 @@
    "lt_months": 6,
    "today": "2026-08-06",
    "decide_deadline": "2027-06-28",
+   "decision_gates": [],
+   "omega": 6,
+   "busy_months": [
+    10,
+    11,
+    12,
+    1,
+    2
+   ],
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -1126,6 +1174,14 @@
    "lt_months": 3,
    "today": "2026-08-06",
    "decide_deadline": "2027-05-28",
+   "decision_gates": [],
+   "omega": 1,
+   "busy_months": [
+    7,
+    8,
+    9,
+    12
+   ],
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -1191,6 +1247,11 @@
      "code": "NU_AXIS_CONFLICT",
      "ref": "Nu.A='使っても分からない' prod.nu='使えば分かる'",
      "msg": "検証時点が二箇所で食い違っている（旧 A と商材座標 ν）。座標のほうを正として点灯を決めた"
+    },
+    {
+     "code": "A42_D_WITH_DECISION",
+     "ref": "D:2027-04-01",
+     "msg": "D（逓増・境界なし）と置いた項に〈決定が締まる日〉が付いている。型が〈段・再来〉＝B/C ではないか（入力側）"
     }
    ],
    "seats": [
@@ -1408,6 +1469,14 @@
    "lt_months": 6,
    "today": "2026-08-06",
    "decide_deadline": "2026-09-28",
+   "decision_gates": [],
+   "omega": 6,
+   "busy_months": [
+    7,
+    8,
+    9,
+    12
+   ],
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -1474,6 +1543,11 @@
      "code": "A21_WILLING_UNKNOWN",
      "ref": "商品本部バイヤー",
      "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+    },
+    {
+     "code": "A42_D_WITH_DECISION",
+     "ref": "D:2027-04-01",
+     "msg": "D（逓増・境界なし）と置いた項に〈決定が締まる日〉が付いている。型が〈段・再来〉＝B/C ではないか（入力側）"
     }
    ],
    "seats": [
@@ -1686,6 +1760,14 @@
    "lt_months": 3,
    "today": "2026-08-06",
    "decide_deadline": "2027-05-28",
+   "decision_gates": [],
+   "omega": 1,
+   "busy_months": [
+    7,
+    8,
+    9,
+    12
+   ],
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -1739,6 +1821,11 @@
      "code": "NU_AXIS_CONFLICT",
      "ref": "Nu.A='使っても分からない' prod.nu='使えば分かる'",
      "msg": "検証時点が二箇所で食い違っている（旧 A と商材座標 ν）。座標のほうを正として点灯を決めた"
+    },
+    {
+     "code": "A42_D_WITH_DECISION",
+     "ref": "D:2027-04-01",
+     "msg": "D（逓増・境界なし）と置いた項に〈決定が締まる日〉が付いている。型が〈段・再来〉＝B/C ではないか（入力側）"
     }
    ],
    "seats": [
@@ -1931,6 +2018,14 @@
    "lt_months": 6,
    "today": "2026-08-06",
    "decide_deadline": "2026-09-28",
+   "decision_gates": [],
+   "omega": 6,
+   "busy_months": [
+    7,
+    8,
+    9,
+    12
+   ],
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -1992,6 +2087,11 @@
      "code": "A21_WILLING_UNKNOWN",
      "ref": "社長",
      "msg": "その執行座席が実行に同意しているかを聞き取っていない"
+    },
+    {
+     "code": "A42_D_WITH_DECISION",
+     "ref": "D:2027-04-01",
+     "msg": "D（逓増・境界なし）と置いた項に〈決定が締まる日〉が付いている。型が〈段・再来〉＝B/C ではないか（入力側）"
     }
    ],
    "seats": [

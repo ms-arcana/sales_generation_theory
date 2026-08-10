@@ -91,6 +91,15 @@ for c0 in B.CELLS:
     if seg in ("E2", "R2"):
         nu.M = [m for m in nu.M if "D5" not in m.dims]
     nu.M = [M_OROSHI if "卸" in m.name else m for m in nu.M]
+    # A43（第13.5b版）：買い手の繁忙期。**これは較正値であり、導出ではない。**
+    # 出所は第13.5版の買い手16体の言葉そのもの（`stage135/buyers.json`）。
+    #   「一般選抜の出願が立ち上がるところ」「2027年12月27日までの繁忙期」   → 学校 12・1・2月
+    #   「募集説明会の準備が始まる時期そのもの」                             → 学校 10・11月
+    #   「お盆の直前」「一年で一番人手の要る時期」「秋の改訂」               → 小売 7・8・9月・12月
+    # したがって「買い手が繁忙期を理由に棄却しなくなるか」は**循環に近い**。
+    # ここで測れるのは〈渡した季節を生成器が守るか〉だけである。
+    # 導出の側（効果発現ラグ ω）は循環しない。予測ではこの二つを分けて置く。
+    nu.busy_months = (10, 11, 12, 1, 2) if seg.startswith("E") else (7, 8, 9, 12)
     c["nu"] = nu; CELLS.append(c)
 
 SELLERS = {k: replace(v, named_cases=CASES["ad" if k=="ad" else "it"])
@@ -108,7 +117,8 @@ def run(dump="decisions8_v10.json"):
         rec.update({k: d.get(k) for k in
             ("generate","sigma","j_star","kappa_n","form_n","tau_ok","delta","five_mentions",
              "d7_basis","blocks","rules","executors","start_deadline","chain","talk_guide",
-             "lt_months","today","decide_deadline")})
+             "lt_months","today","decide_deadline",
+             "decision_gates","omega","busy_months")})   # A41・A43
     # A37：⑥の日付は〈決定〉〈着手〉〈実現〉の三段。表に載せないと指示へ渡らない
     # A37b：start_deadline の担体は決定期限。鍵名は旧走行との突合のために残し、正しい名を足す
         rec["findings"]=[{"code":f.code,"level":f.level,"ref":f.ref,

@@ -982,11 +982,15 @@ check("N₆ 申告欄はすべて要求として書かれている（漏れが�
 check("N₆ 監査は現に型1 を見つける（走らせずに8件）",
       _codes.count("N6_FIELD_SCALAR") + _codes.count("N6_VALUE_SCALAR") == 8,
       [x.ref for x in _a if x.code in ("N6_FIELD_SCALAR", "N6_VALUE_SCALAR")])
-check("N₆ 未解決の順序は A29 の一件だけ", _codes.count("N6_ENTRENCH_TIE") == 1,
+# 第13.5b版：A29（担体＝量の同順位対）は N₄′ の五つ組が解いた ―― 旧2欄が新欄に譲る。
+# 同時に、監査自身の型3 が出た。強さの衝突を**集合全体**で見ていたので、担体に3件目を足して
+# 強さを1段変えるだけで判定が消えた。**対で見る**ように直したら、隠れていた3件が出た（担体＝書き方）。
+# その3件は定義域が交わらないので衝突しない ―― 明示的にそう書いて解いた。
+check("N₆ 未解決の順序はもう無い（A29 は N₄′ が解いた）", _codes.count("N6_ENTRENCH_TIE") == 0,
       [x.ref for x in _a if x.code == "N6_ENTRENCH_TIE"])
 check("N₆ s3_form_mapping は座席ごとなのに単数（実測でも3座席を連結していた）",
       any("s3_form_mapping" in x.ref for x in _a if x.code == "N6_FIELD_SCALAR"))
-check("N₆ 監査の総件数を固定する（新しい欄を黙って足せない）", len(_a) == 9, len(_a))
+check("N₆ 監査の総件数を固定する（新しい欄を黙って足せない）", len(_a) == 8, len(_a))
 
 print("\n── 第12.8版 A34：記入欄の照合が浅かった（型2・A25 と同型）")
 import re as _re2
@@ -1082,5 +1086,106 @@ for _c in _dec37:
 check("A37b 8セルとも、指示を満たす〈決定日・着手日〉が実在する（充足可能）", not _bad37, _bad37)
 check("A37b 決定表は decide_deadline を持ち、start_deadline と同値（鍵名は据え置き）",
       all(_c.get("decide_deadline") == _c.get("start_deadline") for _c in _dec37))
+
+
+print("\n── 第13.5b版 A41：④から落とした〈決定の窓〉が、⑥の決定日を縛る")
+from sales_logic import (check_gates, decision_gates, audit_tau_forms,
+                         check_decidable, quantities_by_seat)
+_G = (("2027-05-31", "学内の入試委員会", None),)
+_f, _j = check_gates(Declared(s6_decide_date="2027-06-20", s6_self_check=True), _G)
+check("A41 決定日が窓より後なら停止",
+      "A41_DECIDE_AFTER_GATE" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_gates(Declared(s6_decide_date="2027-05-01", s6_self_check=True), _G)
+check("A41 窓以前なら通る", not _f, [x.code for x in _f])
+_f, _j = check_gates(Declared(s6_decide_date="2027-05-01"), _G, "④の本文に 2027-05-31 と書いた")
+check("A41 窓を④の〈今やる理由〉に持ち出したら停止",
+      "A41_GATE_IN_S4" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_gates(Declared(), _G)
+check("A41 決定日の申告が無ければ、停止せず申し送る",
+      not _f and any(x.code == "A41_GATE_UNCHECKED" for x in _j),
+      ([x.code for x in _f], [x.code for x in _j]))
+_f, _j = check_gates(Declared(s6_decide_date="2030-01-01"), ())
+check("A41 窓が無ければ何も出ない", not _f and not _j)
+import cells8_v10 as _C
+_g8 = {c["id"]: [t.d.isoformat() for t in decision_gates(c["nu"], _C.TODAY)] for c in _C.CELLS}
+check("A41 8セルの窓は E1 の2セルだけに立つ",
+      sorted(k for k, v in _g8.items() if v) == ["E1-P1", "E1-P2"], _g8)
+from stamp import load as _load41
+check("A41 窓は④に渡っていない（tau_ok に入っていない）",
+      all("2027-05-31" not in [x[1] for x in
+          next(r for r in _load41("decisions8_v12.json") if r["id"] == cid)["tau_ok"]]
+          for cid in ("E1-P1", "E1-P2")))
+
+print("\n── 第13.5b版 A42：D（逓増）と置いた項の型ずれ")
+check("A42 D に〈決定が締まる日〉が付いていたら申し送る",
+      any(x.code == "A42_D_WITH_DECISION" for x in audit_tau_forms(_C.CELLS[4]["nu"])),
+      [x.code for x in audit_tau_forms(_C.CELLS[4]["nu"])])
+check("A42 D を持たないセルでは何も出ない", not audit_tau_forms(_C.CELLS[0]["nu"]))
+_n42 = sum(1 for c in _C.CELLS if audit_tau_forms(c["nu"]))
+check("A42 は8セル中4セル（R1・R2）で立つ", _n42 == 4, _n42)
+
+print("\n── 第13.5b版 A43：実現日に季節を掛ける（ω は導出／繁忙期は入力）")
+_EX43 = [("店長", ["パート人時"])]
+_f, _j = check_realize(Declared(s6_realize=(("店長", "2027-05-01", "パート人時"),)),
+                       _EX43, (), "2027-04-01", 3, ())
+check("A43 効果が出る前に減らしていたら停止",
+      "A43_REALIZE_BEFORE_EFFECT" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_realize(Declared(s6_realize=(("店長", "2027-07-01", "パート人時"),)),
+                       _EX43, (), "2027-04-01", 3, ())
+check("A43 着手＋ω 以降なら通る",
+      not [x for x in _f if x.code.startswith("A43")], [x.code for x in _f])
+_f, _j = check_realize(Declared(s6_realize=(("店長", "2027-08-15", "パート人時"),)),
+                       _EX43, (), "2027-04-01", 1, (7, 8, 9, 12))
+check("A43 繁忙期に置いたら停止",
+      "A43_REALIZE_IN_BUSY" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_realize(Declared(s6_realize=(("店長", "2027-10-01", "パート人時"),)),
+                       _EX43, (), "2027-04-01", 1, ())
+check("A43 繁忙期が渡っていなければ、停止せず申し送る（⊥。無いのではない）",
+      not [x for x in _f if x.code == "A43_REALIZE_IN_BUSY"]
+      and any(x.code == "A43_BUSY_UNKNOWN" for x in _j), [x.code for x in _j])
+_f, _j = check_realize(Declared(s6_realize=(("店長", "2027-10-01", "パート人時"),)),
+                       _EX43, (), "2027-04-01", None, (7,))
+check("A43 ω が渡っていなければ、停止せず申し送る",
+      not [x for x in _f if x.code == "A43_REALIZE_BEFORE_EFFECT"]
+      and any(x.code == "A43_OMEGA_UNKNOWN" for x in _j), [x.code for x in _j])
+
+print("\n── 第13.5b版 N₄′／R20：その座席は、この紙だけで決められるか")
+_CH = [("店長", ["実務性"], ["作業時間"], "実在"), ("社長", ["財源"], ["営業利益"], "実在")]
+
+
+def _q(seat, pay="120", pu="万円", ret="180", ru="万円", per="年あたり",
+       src="試算", kappa="財源"):
+    return {"seat": seat, "kappa": kappa, "pay": pay, "pay_unit": pu,
+            "ret": ret, "ret_unit": ru, "per": per, "source": src}
+
+
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長"), _q("社長"))), _CH)
+check("R20 払う・戻るが同じ単位で揃っていれば通る", not _f, [x.code for x in _f])
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長", ret=None), _q("社長"))), _CH)
+check("R20 戻るが空なら停止（買い手が最も多く挙げた形）",
+      "R20_RETURN_MISSING" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長", ru="人時"), _q("社長"))), _CH)
+check("R20 単位が違えば停止", "R20_UNIT_MISMATCH" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長"),)), _CH)
+check("R20 量の無い座席があれば停止",
+      "R20_SEAT_NO_QUANTITY" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長", per=""), _q("社長"))), _CH)
+check("R20 分母が無ければ申し送る（停止ではない）",
+      not _f and any(x.code == "R20_DENOMINATOR_MISSING" for x in _j),
+      ([x.code for x in _f], [x.code for x in _j]))
+_f, _j = check_decidable(Declared(), _CH)
+check("R20 五つ組の申告が無ければ、停止せず申し送る",
+      not _f and any(x.code == "R20_QUANTITIES_UNDECLARED" for x in _j), [x.code for x in _j])
+check("N₄′ 新欄があれば A23/A28 の橋が座席→基準を作る",
+      quantities_by_seat(Declared(s6_quantities=(_q("店長"),))) == {"店長": "財源"})
+check("N₄′ 新欄が無ければ旧欄をそのまま返す",
+      quantities_by_seat(Declared(s6_kappa_by_seat={"店長": "実務性"})) == {"店長": "実務性"})
+
+
+print("\n── 第13.5b版：四つの制約が重なった指示が、充足可能であること")
+# 第13.5版 A37b の教訓。制約を足すたびに、**走らせる前に総当たりで確かめる**。
+from feasible136 import feasible as _feas
+_infeasible = [r["id"] for r in _load41("decisions8_v12.json") if not _feas(r)]
+check("充足可能性 8セルとも〈決定・着手・実現〉の解が在る", not _infeasible, _infeasible)
 
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")

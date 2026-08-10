@@ -75,6 +75,12 @@ def to_declared(dd):
     if dd.get("s6_quantity_sources"):
         qsrc = {x["seat"]: x["source"] for x in dd["s6_quantity_sources"]
                 if isinstance(x, dict) and x.get("seat")}
+    # N₄′（第13.5b版）：座席ごとの五つ組。旧2欄（s6_kappa_by_seat / s6_quantity_sources）は
+    # 新欄が在るときは `quantities_by_seat` が橋渡しするので、ここでは素通しでよい。
+    quants = None
+    if dd.get("s6_quantities"):
+        quants = tuple(dict(x) for x in dd["s6_quantities"]
+                       if isinstance(x, dict) and x.get("seat"))
     to_sales = None
     if dd.get("s6_to_sales") is not None:
         to_sales = tuple(str(x).strip() for x in dd["s6_to_sales"] if str(x).strip())
@@ -104,6 +110,8 @@ def to_declared(dd):
         s6_omitted_blocks=omitted,
         s6_quantity_sources=qsrc,
         s6_to_sales=to_sales,
+        s6_quantities=quants,                              # N₄′
+        s6_table_rows=dd.get("s6_table_rows"),             # 形式
     )
 
 
@@ -124,7 +132,10 @@ def score(d, g):
                       industry=d.get("industry"),
                       blocks=d.get("blocks") or [],
                       today=date.fromisoformat(d["today"]) if d.get("today") else None,
-                      lt_months=d.get("lt_months"))   # A37
+                      lt_months=d.get("lt_months"),                      # A37
+                      gates=[tuple(g) for g in (d.get("decision_gates") or [])],   # A41
+                      omega=d.get("omega"),                              # A43（導出）
+                      busy_months=d.get("busy_months") or ())            # A43（較正）
     return copy, D, v
 
 
