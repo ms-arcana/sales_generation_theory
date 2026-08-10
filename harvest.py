@@ -23,9 +23,9 @@ def main():
             rec = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if rec.get("type") != "completed":
+        if rec.get("type") not in ("result", "completed"):
             continue
-        val = rec.get("result")
+        val = rec.get("result", rec.get("value"))
         if isinstance(val, str):
             try:
                 val = json.loads(val)
