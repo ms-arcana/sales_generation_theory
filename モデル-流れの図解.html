@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第12.8版）</title>
+<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第12.9版）</title>
 <style>
 :root{
   --ink:#1a1c22; --sub:#5d6470; --line:#d8dbe2; --bg:#fbfbfc;
@@ -158,7 +158,7 @@ pre.rawprompt{white-space:pre-wrap;word-break:break-word;font-size:11.5px;line-h
 <div class="wrap">
 
 <h1>公理から営業メッセージまで、何がどう決まっているか</h1>
-<p class="sub">営業資料生成モデル 第12.8版 ／ 流れの図解 ／ 2026-08-09 更新（tag v12.8 ／ <b>N₆ 要求の四つ組を追加。交絡を3本割り（すべて帰無）</b> ／ A26・A27・A28 は実装済み・<b>効果は未測定</b>）</p>
+<p class="sub">営業資料生成モデル 第12.9版 ／ 流れの図解 ／ 2026-08-09 更新（tag v12.9 ／ <b>8体を揃えて A26・A27・A28 を測った（予測21項目中19的中）</b> ／ A26・A27・A28 は実装済み・<b>効果は未測定</b>）</p>
 
 <p class="sub" style="margin:-32px 0 40px">
 <b>近道</b> → <a href="#method" style="color:var(--gen)">METHOD 方法の出典</a>（なぜこの形なのか）／<a href="#now" style="color:var(--model)">NOW 現在地</a>／<a href="#open" style="color:var(--chk)">OPEN いま開いている問題</a>
@@ -1260,8 +1260,8 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="nodes">
 <div class="node n-done"><b>指示が複数形を誘うのに欄が単数</b>κ_n を「価格・財源」と連結表示したまま、欄は単数だった（型1 の未処置分）。<b>指示の側と欄の側を両方直した</b> ―― 連結表示6箇所を〈鉤括弧で割り個数を明示〉へ（座席一覧と連鎖行も同じ処置）、そのうえで <code>s6_kappa</code> を<b>配列</b>で申告させる。連結は<code>kappa_merged</code>で「一要素の中の連結」だけを捕まえる<em>第12.5b版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
 <div class="node n-done"><b><code>BAN</code> と <code>V0</code> のずれ</b>検査する語のうち4つ（<code>warrant</code>・承認を積・資本として・消去対象）を生成器に渡していなかった。<b>渡していない語で落とすのは仕様のほうの不備である</b>（A27・A28 と同じ形）。手書きの表を二つ持つのをやめ、<b><code>BAN</code> を <code>V0</code> ∪ <code>V0_RE</code> から導出</b>した ―― 配管の刻みと同じ処置で、離れようがなくなる<em>第12.5b版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
-<div class="node n-wait"><b>必須要素と字数上限が両立していなかった</b>優先順位を規定した——<b>要素は必須、字数は目安</b>（導出 &gt; 較正）。落ちを隠させない欄も作った<em>A27</em><div class="stwrap"><span class="st st-done">5体で実測（落ち 0、字数は 450→平均2218）</span> <span class="st st-wait">最も厳しい Σ2枚は未走行</span></div></div>
-<div class="node n-wait"><b>⑥は〈本文〉と〈運搬の道具〉が混ざっている</b>必須要素13個は 説得の本文8 ＋ 起案理由文・上申用サマリ・記入スロット・層A・下向き資料5。上限を本文だけに掛ければ 41字/要素 → 56〜64字。<b>採らずに残した。</b>いま分離すると切り分けられなくなるので走行の後に回した。<b>5体で <code>A27_BLOCK_OMITTED</code> は 0</b> ―― ただし<b>最も厳しい Σ=⑤⑥ の2枚だけのセル（E1-P2・R1-P2）は一度も走っていない</b><div class="stwrap"><span class="st st-wait">残り6体の走行待ち</span></div></div>
+<div class="node n-wait"><b>必須要素と字数上限が両立していなかった</b>優先順位を規定した——<b>要素は必須、字数は目安</b>（導出 &gt; 較正）。落ちを隠させない欄も作った<em>A27</em><div class="stwrap"><span class="st st-done">8体で決着 ―― 落ち 0/8。最も厳しい Σ=⑤⑥ でも 0</span></div></div>
+<div class="node n-wait"><b>⑥は〈本文〉と〈運搬の道具〉が混ざっている</b>必須要素13個は 説得の本文8 ＋ 起案理由文・上申用サマリ・記入スロット・層A・下向き資料5。上限を本文だけに掛ければ 41字/要素 → 56〜64字。<b>採らない、で決着した。</b>第12.3版は「次の走行で <code>A27_BLOCK_OMITTED</code> が複数出たら分離へ進む根拠になる。出なければ優先順位の規定だけで足りたということ」と書いた。<b>8体で 0、最も厳しい Σ=⑤⑥ の2体でも 0。</b>E1-P2 は必須要素<b>16項目</b>を2枚に収めきり、落とした要素は無いと申告した<em>第12.9版</em><div class="stwrap"><span class="st st-done">条件が満たされた（分離は不要）</span></div></div>
 <div class="node n-hold"><b>Arm 1 の確定が未了</b><code>prompts8_v12.py</code> はまだ無い<div class="stwrap"><span class="st st-hold">§4-3</span></div></div>
 </div>
 </div>
@@ -1270,10 +1270,11 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <div class="band b-chk">
 <div class="bandlab">検査<span>validate_copy</span></div>
 <div class="nodes">
-<div class="node n-wait"><b>R10a が測っていた対象が違った</b>比較対象を課金周期から〈提案後に問題が残る周期〉へ差し替えた。回帰は偽陰性側・偽陽性側の両方に入れてある<em>A26</em><div class="stwrap"><span class="st st-done">5体で実測（欄が 5/5 で埋まり、混同 0）</span> <span class="st st-wait">it商材・Σ2枚は未走行</span></div></div>
-<div class="node n-wait"><b>⑥に置く量に出所を要求していなかった</b>④には受領記録まで要求し、⑥にはゼロ欄。試算は禁じず、<b>分からないものは営業へ回す出口</b>を作った<em>A28</em><div class="stwrap"><span class="st st-done">5体で実測（13座席中 裏づけ無し 8。生成器は認めた）</span> <span class="st st-wait">it商材は未走行</span></div></div>
+<div class="node n-wait"><b>R10a が測っていた対象が違った</b>比較対象を課金周期から〈提案後に問題が残る周期〉へ差し替えた。回帰は偽陰性側・偽陽性側の両方に入れてある<em>A26</em><div class="stwrap"><span class="st st-done">8体で決着 ―― 欄 8/8、混同 0、偽陽性の除去は予測より1件多い</span></div></div>
+<div class="node n-wait"><b>⑥に置く量に出所を要求していなかった</b>④には受領記録まで要求し、⑥にはゼロ欄。試算は禁じず、<b>分からないものは営業へ回す出口</b>を作った<em>A28</em><div class="stwrap"><span class="st st-done">8体で決着 ―― 19座席中 裏づけ無し 12（診断は予測より強く支持された）</span></div></div>
 <div class="node n-hold"><b>様式語の照合が全座席に掛かる</b>Form が閉じているのは制度由来だけ（SPEC §10.1）。<b>アーム差はこの1本だけに乗っている</b><em>G1</em><div class="stwrap"><span class="st st-hold">据え置き（判断済）</span></div></div>
 <div class="node n-done"><b>記入欄の照合が「括弧の中は空白だけ」を仮定</b>生成器はラベルを括弧の<b>中</b>に入れる（【　　　ポイント】【パート平均時給：　　　】）。R1-P1K は記入欄を<b>9つ</b>置いていたのに一つも当たらず、<code>A28_SLOT_ABSENT</code> で<b>偽の停止</b>を出した。A25 と同型（型2）で処置も同じ<em>A34・第12.8版</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
+<div class="node n-open"><b>⑥の字数上限450字が、実態と4.5倍ずれている</b>8体の実測は平均2029・最大2491。要素を優先させると必ずこうなる。上限は<b>較正表</b>（「そのままスライドに貼れる」という観測されていない前提）なので、<b>前提のほうが成り立たなくなった</b>。値そのものを見直す番<em>第12.9版</em><div class="stwrap"><span class="st st-open">開いている</span></div></div>
 <div class="node n-open"><b>名前の完全一致</b>実行者名・費目名・座席名。24体では不一致 0件だが、生成器は現に単位へ説明句を付けてきた<div class="stwrap"><span class="st st-lat">潜在</span></div></div>
 <div class="node n-done"><b>単位語の正規化が浅い</b>宣言が文になると照合語が取れない／1文字の単位は必ず停止<em>A25b</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
 <div class="node n-done"><b>基準名の連結</b><code>s6_kappa="価格・財源"</code> を「無い基準」と読み <b>A16 を出していた</b><em>A25c</em><div class="stwrap"><span class="st st-done">閉じた</span></div></div>
@@ -1372,7 +1373,9 @@ R10a: s4_declares_repetition ∧ s6_residual_period_months ≠ 0
 <tr style="background:#e9f5ee"><td>済</td><td><b>交絡を3本割った</b><br><small>第12.6・12.8版・5体／19分／17.4万トークン。E1-P1R／R1-P1K／E1-P1G</small></td><td><b>三本とも帰無。</b>そして |κ_n| と origin は R18 が結びつけているので<b>原理的に分離できない</b>と分かった</td></tr>
 <tr style="background:#e9f5ee"><td>済</td><td><b>N₆ 要求の四つ組を置いた</b><br><small>第12.7版・SPEC §13 ／ <code>REQS</code>・<code>audit_requirements()</code></small></td><td>型1 と型4 をまとめて潰す規定。<b>走らせずに型1 の6〜11例目が出た</b>。A30・A32 は吸収され、個別に足す必要がなくなった</td></tr>
 <tr style="background:#e9f5ee"><td>済</td><td><b>A34 を直した</b><br><small>第12.8版・記入欄の照合を緩めた</small></td><td>外れた予測1件の中身が、因子ではなく<b>物差しの欠陥</b>だった。直したら3体とも停止 0 で予測が全的中</td></tr>
-<tr style="background:#fbf2e2"><td><b>1</b></td><td><b>残り6体を走らせて8体を揃える</b><br><small>E1-P2・E2-P1・E2-P2・R1-P2・R2-P1・R2-P2（Arm 1・v12.8）。約20分・35万トークン</small></td><td>いまの5体は<b>全部 ad商材・E1/R1 系</b>で偏っている。抜けているのは <b>it商材</b>（裏づけの取れる座席が入れ替わる）と <b>Σ=⑤⑥ の2枚だけのセル</b>（A27 が最も厳しい形。<b>一度も走っていない</b>）と <b>A26 の偽陰性側</b>。揃えば <code>predict_v12_3.md</code> の8体中の件数がそのまま検証できる</td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><b>8体を揃えて A26・A27・A28 を測った</b><br><small>第12.9版・6体／17分／22.3万トークン。<b>停止 0/8・pass 7/8・予測21項目中19的中</b></small></td><td>外れた2件は<b>どちらも予測より強い方向</b> ―― 旧 R10a の偽陽性は予測より1件多く、裏づけの無い座席は 12/19（予測 6〜10）。<b>⑥の分離は採らないで決着</b></td></tr>
+<tr style="background:#fbf2e2"><td><b>1</b></td><td><b>第2段を走らせる</b><br><small>Arm 1 の生成物に予測者と盲検買い手（16体）</small></td><td><b>本丸。</b>ここまで測ったのは <code>validate_copy</code> が「仕様を満たす」と言うかどうかだけ。<b>ただし買い手ペルソナは Γ^own・τ の適用範囲・M・W を渡していない</b> ―― R17 侮辱検査は買い手側に対応物を持たない。先にペルソナ仕様を組み直す必要がある。<b>そしてこれも帰納ではない</b></td></tr>
+
 <tr><td>2</td><td><b>A29 の定義域を決める</b><br><small>出所は「読む座席」か「置いた量すべて」か</small></td><td>監査が名指しした<b>唯一の未解決の順序</b>。直すのは定義域の一行</td></tr>
 <tr><td>3</td><td><b>監査が出した型1 の6件を直す</b><br><small><code>s3_form_mapping</code>／<code>s6_coverage_*</code>／<code>s6_kappa_type</code>／<code>s5_denies_own</code>／写像の値2件</small></td><td>スキーマが6欄変わるので、<b>直すと次の走行が過去と比べられなくなる</b>。8体を揃えてからにする</td></tr>
 <tr><td>4</td><td><b>残りの交絡を割る</b><br><small>座席列の残り4本／商材の6因子束／<code>procedural</code> を True にする</small></td><td><code>procedural</code> は測定ではなく、<b>一度も点いたことのない <code>B_layer_a</code> を動かす</b>ため</td></tr>
