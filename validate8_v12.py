@@ -13,6 +13,7 @@
 """
 import glob
 import json
+from datetime import date
 import os
 import re
 import sys
@@ -94,6 +95,7 @@ def to_declared(dd):
         s6_coverage_disclosed=dd.get("s6_coverage_disclosed"),
         s6_coverage_subset=dd.get("s6_coverage_subset"),
         s6_kappa_type=dd.get("s6_kappa_type"),
+        s6_decide_date=dd.get("s6_decide_date"),
         s6_start_date=dd.get("s6_start_date"),
         s6_self_check=dd.get("s6_self_check"),
         s5_denies_own=dd.get("s5_denies_own"),
@@ -120,7 +122,9 @@ def score(d, g):
                       unwilling=d.get("unwilling") or [],
                       prod=Product(**d["prod"]) if d.get("prod") else None,
                       industry=d.get("industry"),
-                          blocks=d.get("blocks") or [])
+                      blocks=d.get("blocks") or [],
+                      today=date.fromisoformat(d["today"]) if d.get("today") else None,
+                      lt_months=d.get("lt_months"))   # A37
     return copy, D, v
 
 

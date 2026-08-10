@@ -169,7 +169,7 @@ def val7(**over):
 
 
 v = val7()
-check("三つ組が揃い、着手日が期限内なら通る", v["pass"],
+check("三つ組が揃い、着手日が期限内なら停止しない", not stops(v),
       [f.code for f in v["findings"] if f.level == "stop"] + [j.code for j in v["needs_judgment"]])
 
 v = val7(s6_realize_actor="調達本部")
@@ -264,7 +264,7 @@ def val8(**over):
 
 
 v = val8()
-check("R17 買い手の既承認を否定していなければ通る", v["pass"],
+check("R17 買い手の既承認を否定していなければ停止しない", not stops(v),
       [f.code for f in v["findings"] if f.level == "stop"] + [j.code for j in v["needs_judgment"]])
 
 v = val8(s5_denies_own="現在の人材派遣会社は3年前に自分で選定した")
@@ -1008,5 +1008,79 @@ check("A34 ラベル入りの記入欄があれば A28_SLOT_ABSENT は出ない"
 _f2, _ = check_quantity_sources({"⑥": "見込みは【確定】です。試算です。"}, _d, _ch)
 check("A34 記入欄が本当に無ければ従来どおり停止する",
       any(x.code == "A28_SLOT_ABSENT" for x in _f2), [x.code for x in _f2])
+
+
+print("\n── 第13.5版 A37：LT が⑥の日付に掛かる（決定日／着手日／実現日の三段）")
+from datetime import date as _date
+from sales_logic import check_dates_v7, check_realize, add_months
+_TD = _date(2026, 8, 6)
+_f, _j = check_dates_v7(Declared(s6_decide_date="2026-09-01", s6_start_date="2026-09-15",
+                                 s6_self_check=True), "2026-12-28", _TD, 3)
+check("A37 着手が決定＋LT を待っていなければ停止",
+      "A37_START_BEFORE_LT" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_dates_v7(Declared(s6_decide_date="2026-09-01", s6_start_date="2026-12-01",
+                                 s6_self_check=True), "2026-12-28", _TD, 3)
+check("A37 決定＋LT 以降なら通る", not [x for x in _f if x.code.startswith("A37")],
+      [x.code for x in _f])
+_f, _j = check_dates_v7(Declared(s6_decide_date="2026-07-01", s6_start_date="2026-12-01",
+                                 s6_self_check=True), "2026-12-28", _TD, 3)
+check("A37 決定日が過去なら停止", "A37_DECIDE_PAST" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_dates_v7(Declared(s6_start_date="2026-09-01", s6_self_check=True),
+                        "2026-12-28", _TD, 3)
+check("A37 欄を分けていない旧版は、着手日を決定日として読み、申し送る",
+      any(x.code == "A37_DECIDE_UNDECLARED" for x in _j), [x.code for x in _j])
+_f, _j = check_dates_v7(Declared(s6_decide_date="2026-09-01", s6_start_date="2026-12-01",
+                                 s6_self_check=True), "2026-12-28", _TD, None)
+check("A37 LT が渡されていなければ、停止せず申し送る",
+      not [x for x in _f if x.code.startswith("A37")]
+      and any(x.code == "A37_LT_UNKNOWN" for x in _j), ([x.code for x in _f], [x.code for x in _j]))
+_EX37 = [("入試広報課長", ["媒体費"])]
+_f, _j = check_realize(Declared(s6_realize=(("入試広報課長", "2026-11-01", "媒体費"),)),
+                       _EX37, (), "2026-12-01")
+check("A37 費目を減らす日が着手より前なら停止",
+      "A37_REALIZE_BEFORE_START" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_realize(Declared(s6_realize=(("入試広報課長", "2027-04-01", "媒体費"),)),
+                       _EX37, (), "2026-12-01")
+check("A37 着手より後なら通る", not [x for x in _f if x.code.startswith("A37")],
+      [x.code for x in _f])
+check("A37 add_months は月末を28日に丸める（sub_months と対）",
+      add_months(_date(2026, 11, 30), 3) == _date(2027, 2, 28)
+      and add_months(_date(2026, 12, 1), 1) == _date(2027, 1, 1))
+
+print("\n── 第13.5版 A37b：④からの逆算日は〈決定期限〉であって着手期限ではない")
+# 逆算日は決定日に掛かる。着手日には上限が無い。
+# ここを取り違えると「決定 ≤ D かつ 着手 ≤ D かつ 着手 ≥ 決定+LT」となり、充足不能な指示になる。
+_f, _j = check_dates_v7(Declared(s6_decide_date="2026-09-28", s6_start_date="2027-03-28",
+                                 s6_self_check=True), "2026-09-28", _TD, 6)
+check("A37b 決定が期限ちょうど・着手がその LT か月後なら、停止は出ない",
+      not [x for x in _f], [x.code for x in _f])
+_f, _j = check_dates_v7(Declared(s6_decide_date="2026-10-01", s6_start_date="2027-04-01",
+                                 s6_self_check=True), "2026-09-28", _TD, 6)
+check("A37b 逆算日を過ぎた決定日は、従来どおり停止（担体は決定日に移っても検査は残る）",
+      "R12b_START_AFTER_DEADLINE" in [x.code for x in _f], [x.code for x in _f])
+check("A37b 着手日に上限は無い（逆算日より後でも、それだけでは停止しない）",
+      not any(x.code.startswith("A37") for x in
+              check_dates_v7(Declared(s6_decide_date="2026-08-10", s6_start_date="2030-01-01",
+                                      s6_self_check=True), "2026-09-28", _TD, 6)[0]))
+# 8セルの指示が充足可能か（決定期限と LT から、置ける決定日・着手日が実在するか）
+from stamp import load as _load37
+_dec37 = _load37("decisions8_v12.json")
+_bad37 = []
+for _c in _dec37:
+    _dl, _lt, _td37 = _c.get("decide_deadline") or _c.get("start_deadline"), _c["lt_months"], _c["today"]
+    if not _dl:
+        continue
+    _d0, _t0 = iso_date(_dl), iso_date(_td37)
+    if _d0 < _t0:                      # 決定期限がすでに過去なら置きようがない
+        _bad37.append((_c["id"], "決定期限が過去"))
+        continue
+    _f37, _ = check_dates_v7(Declared(s6_decide_date=_dl,
+                                      s6_start_date=add_months(_d0, _lt).isoformat(),
+                                      s6_self_check=True), _dl, _t0, _lt)
+    if _f37:
+        _bad37.append((_c["id"], [x.code for x in _f37]))
+check("A37b 8セルとも、指示を満たす〈決定日・着手日〉が実在する（充足可能）", not _bad37, _bad37)
+check("A37b 決定表は decide_deadline を持ち、start_deadline と同値（鍵名は据え置き）",
+      all(_c.get("decide_deadline") == _c.get("start_deadline") for _c in _dec37))
 
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")

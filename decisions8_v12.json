@@ -1,9 +1,9 @@
 {
  "_stamp": {
-  "git": "44681e1",
-  "tag": "v12.8",
-  "dirty": false,
-  "sales_logic_sha256_12": "28181539e212"
+  "git": "8f0cc26",
+  "tag": "v13.4",
+  "dirty": true,
+  "sales_logic_sha256_12": "790f7e3949dc"
  },
  "data": [
   {
@@ -162,6 +162,9 @@
     ]
    ],
    "talk_guide": [],
+   "lt_months": 3,
+   "today": "2026-08-06",
+   "decide_deadline": null,
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -416,6 +419,9 @@
     ]
    ],
    "talk_guide": [],
+   "lt_months": 6,
+   "today": "2026-08-06",
+   "decide_deadline": null,
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -664,6 +670,9 @@
     ]
    ],
    "talk_guide": [],
+   "lt_months": 3,
+   "today": "2026-08-06",
+   "decide_deadline": "2026-12-28",
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -874,6 +883,9 @@
     ]
    ],
    "talk_guide": [],
+   "lt_months": 6,
+   "today": "2026-08-06",
+   "decide_deadline": "2027-06-28",
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -1111,6 +1123,9 @@
     ]
    ],
    "talk_guide": [],
+   "lt_months": 3,
+   "today": "2026-08-06",
+   "decide_deadline": "2027-05-28",
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -1390,6 +1405,9 @@
     ]
    ],
    "talk_guide": [],
+   "lt_months": 6,
+   "today": "2026-08-06",
+   "decide_deadline": "2026-09-28",
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -1665,6 +1683,9 @@
     ]
    ],
    "talk_guide": [],
+   "lt_months": 3,
+   "today": "2026-08-06",
+   "decide_deadline": "2027-05-28",
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",
@@ -1907,6 +1928,9 @@
     ]
    ],
    "talk_guide": [],
+   "lt_months": 6,
+   "today": "2026-08-06",
+   "decide_deadline": "2026-09-28",
    "findings": [
     {
      "code": "A22_SCOPE_UNSOURCED",

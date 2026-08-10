@@ -239,7 +239,13 @@ class Declared:
     # 単数の欄しか無かったため、生成器は「媒体費・広報外注費」と連結して申告し、
     # そんな費目は存在しないと判定されていた（第10版 R13_ACCOUNT_NOT_HELD 2件）。
     s6_realize: Optional[Tuple[Tuple[str, str, str], ...]] = None   # ⟨誰が, いつ, どの費目⟩ の組
-    s6_start_date: Optional[str] = None           # A14：⑥が示す着手日（ISO）
+    # A37（第13.5版）：`s6_start_date` は **二つの担体を持っていた** ――
+    # 〈決定が締まる日〉と〈実際に動き出す日〉。生成器自身が両方の意味で書いている
+    # （R2-P2 は「2026年9月28日に着手し」と書き、同じ枚で「2026年9月28日は決定の締切である」とも書いた）。
+    # 買い手は二つを分けて読む ――「9月28日に決めても、動き出すのは2027年3月末だ」。
+    # 一つの欄が二つのものを指す ＝ 型1 と同じ形。**欄を割る。**
+    s6_decide_date: Optional[str] = None    # 決定が締まる日（④の着手期限と比べる）
+    s6_start_date: Optional[str] = None     # 実際に動き出す日（決定日 ＋ LT 以降）           # A14：⑥が示す着手日（ISO）
     s6_self_check: Optional[bool] = None          # A14：⑤の根拠を自社案にも当てたか
     s5_denies_own: Optional[str] = None           # R17：⑤が否定している買い手の既承認（無ければ空文字）
     s6_kappa_by_seat: Optional[Dict[str, str]] = None   # A23：座席名 → その座席で読める量の基準
@@ -919,8 +925,23 @@ def sub_months(d: date, m: int) -> date:
     return date(y, mo, min(d.day, 28))
 
 
+def add_months(d: date, m: int) -> date:
+    y, mo = d.year, d.month + m
+    while mo > 12:
+        mo -= 12; y += 1
+    return date(y, mo, min(d.day, 28))
+
+
 def start_deadline(ok: List[TauItem], lt: int) -> Optional[date]:
-    """④が示す着手期限日。A/C の終端日から実効リードタイムを引いた最小値"""
+    """④が示す**決定期限日**。A/C の終端日から実効リードタイムを引いた最小値。
+
+    A37b（第13.5版）：**この量はずっと「着手期限」と呼ばれていたが、算術は決定期限である。**
+    `effective_LT = LT_months + acquire`。`acquire` は「着手してから1周期分のデータが
+    たまるまで」だから、`LT_months` を〈着手→境界〉と読むと同じ区間を二度数える。
+    〈決定→着手〉と読んだときだけ、二つは連続した区間として足せる。
+    したがって `d − effective_LT` は〈決定が締まっていなければならない日〉である。
+    関数名と鍵名（`start_deadline`）は旧走行との突合のために残す。**表示名は決定期限。**
+    """
     ds = [sub_months(t.d, lt) for t in ok if t.form in ("A", "C") and t.d]
     return min(ds) if ds else None
 
@@ -1184,8 +1205,13 @@ def compile_deal(n: Nu, seller: Seller, today: date,
         "unwilling": [w.name for w in n.W if w.willing is False],
         "chain": [(j.name, sorted(j.kappa), sorted(j.form), j.origin)
                   for j in n.J if j.reads],
+        # A37b：鍵名は旧走行との突合のために据え置く。担体は〈決定期限〉であって着手期限ではない。
         "start_deadline": (start_deadline(tau_ok, effective_LT(n)).isoformat()
                            if start_deadline(tau_ok, effective_LT(n)) else None),
+        "decide_deadline": (start_deadline(tau_ok, effective_LT(n)).isoformat()
+                            if start_deadline(tau_ok, effective_LT(n)) else None),
+        "lt_months": n.LT_months,          # A37：⑥の日付に掛ける（買い手が決めてから動くまで）
+        "today": today.isoformat(),
         "talk_guide": talk_guide(n, S, uncal),
         "blocks": blocks_on(n, S, live, {t.form for t in tau_ok}),
         "rules": fire_rules(n, tau_ok, live, S),
@@ -1438,7 +1464,8 @@ def check_blocks(dec: Declared, blocks: Sequence[str]) -> Tuple[List[Finding], L
 
 
 def check_realize(dec: Declared, executors: Sequence[Tuple[str, Sequence[str]]],
-                  unwilling: Sequence[str] = ()) -> Tuple[List[Finding], List[Judgment]]:
+                  unwilling: Sequence[str] = (),
+                  start: Optional[str] = None) -> Tuple[List[Finding], List[Judgment]]:
     """R13（A12）：〈誰が・いつ・どの費目を〉の三つ組。両替は写像ではなく行為である。
 
     A24（第12版）：三つ組は**集合**である。単数の欄しか無かったので、
@@ -1484,6 +1511,13 @@ def check_realize(dec: Declared, executors: Sequence[Tuple[str, Sequence[str]]],
             f.append(Finding("R13_NO_AUTHORITY_PAIR", "stop", f"{actor}×{account}"))
         elif actor in set(unwilling):
             f.append(Finding("A21_NAMED_ACTOR_REFUSES", "stop", actor))
+    # A37（第13.5版）：費目は着手より前には減らない。N₃ の〈いつ〉に因果の下限を与える。
+    s0 = iso_date(start) if start else None
+    if s0:
+        for _a, d_, c_ in acts:
+            dd = iso_date(str(d_))
+            if dd and dd < s0:
+                f.append(Finding("A37_REALIZE_BEFORE_START", "stop", f"{c_} {dd} < 着手{s0}"))
     return f, j
 
 
@@ -1557,20 +1591,59 @@ def check_chain(dec: Declared,
     return f, j
 
 
-def check_dates_v7(dec: Declared, deadline: Optional[str]) -> Tuple[List[Finding], List[Judgment]]:
-    """R12b / R16（A14）：⑤で他手段に課した期限は、自社案にも当たる"""
+def check_dates_v7(dec: Declared, deadline: Optional[str],
+                   today: Optional[date] = None,
+                   lt_months: Optional[int] = None) -> Tuple[List[Finding], List[Judgment]]:
+    """R12b / R16（A14）：⑤で他手段に課した期限は、自社案にも当たる。
+
+    A37（第13.5版）：**`LT_months` が⑥の日付に一度も掛かっていなかった。**
+    買い手が決めてから実際に動き出すまでの月数は `start_deadline` の逆算にしか使われず、
+    ⑥に書く日付は素通りだった。第13版で 12/15、第13.3版では**版によらず 4/4** が指摘した。
+
+      「うちは決めてから実際に動き出すまで**半年**かかる。2026年9月28日に決めても
+        動き出すのは2027年3月末だ。ところが『2027年2月28日にパート人時を落とす』と書いてある」
+
+    A37b：その実装中に、**`LT_months` が二つの担体を持っていた**ことが出た。
+    `persona12.py` は〈決定→着手〉として買い手に渡し、`effective_LT` は〈着手→境界〉として
+    足していた。前者で読むときだけ `acquire` と連続区間になる（→ `start_deadline`）。
+    よって④からの逆算日は**決定期限**であり、⑥の着手日に上限を課すものではない。
+    ここを直さずに走らせると 8セル中6セルで**充足不能な指示**になっていた
+    （例 R1-P2：決定 ≤ 2026-09-28 かつ 着手 ≤ 2026-09-28 かつ 着手 ≥ 決定+6か月）。
+
+    三段で見る。
+      決定日  today ≤ decide ≤ **決定期限**（④からの逆算・従来の R12b）
+      着手日  start ≥ decide ＋ LT_months        （上限は無い）
+      実現日  s6_realize の各〈いつ〉 ≥ start     （→ check_realize）
+    """
     f, j = [], []
-    if deadline and dec.s6_start_date:
+    dcd = dec.s6_decide_date or dec.s6_start_date   # 旧走行は欄が一つしかない
+    if dec.s6_decide_date is None and dec.s6_start_date is not None:
+        j.append(Judgment("A37_DECIDE_UNDECLARED", dec.s6_start_date))
+    if deadline and dcd:
         # 第12.1版：文字列のまま比べていた。"2027-4-1"（ゼロ詰めなし）や "2027/4/1" で
         # 辞書順が暦順と食い違う。日付として読めないなら、比較せず要判断へ（N2）。
-        a, b = iso_date(dec.s6_start_date), iso_date(deadline)
+        a, b = iso_date(dcd), iso_date(deadline)
         if a is None or b is None:
-            j.append(Judgment("R12b_DATE_UNPARSED", f"⑥{dec.s6_start_date} / ④{deadline}"))
+            j.append(Judgment("R12b_DATE_UNPARSED", f"⑥{dcd} / ④{deadline}"))
         elif a > b:
-            f.append(Finding("R12b_START_AFTER_DEADLINE", "stop",
-                             f"⑥{dec.s6_start_date}>④{deadline}"))
-    elif deadline and dec.s6_start_date is None:
+            f.append(Finding("R12b_START_AFTER_DEADLINE", "stop", f"⑥{dcd}>④{deadline}"))
+    elif deadline and dcd is None:
         j.append(Judgment("R12b_START_UNDECLARED", deadline))
+    # ── A37：決定日が過去でないか／着手日が決定日＋LT 以降か
+    d0 = iso_date(dcd) if dcd else None
+    d1 = iso_date(dec.s6_start_date) if dec.s6_start_date else None
+    if today and d0 and d0 < today:
+        f.append(Finding("A37_DECIDE_PAST", "stop", f"決定{d0} < 今日{today}"))
+    if lt_months is None:
+        if d1:
+            j.append(Judgment("A37_LT_UNKNOWN", "買い手のリードタイムが渡されていない"))
+    elif d0 and d1:
+        need = add_months(d0, lt_months)
+        if d1 < need:
+            f.append(Finding("A37_START_BEFORE_LT", "stop",
+                             f"着手{d1} < 決定{d0}+{lt_months}m={need}"))
+    elif d0 and d1 is None:
+        j.append(Judgment("A37_START_UNDECLARED", str(d0)))
     if dec.s6_self_check is None:
         j.append(Judgment("R16_SELF_APPLY_UNDECLARED"))
     elif dec.s6_self_check is False:
@@ -1704,7 +1777,9 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
                   unwilling: Sequence[str] = (),
                   prod: Optional[Product] = None,
                   industry: Optional[str] = None,
-                  blocks: Sequence[str] = ()) -> dict:
+                  blocks: Sequence[str] = (),
+                  today: Optional[date] = None,
+                  lt_months: Optional[int] = None) -> dict:
     """第12.1版：商材座標と業界を受け取れるようにした。
 
     第10版は「較正表は業界の関数ではなく商材座標の関数である」と言い、`expr_ok_of` を入れたが、
@@ -1717,8 +1792,9 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
     f = check_v0(copy) + uf
     f2, j = check_declared(dec, set(kappa_final), kept, stages, n_seats, ex)
     f += f2; j += uj
-    f3, j3 = check_realize(dec, executors, unwilling); f += f3; j += j3
-    f4, j4 = check_dates_v7(dec, deadline); f += f4; j += j4
+    f3, j3 = check_realize(dec, executors, unwilling,
+                           dec.s6_start_date); f += f3; j += j3   # A37：着手より前に減らない
+    f4, j4 = check_dates_v7(dec, deadline, today, lt_months); f += f4; j += j4   # A37
     f5, j5 = check_insult(dec, gamma_own or {}); f += f5; j += j5
     f6, j6 = check_chain(dec, chain, kept, ex); f += f6; j += j6
     f += check_seat_words(copy, dec, chain)      # A23 の紙側（申告だけで通さない）
@@ -1810,9 +1886,14 @@ REQS: Tuple[Req, ...] = (
         "量ごとに stock か flow か（R14 は④の周期と突き合わせる）", "導出"),
     Req("s6_realize", "行為", "浮いた分を減らす費目", "n", "", "-",
         "〈誰が・いつ・どの費目〉の三つ組を、費目の数だけ（A24・N₃）", "導出"),
+    Req("s6_decide_date", "日付", "⑥が示す決定が締まる日", "1",
+        "決定は一点（④からの逆算＝決定期限と比べる。A37b）", "-",
+        "ISO 形式で、今日以降かつ決定期限以前であること（A37）", "導出",
+        "着手日と対（決定→LT→着手の順で、競合しない）"),
     Req("s6_start_date", "日付", "⑥が示す着手日", "1",
-        "着手は一点（start_deadline と比較する）。実施期日・費目削減日は s6_realize の側にある",
-        "-", "ISO 形式で、締切から逆算した日以前であること", "導出"),
+        "着手は一点。決定日とは別の担体である（A37。旧版は一つの欄が両方を指していた）",
+        "-", "ISO 形式で、決定日 ＋ LT_months 以降であること（A37）", "導出",
+        "決定日と対（決定→LT→着手の順で、競合しない）"),
     Req("s6_self_check", "書き方", "⑤で他手段を落とした条件", "1",
         "⑤の条件集合全体に掛かる一つの述語（A14）", "-", "自社案にも当てて確かめたか", "導出"),
     Req("s5_denies_own", "買い手の既承認", "Γ^own", "n", "", "-",

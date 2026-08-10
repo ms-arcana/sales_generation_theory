@@ -79,7 +79,9 @@ const GEN_SCHEMA = {
             },
           },
         },
-        s6_start_date: { type: ['string', 'null'], description: '⑥が示す着手日（YYYY-MM-DD）' },
+        // A37（第13.5版）：一つの欄が〈決定〉と〈着手〉の二つを指していた。欄を割る。
+        s6_decide_date: { type: ['string', 'null'], description: '⑥が示す「決定が締まる日」（YYYY-MM-DD）。今日以降かつ、渡された決定期限以前' },
+        s6_start_date: { type: ['string', 'null'], description: '⑥が示す「実際に動き出す日」（YYYY-MM-DD）。決定日 ＋ 買い手が動き出すまでの月数 以降。上限は無い' },
         s6_self_check: { type: ['boolean', 'null'], description: '⑤で他手段を落とした条件を、自社の提案にも当てて確かめたか' },
         s5_denies_own: { type: ['string', 'null'], description: '⑤が否定してしまっている「買い手が自分で決めてきたこと」。無ければ空文字' },
         s6_quantity_sources: {

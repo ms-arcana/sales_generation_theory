@@ -107,7 +107,10 @@ def run(dump="decisions8_v10.json"):
         rec = {k: c[k] for k in ("id","業界","セグメント","商材")}
         rec.update({k: d.get(k) for k in
             ("generate","sigma","j_star","kappa_n","form_n","tau_ok","delta","five_mentions",
-             "d7_basis","blocks","rules","executors","start_deadline","chain","talk_guide")})
+             "d7_basis","blocks","rules","executors","start_deadline","chain","talk_guide",
+             "lt_months","today","decide_deadline")})
+    # A37：⑥の日付は〈決定〉〈着手〉〈実現〉の三段。表に載せないと指示へ渡らない
+    # A37b：start_deadline の担体は決定期限。鍵名は旧走行との突合のために残し、正しい名を足す
         rec["findings"]=[{"code":f.code,"level":f.level,"ref":f.ref,
                           "msg":msgs["findings"].get(f.code,f.code)} for f in d["findings"]]
         rec["needs_judgment"]=[{"code":j.code,"ref":j.ref,
