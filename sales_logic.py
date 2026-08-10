@@ -1654,6 +1654,42 @@ def check_realize(dec: Declared, executors: Sequence[Tuple[str, Sequence[str]]],
 
 
 UNIT_UNKNOWN = ("", "―", "-", "未定", "不明", "⊥", "None", "null")
+# 単位の語。**値の文字列の中に**単位が混ざっていると、宣言された単位と食い違っていても
+# 文字列比較では見えない（第13.6版の実測：pay="180万〜900万" / pay_unit="円"）。
+UNIT_TOKENS = ("億円", "万円", "千円", "人時", "人月", "時間", "円", "点", "件", "名",
+               "％", "%", "日", "月", "億", "万", "千")   # 長いものから見る（万円 と 万 を取り違えない）
+
+
+def is_bottom(v) -> bool:
+    """⊥ か。**記入欄は ⊥ である。**
+
+    第13.6版：R20 を入れた最初の実装は、`【　　　】`（営業が埋める記入欄）を
+    「値が在る」と読んでいた。17行のうち13行が記入欄で、それでも停止 0 件だった。
+    ところが買い手が第13版から一貫して言っているのは、まさにこの形である ――
+    「出ていく額だけ決まっていて、**戻る額が全部空欄だ**」。
+    N₂ は「⊥ はいかなる値とも比較できない」と言う。記入欄は ⊥ であって値ではない。
+    **A28 の三つ目の出口（営業記入）は、営業が出す前に埋めるための出口であって、
+    穴の空いた紙を出してよいという意味ではない。**
+    """
+    s = str(v).strip() if v is not None else ""
+    if s in UNIT_UNKNOWN:
+        return True
+    return bool(re.search(SLOT_RE, s))
+
+
+def unit_in_value(v, declared: str) -> Optional[str]:
+    """値の文字列に、宣言された単位と食い違う単位語が混ざっていないか。
+
+    第13.6版の実測：`pay="180万〜900万"` に対し `pay_unit="円"`。
+    単位欄どうしの比較では見えない（どちらも「円」系ではある）が、**桁が二重になる**。
+    長い語から見る ―― 「万円」を「万」と取り違えないため。最初に見つかった一つで判定する。
+    """
+    s = str(v) if v is not None else ""
+    d = declared.strip()
+    for u in UNIT_TOKENS:
+        if u in s:
+            return None if (u in d or d in u) else u
+    return None
 
 
 def _q_seat(q: Dict[str, object]) -> str:
@@ -1695,22 +1731,29 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
         j.append(Judgment("R20_QUANTITIES_UNDECLARED"))
         return f, j
     seats = {c[0] for c in chain}
-    got = {_q_seat(q) for q in dec.s6_quantities}
-    for name in sorted(seats - got):
+    got = [_q_seat(q) for q in dec.s6_quantities]
+    for name in sorted(seats - set(got)):
         f.append(Finding("R20_SEAT_NO_QUANTITY", "stop", name))
+    for name in sorted({x for x in got if got.count(x) > 1}):
+        f.append(Finding("R20_SEAT_DUPLICATED", "stop", name))   # 座席は一行（N₄′）
     for q in dec.s6_quantities:
         s = _q_seat(q) or "(座席なし)"
         pay, ret = q.get("pay"), q.get("ret")
         pu, ru = str(q.get("pay_unit", "")).strip(), str(q.get("ret_unit", "")).strip()
         den = str(q.get("per", "")).strip()
-        if pay in (None, "") or str(pay).strip() in UNIT_UNKNOWN:
-            f.append(Finding("R20_PAY_MISSING", "stop", s))
-        if ret in (None, "") or str(ret).strip() in UNIT_UNKNOWN:
-            f.append(Finding("R20_RETURN_MISSING", "stop", s))
+        if is_bottom(pay):
+            f.append(Finding("R20_PAY_MISSING", "stop", f"{s}={str(pay).strip()[:20]}"))
+        if is_bottom(ret):
+            f.append(Finding("R20_RETURN_MISSING", "stop", f"{s}={str(ret).strip()[:20]}"))
         if pu in UNIT_UNKNOWN or ru in UNIT_UNKNOWN:
             j.append(Judgment("R20_UNIT_UNDECLARED", f"{s} 払う={pu or '⊥'} 戻る={ru or '⊥'}"))
         elif pu != ru:
             f.append(Finding("R20_UNIT_MISMATCH", "stop", f"{s} {pu} vs {ru}"))
+        # 値の中に混ざった単位（"180万〜900万" と書いて単位欄は "円"）
+        for lab, v, u in (("払う", pay, pu), ("戻る", ret, ru)):
+            bad = unit_in_value(v, u) if not is_bottom(v) else None
+            if bad:
+                f.append(Finding("R20_UNIT_IN_VALUE", "stop", f"{s} {lab}「{bad}」≠単位欄「{u}」"))
         if den in UNIT_UNKNOWN:
             j.append(Judgment("R20_DENOMINATOR_MISSING", s))
         src = str(q.get("source", "")).strip()

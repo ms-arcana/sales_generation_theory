@@ -1164,6 +1164,24 @@ check("R20 払う・戻るが同じ単位で揃っていれば通る", not _f, [
 _f, _j = check_decidable(Declared(s6_quantities=(_q("店長", ret=None), _q("社長"))), _CH)
 check("R20 戻るが空なら停止（買い手が最も多く挙げた形）",
       "R20_RETURN_MISSING" in [x.code for x in _f], [x.code for x in _f])
+# 第13.6版：最初の実装は**記入欄を値として読んでいた**。17行中13行が記入欄で停止 0 件。
+# 記入欄は ⊥ である（N₂）。A28 の三つ目の出口は、営業が出す前に埋めるための出口であって、
+# 穴の空いた紙を出してよいという意味ではない。
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長", ret="【　　　】"), _q("社長"))), _CH)
+check("R20 戻るが記入欄なら停止（⊥ は値ではない）",
+      "R20_RETURN_MISSING" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長", pay="＿＿＿＿"), _q("社長"))), _CH)
+check("R20 下線の記入欄も ⊥ として読む",
+      "R20_PAY_MISSING" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長", pay="180万〜900万", pu="円"), _q("社長"))), _CH)
+check("R20 値の中に単位が混ざっていたら停止（桁が二重になる）",
+      "R20_UNIT_IN_VALUE" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長"), _q("社長"), _q("社長"))), _CH)
+check("R20 同じ座席に2行あれば停止",
+      "R20_SEAT_DUPLICATED" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_decidable(Declared(s6_quantities=(_q("店長", pay="120", pu="万円"), _q("社長"))), _CH)
+check("R20 値と単位が整合していれば、単位の判定は出ない",
+      not [x for x in _f if x.code == "R20_UNIT_IN_VALUE"], [x.code for x in _f])
 _f, _j = check_decidable(Declared(s6_quantities=(_q("店長", ru="人時"), _q("社長"))), _CH)
 check("R20 単位が違えば停止", "R20_UNIT_MISMATCH" in [x.code for x in _f], [x.code for x in _f])
 _f, _j = check_decidable(Declared(s6_quantities=(_q("店長"),)), _CH)
