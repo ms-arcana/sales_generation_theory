@@ -1,7 +1,20 @@
 # 引き継ぎ書（VS Code / Claude Code 側）―― **コード群の検証**
 
 あなたの仕事は**検証**です。実験の設計・走行・レポートは Cowork 側が持ちます。
-版：`git 3b2128b` ／ tag `v13.6` ／ `sales_logic.py sha256[:12] = a6d1c8416305` ／ 2,228行。
+版：**tag `v13.6`** ／ `sales_logic.py sha256[:12] = a6d1c8416305` ／ 2,228行。
+
+**最初に版を確かめてください。**（一度、`main` が21コミット遅れたまま `v13.6` タグが作業途中に
+打たれていて、この引き継ぎ書の指すコミットがリモートに無い、という事故を起こしています。）
+
+```bash
+git describe --tags --exact-match          # → v13.6   （コミットの短縮ハッシュには依存しない）
+python3 -c "import hashlib,pathlib;print(hashlib.sha256(pathlib.Path('sales_logic.py').read_bytes()).hexdigest()[:12])"
+                                                             # → a6d1c8416305
+python3 test_sales_logic.py | grep -c '^ok'                  # → 239
+ls validate136.py validate_stage136.py harvest.py feasible136.py audit_td.py score_reasons.py
+```
+
+**この5つが揃わなければ、取り込みが古いままです。**先へ進まず、bundle を取り直してください。
 
 ---
 
