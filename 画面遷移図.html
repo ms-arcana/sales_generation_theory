@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Materia Sync ― 画面遷移図</title>
+<style>
+:root{--ink:#1f2328;--sub:#5d6470;--line:#d8dce3;--bg:#fbfbfc;
+      --have:#2f7a4d;--haveb:#e9f5ee;--miss:#a33a3a;--missb:#fbecec;
+      --mach:#2f4a86;--machb:#eef2fb;--warn:#8a5320;--warnb:#fdf1e7}
+*{box-sizing:border-box}
+body{margin:0;padding:28px 22px 60px;background:var(--bg);color:var(--ink);
+ font:15px/1.75 -apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+ max-width:1120px;margin-inline:auto}
+h1{font-size:21px;margin:0 0 4px;letter-spacing:.01em}
+h2{font-size:16px;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h2 .n{font-size:10.5px;color:var(--sub);letter-spacing:.14em;margin-right:10px;font-weight:700}
+p{margin:8px 0}
+.lead{color:var(--sub);font-size:13.5px;margin-bottom:18px}
+.wrap{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 10px;overflow-x:auto}
+svg{display:block;margin:0 auto}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:10px 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f4f5f7;font-weight:700;font-size:12px;color:var(--sub)}
+code{background:#f1f2f4;padding:1px 5px;border-radius:3px;font-size:12.5px}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:3px;
+ white-space:nowrap;letter-spacing:.04em;margin-right:6px}
+.t-have{background:var(--haveb);color:var(--have);border:1px solid #b6d9c4}
+.t-miss{background:var(--missb);color:var(--miss);border:1px solid #e8bcbc}
+.t-mach{background:var(--machb);color:var(--mach);border:1px solid #c3cfe8}
+.box{border:1px solid var(--line);border-left:3px solid var(--sub);background:#fff;
+ border-radius:5px;padding:11px 14px;margin:12px 0}
+.box.warn{border-left-color:var(--warn);background:var(--warnb);border-color:#ecd0b2}
+.box.miss{border-left-color:var(--miss);background:var(--missb);border-color:#e8bcbc}
+.legend{font-size:12.5px;color:var(--sub);margin:8px 0 0}
+blockquote{margin:8px 0;padding:6px 0 6px 13px;border-left:3px solid var(--line);
+ color:var(--sub);font-size:13px}
+ol,ul{margin:8px 0 8px 20px;padding:0}
+li{margin:4px 0}
+</style></head><body>
+
+<h1>Materia Sync ― 画面遷移図</h1>
+<p class="lead">いまある画面は <b>3つ</b>。遷移図を完成させるのに足りない画面は <b>6つ</b>。
+そして足りないのは画面だけではなく、<b>〈案件〉という単位</b>と<b>保存</b>です。</p>
+
+<div class="wrap">
+<svg width="1060" height="880" viewBox="0 0 1060 880" role="img" aria-label="画面遷移図">
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" fill="#8b93a1"/></marker>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" fill="#a33a3a"/></marker>
+  <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" fill="#2f7a4d"/></marker>
+</defs>
+<style>
+ .bx{fill:#fff;stroke:#d8dce3;stroke-width:1.4;rx:6}
+ .bx.have{fill:#e9f5ee;stroke:#b6d9c4}
+ .bx.miss{fill:#fbecec;stroke:#e8bcbc;stroke-dasharray:5 3}
+ .bx.mach{fill:#eef2fb;stroke:#c3cfe8;stroke-dasharray:5 3}
+ .ti{font:700 13px -apple-system,"Hiragino Kaku Gothic ProN",sans-serif;fill:#1f2328}
+ .sb{font:11px -apple-system,"Hiragino Kaku Gothic ProN",sans-serif;fill:#5d6470}
+ .ed{font:11px -apple-system,"Hiragino Kaku Gothic ProN",sans-serif;fill:#5d6470}
+ .ed.no{fill:#a33a3a}
+ .ed.ok{fill:#2f7a4d}
+ .ln{stroke:#8b93a1;stroke-width:1.3;fill:none;marker-end:url(#a)}
+ .ln.no{stroke:#a33a3a;marker-end:url(#ar);stroke-dasharray:4 3}
+ .ln.ok{stroke:#2f7a4d;marker-end:url(#ag)}
+ .lane{font:700 10.5px -apple-system,sans-serif;fill:#9aa1ad;letter-spacing:.12em}
+</style>
+
+<!-- レーン -->
+<line x1="130" y1="40" x2="130" y2="850" stroke="#eceef1"/>
+<text class="lane" x="10" y="80">誰でも</text>
+<text class="lane" x="10" y="200">入力する人</text>
+<text class="lane" x="10" y="360">機械</text>
+<text class="lane" x="10" y="500">機械＋LLM</text>
+<text class="lane" x="10" y="640">営業</text>
+<text class="lane" x="10" y="810">出口</text>
+
+<!-- H 案件一覧 -->
+<rect class="bx miss" x="400" y="48" width="260" height="62"/>
+<text class="ti" x="416" y="72">H　案件一覧（ホーム）</text>
+<text class="sb" x="416" y="92">止まっている件数／自分の担当ぶん／続きから</text>
+<text class="sb" x="416" y="106" fill="#a33a3a">無い ―― これが遷移図の起点になるはずのもの</text>
+
+<!-- 01 02 03 -->
+<rect class="bx have" x="150" y="168" width="230" height="76"/>
+<text class="ti" x="166" y="192">01　商材マスタ</text>
+<text class="sb" x="166" y="210">プロダクト　／　商材ごと</text>
+<text class="sb" x="166" y="228">商材座標 ν θ σp ω α β・売り手マスタ</text>
+
+<rect class="bx have" x="400" y="168" width="230" height="76"/>
+<text class="ti" x="416" y="192">02　顧客カルテ</text>
+<text class="sb" x="416" y="210">リサーチ → 営業が承認　／　会社ごと</text>
+<text class="sb" x="416" y="228">属性・上位者・制度の日付・座席・語の候補</text>
+
+<rect class="bx have" x="650" y="168" width="230" height="76"/>
+<text class="ti" x="666" y="192">03　案件カルテ</text>
+<text class="sb" x="666" y="210">営業　／　<tspan font-weight="700">買い手 × 商材</tspan></text>
+<text class="sb" x="666" y="228">内側の日付・他の選び方・既承認・LT</text>
+
+<!-- J 判定 -->
+<rect class="bx mach" x="400" y="316" width="260" height="66"/>
+<text class="ti" x="416" y="340">J　判定</text>
+<text class="sb" x="416" y="358">0.1ms・LLM を呼ばない</text>
+<text class="sb" x="416" y="374" fill="#a33a3a">無い（右下の小さな枠にしか出ていない）</text>
+
+<!-- G 生成 -->
+<rect class="bx miss" x="400" y="452" width="260" height="62"/>
+<text class="ti" x="416" y="476">G　資料を作る</text>
+<text class="sb" x="416" y="494">表と定型文＝機械　／　散文だけ LLM（約30秒）</text>
+
+<!-- P プレビュー -->
+<rect class="bx miss" x="400" y="560" width="260" height="62"/>
+<text class="ti" x="416" y="584">P　資料プレビュー</text>
+<text class="sb" x="416" y="602">段ごと。表3つ＋散文＋記入欄</text>
+
+<!-- V 検査 -->
+<rect class="bx miss" x="400" y="666" width="260" height="70"/>
+<text class="ti" x="416" y="690">V　検査結果</text>
+<text class="sb" x="416" y="708"><tspan font-weight="700">座席ごとに</tspan>「誰が・なぜ止めるか」</text>
+<text class="sb" x="416" y="724">停止／要判断／通過</text>
+
+<!-- F 記入 -->
+<rect class="bx miss" x="740" y="666" width="230" height="70"/>
+<text class="ti" x="756" y="690">F　営業が埋める</text>
+<text class="sb" x="756" y="708">記入欄と申し送りだけを集めた画面</text>
+<text class="sb" x="756" y="724">数字は機械が作らない</text>
+
+<!-- X 書き出し -->
+<rect class="bx miss" x="400" y="784" width="260" height="56"/>
+<text class="ti" x="416" y="808">X　書き出し</text>
+<text class="sb" x="416" y="826">スライド／PDF・版を刻む</text>
+
+<!-- 線 -->
+<path class="ln" d="M470 110 L300 160"/>
+<text class="ed" x="330" y="140">新規／続き</text>
+<path class="ln" d="M530 110 L530 162"/>
+<path class="ln" d="M590 110 L760 160"/>
+
+<path class="ln" d="M265 244 L470 312"/>
+<path class="ln" d="M515 244 L522 312"/>
+<path class="ln" d="M765 244 L590 312"/>
+<text class="ed" x="600" y="288">〔判定する〕</text>
+
+<path class="ln ok" d="M530 382 L530 448"/>
+<text class="ed ok" x="540" y="418">生成可</text>
+
+<path class="ln no" d="M400 350 C300 350 300 270 380 246"/>
+<text class="ed no" x="180" y="300">停止 ―― 欄を名指しして戻す</text>
+
+<path class="ln" d="M530 514 L530 556"/>
+<path class="ln" d="M530 622 L530 662"/>
+<text class="ed" x="540" y="648">自動</text>
+
+<path class="ln" d="M660 700 L736 700"/>
+<text class="ed" x="668" y="692">記入欄あり</text>
+<path class="ln" d="M855 666 C855 620 700 620 660 686"/>
+<text class="ed" x="700" y="612">埋めたら再検査</text>
+
+<path class="ln no" d="M400 700 C250 700 250 300 660 240"/>
+<text class="ed no" x="150" y="500">ν が足りない ―― 03 へ戻す</text>
+
+<path class="ln ok" d="M530 736 L530 780"/>
+<text class="ed ok" x="540" y="764">通った</text>
+
+<path class="ln" d="M660 812 C960 812 1000 80 664 78"/>
+<text class="ed" x="900" y="440">一覧へ戻る</text>
+</svg>
+<p class="legend">
+<span class="tag t-have">実装済</span>いまのモックアップにある
+<span class="tag t-mach">機械</span>LLM を呼ばない
+<span class="tag t-miss">無い</span>これから作る
+<span style="color:#a33a3a">赤い線＝戻りの経路</span>
+<span style="color:#2f7a4d">緑の線＝前へ進む</span>
+</p>
+</div>
+
+<h2><span class="n">POINT 1</span>足りないのは画面ではなく、まず〈案件〉という単位</h2>
+
+<div class="box miss">
+<p><b>いまのモックアップには「案件」という入れ物がありません。</b>上端の2つのセレクトで
+買い手と商材を選ぶと画面の中身が変わりますが、それは<b>表示の切替</b>であって、
+案件が保存されているわけではない（<code>localStorage</code> に1件だけ、DOM順の配列で入る）。</p>
+<p><b>単位が無いので、遷移が定義できません。</b>「どの画面からどの画面へ」の前に、
+<b>何を持って移動するのか</b>が決まっていないからです。</p>
+</div>
+
+<p>盲検の5体が言ったことは、全部これの言い換えです。</p>
+
+<table>
+<tr><th style="width:38%">盲検で出たこと</th><th>正体</th></tr>
+<tr><td><b>保存が無い。「一つだけ直すなら」5体中5体が保存</b></td><td><b>案件という単位が無い</b>。保存する対象が定義されていない</td></tr>
+<tr><td>「いま何件止まっているか」を迷わず答えた体 <b>0/5</b></td><td><b>H 案件一覧が無い</b>。件数を数える対象が無い</td></tr>
+<tr><td>「自分の担当ぶんが埋まったか」できない <b>4/5</b></td><td>案件 × 役割の残数が無い。<b>H と 03 の両方</b></td></tr>
+<tr><td>「保存して明日の続きから」できない <b>5/5</b></td><td>同上。<b>遷移の起点が無い</b></td></tr>
+<tr><td>上端に買い手名も商材名も出ていない／いま何の商材を編集しているか分からない</td><td>いまどの案件に居るかが画面に出ていない（<b>パンくず</b>）</td></tr>
+<tr><td>リサーチ担当「下書きする側の画面で一番強いボタンが〔すべて承認する〕。<b>そもそも承認は営業の仕事のはず</b>」</td><td><b>02 に二つの役割が同居している。</b>下書きと承認は別の画面（か別のモード）に割るべき</td></tr>
+</table>
+
+<h2><span class="n">POINT 2</span>遷移の一覧（これを埋めれば図が閉じる）</h2>
+
+<table>
+<tr><th style="width:8%">元</th><th style="width:8%">先</th><th style="width:22%">きっかけ</th><th>条件と、持っていくもの</th></tr>
+<tr><td><b>H</b></td><td>01/02/03</td><td>案件を選ぶ／新規</td><td>案件ID。<b>途中の状態ごと開く</b></td></tr>
+<tr><td>01</td><td>J</td><td>〔判定する〕</td><td>商材座標が揃っていること</td></tr>
+<tr><td>02</td><td>J</td><td>〔判定する〕</td><td><b>承認済みの欄だけ</b>が照合に使われる（未承認は「不明」）</td></tr>
+<tr><td>03</td><td>J</td><td>〔判定する〕</td><td>案件固有の ν</td></tr>
+<tr><td><b>J</b></td><td>03／02</td><td><b>停止が出た</b></td><td><b>欄を名指しして戻す。</b>「どこを直せば進むか」が遷移の中身</td></tr>
+<tr><td><b>J</b></td><td>G</td><td>停止なし</td><td>決定表。<b>ここから先は入力を変えられない</b>（版を刻む）</td></tr>
+<tr><td>G</td><td>P</td><td>生成の完了</td><td>表と定型文は即時。<b>散文だけ約30秒</b></td></tr>
+<tr><td>P</td><td>V</td><td>自動</td><td>生成物をそのまま検査へ</td></tr>
+<tr><td><b>V</b></td><td>F</td><td>記入欄がある</td><td><b>記入欄と申し送りだけ</b>を集めた画面へ。資料に戻さない</td></tr>
+<tr><td>F</td><td>V</td><td>〔埋めた〕</td><td><b>再生成しない。</b>検査だけやり直す</td></tr>
+<tr><td><b>V</b></td><td>03</td><td>ν が足りない</td><td>生成では直らないもの（座席・日付・執行者）は入力へ戻す</td></tr>
+<tr><td>V</td><td>X</td><td>停止なし</td><td>書き出し</td></tr>
+<tr><td>X</td><td>H</td><td>完了</td><td>一覧へ。案件の状態が変わる</td></tr>
+</table>
+
+<div class="box warn">
+<p><b>戻りが2本あるのが、この製品の形です。</b></p>
+<p><b>赤い線の1本目（J → 03）</b>は「まだ作れない」。<b>2本目（V → 03）</b>は「作ったが通らない、
+しかも直すのは文章ではなく入力」。<b>この2本を画面に出すことが、この製品の価値そのもの</b>です。
+まっすぐ進む線だけの遷移図にすると、ただの生成ツールになります。</p>
+</div>
+
+<h2><span class="n">POINT 3</span>モックアップを完成させるのに必要なもの</h2>
+
+<p><b>画面を6つ足す前に、3つ決めてください。</b>決めれば、あとは絵を描くだけです。</p>
+
+<ol>
+<li><b>案件の状態は何種類か。</b>図から出てくるのは6つ ――
+<code>下書き</code>／<code>判定待ち</code>／<code>入力に差し戻し</code>／<code>生成済み・検査待ち</code>／
+<code>営業の記入待ち</code>／<code>書き出し済み</code>。<b>H の一覧はこの状態で並びます。</b></li>
+<li><b>誰の画面か。</b>01＝プロダクト、02＝<b>リサーチが下書き／営業が承認</b>（いまは同居）、03＝営業、
+F＝営業。<b>02 を割るかどうかが、いちばん大きな設計判断です。</b></li>
+<li><b>保存の単位。</b>案件ごと・欄ごとの自動保存か、画面ごとの明示保存か。
+盲検の第1位がこれです。<b>ここを決めないと、どの画面も完成しません。</b></li>
+</ol>
+
+<h3 style="font-size:14px;margin:22px 0 6px">作る順（絵だけなら1〜2日）</h3>
+<table>
+<tr><th style="width:6%">順</th><th style="width:26%">画面</th><th>なぜその順か</th></tr>
+<tr><td>1</td><td><b>H 案件一覧</b></td><td><b>遷移の起点。</b>これが無いと他の画面の「戻る先」が決まらない。状態6つを並べるだけ</td></tr>
+<tr><td>2</td><td><b>V 検査結果</b></td><td><b>この製品の主役。</b>座席ごとに「誰がなぜ止めるか」。文言は <code>messages.json</code>（178種）に既にある</td></tr>
+<tr><td>3</td><td><b>J 判定</b></td><td>V と同じ見せ方でよい。<b>生成の前に出る</b>ことが分かればよい</td></tr>
+<tr><td>4</td><td><b>F 営業が埋める</b></td><td>記入欄と申し送りだけ。<b>V との往復</b>が見えれば足りる</td></tr>
+<tr><td>5</td><td>P 資料プレビュー</td><td>表3つは <code>mockup_presets.json</code> の値でそのまま描ける</td></tr>
+<tr><td>6</td><td>G 生成中／X 書き出し</td><td><b>ほぼ絵。</b>G は待ち時間の表示、X はボタン1つ</td></tr>
+</table>
+
+<div class="box">
+<p><b>01/02/03 は作り直さないでください。</b>盲検の指摘21件は本番前の課題であって、
+遷移図を閉じる作業とは別です。<b>いま必要なのは「画面と画面のあいだ」</b>で、
+中身の作り込みではありません。</p>
+<p>そして<b>デモでは入力済みの状態から始める</b>のが正解です（盲検で 01/02/03 は通過0）。
+H から「続きから」で入り、J → G → P → V → F → V → X を見せる。
+<b>入力3画面はデモの経路に入れない。</b></p>
+</div>
+
+<h2><span class="n">POINT 4</span>この図に出てこないもの</h2>
+<ul>
+<li><b>ログイン・権限・組織</b> ―― 役割は画面の割り方で表せます。認証は後</li>
+<li><b>一覧の検索・並び替え</b> ―― 案件が8件のうちは要りません</li>
+<li><b>編集履歴・版の比較</b> ―― 版は刻みますが、画面に出すのは後</li>
+<li><b>通知</b> ―― 「営業の記入待ち」を誰かに知らせる仕掛けは、H の一覧で足ります</li>
+</ul>
+
+</body></html>
