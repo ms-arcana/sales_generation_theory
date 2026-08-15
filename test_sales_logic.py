@@ -1488,4 +1488,29 @@ check("A49 割って申告すれば通る",
       not [x for x in _j49 if x.code in ("A49_SOURCE_MERGED", "A28_SOURCE_UNKNOWN")],
       [x.code for x in _j49])
 
+print("\n── 第14版 N₆ 追補：**担体は一つ** ―― 52件の最大の型（8件）を1つに畳む")
+# A37・A37b・A41・A41b・A47・A48・A48b・A49 は、すべて〈一つの記号が二つの担体を指す〉。
+# 第8版の規律「同じ誤りが4回出たものは規則ではなく型である」の二度目の適用。
+from sales_logic import audit_symbols, GLOSSARY, Sym
+check("N₆ 記号表は全部の記号に担体と出所を持つ",
+      all(x.sym and x.means and x.carrier and x.where for x in GLOSSARY), len(GLOSSARY))
+check("N₆ いまの記号表に、書き分けの無い重なりは無い", not audit_symbols(),
+      [x.ref for x in audit_symbols()])
+# **9件目が書けなくなること**を確かめる ―― 書き分けなしで同じ記号を足すと落ちる
+import sales_logic as _S14
+_orig = _S14.GLOSSARY
+_S14.GLOSSARY = _orig + (Sym("τ 項", "別の意味", "別の担体", "どこか", ""),)
+check("N₆ 書き分けを書かずに同じ記号を足すと、監査が落とす（9件目が書けない）",
+      any(x.code == "N6_SYMBOL_AMBIGUOUS" for x in _S14.audit_symbols()),
+      [x.ref for x in _S14.audit_symbols()])
+_S14.GLOSSARY = _orig + (Sym("τ 項", "別の意味", "別の担体", "どこか", "書き分けはこう"),)
+check("N₆ 書き分けを書けば通る", not _S14.audit_symbols())
+_S14.GLOSSARY = _orig
+check("N₆ 記号表を戻した", not audit_symbols())
+# 型5 の8件が、記号表の中で解決済みとして残っていること（履歴を消さない）
+_res = {x.sym for x in GLOSSARY if x.distinct.strip()}
+for _sym in ("s6_decide_date", "s6_start_date", "LT_months", "decide_deadline",
+             "decide_deadline_tau", "decision_gates", "pay_source", "ret_source", "ν", "軸"):
+    check(f"N₆ {_sym} の書き分けが記号表に残っている", _sym in _res)
+
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")

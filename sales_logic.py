@@ -2674,6 +2674,82 @@ REQS: Tuple[Req, ...] = (
 )
 
 # 廃止した欄（A24 で三つ組へ畳んだ。監査の対象外）
+# ══════════════════════════════════════════ N₆ 追補（第14版）：**担体は一つ**
+# 第12版以降に出た52件を型で数えたら、**最大の型が「一つの語／欄が二つの担体を持つ」8件**だった
+# （A37・A37b・A41・A41b・A47・A48・A48b・A49）。しかも直近5版で連続して出ている。
+#
+# 第8版の規律 ―― **同じ誤りが4回出たものは規則ではなく型である** ―― の二度目の適用。
+# 命題を足しても再発する。**記法で書けなくする。**
+#
+#   N₆ の四つ組 ⟨担体, 定義域, 充足条件, 強さ⟩ に、次の一行を足す。
+#   **一つの記号（欄名・語・記法）は、一つの担体しか指してはならない。**
+#
+# 二つ指すなら、**書き分けを明記する**（`distinct`）。空なら監査が落とす。
+# `Req.yields_to`（同順位の衝突に順序を書く）とまったく同じ形である。
+
+class Sym(NamedTuple):
+    sym: str          # 記号・欄名・語
+    means: str        # 何を指すか
+    carrier: str      # 担体
+    where: str        # どこで使うか
+    distinct: str = ""   # 同じ記号が他にもあるときの書き分け。空なら監査が落とす
+
+
+GLOSSARY: Tuple[Sym, ...] = (
+    # ── 解決済み（欄を割った。8件の型5がここに畳まれる）
+    Sym("s6_decide_date", "決定が締まる日", "日付", "⑥", "A37 で s6_start_date から割った"),
+    Sym("s6_start_date", "実際に動き出す日", "日付", "⑥", "A37 で欄を割った"),
+    Sym("LT_months", "決定→着手の月数", "期間", "ν",
+        "A37b。〈着手→境界〉ではない。effective_LT と連続区間になるのはこの読みだけ"),
+    Sym("decide_deadline", "実効の決定期限 min(逆算, 窓)", "日付", "決定表",
+        "A41b で decide_deadline_tau と割った。⑥を縛るのはこちら"),
+    Sym("decide_deadline_tau", "④からの逆算のみ", "日付", "決定表",
+        "A41b。④に出してよいのはこちらだけ（窓は買い手の内側なので出せない）"),
+    Sym("τ 項", "④の〈今やる理由〉の担体", "時間", "④",
+        "A41。同じ項が〈決定の窓〉でもある場合は decision_gates が別に持つ"),
+    Sym("decision_gates", "決定が物理的に締まりうる窓", "時間", "⑥",
+        "A41。④には出さない。⑥の決定日と着手日を縛る"),
+    Sym("②の問い", "単位の置き換え", "単位", "②",
+        "A47。〈買い手の保有〉を問う形ではない。s2_asks_possession は False であること"),
+    Sym("pay_source", "払う側の量の出所", "出所", "⑥",
+        "A49 で source から割った"),
+    Sym("ret_source", "戻る側の量の出所", "出所", "⑥",
+        "A49 で割った。式なら coef_source が別に要る"),
+    # ── A48b・A48：語が重なっていたので、書き分けを決めた（第14版）
+    Sym("ν", "入力の記録そのもの（class Nu）", "入力", "全体",
+        "A48b。**入力は ν と書く。**検証時点は ν_v と書き分ける。"
+        "コードは後方互換のため `Nu` / `Product.nu` のままで、"
+        "**読み口は `nu_of()` 一箇所に限る**（直接 `n.A` を読まない）"),
+    Sym("ν_v", "検証時点（Nelson / Darby-Karni の三分類）", "商材座標", "商材",
+        "A48b。旧 `Nu.A` と `Product.nu` の二重の真実は `nu_of()` が座標側を正として解いた"),
+    Sym("軸", "記法が型を与えるもの（入力ν・τ・J・Σ）", "型経由", "資料",
+        "A48。**〈軸〉と呼ぶのはこちらだけ。**型検査が効く"),
+    Sym("座標", "原理／文献が値域を直接与えるもの（λ・ε・商材座標の7成分）", "直列挙", "資料",
+        "A48。**〈座標〉と呼ぶ。**記法を通らないので型検査が効かず、列挙照合だけ"),
+)
+
+
+def audit_symbols() -> List[Judgment]:
+    """N₆ 追補：**一つの記号は一つの担体しか指してはならない。**
+
+    二つ指すなら書き分けを `distinct` に書く。書いていなければ落とす。
+    **これで9件目の〈二つの担体〉が書けなくなる** ―― 記号を足すときに、
+    既に在る記号と衝突していれば、書き分けを書くまで監査が通らない。
+    """
+    out: List[Judgment] = []
+    by_sym: Dict[str, List[Sym]] = {}
+    for x in GLOSSARY:
+        by_sym.setdefault(x.sym, []).append(x)
+    for sym, xs in sorted(by_sym.items()):
+        if len(xs) < 2:
+            continue
+        carriers = sorted({x.carrier for x in xs})
+        if any(not x.distinct.strip() for x in xs):
+            out.append(Judgment("N6_SYMBOL_AMBIGUOUS",
+                                f"{sym} が {len(xs)} つの担体を指す：{'／'.join(carriers)}"))
+    return out
+
+
 REQ_RETIRED = ("s6_realize_actor", "s6_realize_date", "s6_realize_account")
 
 SEQ_HINTS = ("Tuple", "Dict", "List", "Sequence", "object")
