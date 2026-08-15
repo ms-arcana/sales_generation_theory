@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>本モデルと既存知の対応 ― 説明可能性のための地図</title>
+<style>
+:root{--ink:#1f2328;--sub:#5d6470;--line:#d8dce3;--bg:#fbfbfc;
+ --same:#2f4a86;--sameb:#eef2fb;--ref:#8a5320;--refb:#fdf1e7;
+ --der:#2f7a4d;--derb:#e9f5ee;--own:#5a3f86;--ownb:#f2eefb;--ref2:#a33a3a;--refb2:#fbecec}
+*{box-sizing:border-box}
+body{margin:0;padding:30px 22px 70px;background:var(--bg);color:var(--ink);
+ font:15px/1.8 -apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+ max-width:1080px;margin-inline:auto}
+h1{font-size:22px;margin:0 0 6px;letter-spacing:.01em}
+h2{font-size:16.5px;margin:42px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+h2 .n{font-size:10.5px;color:var(--sub);letter-spacing:.14em;margin-right:10px;font-weight:700}
+h3{font-size:14.5px;margin:26px 0 8px}
+p{margin:9px 0}
+.lead{color:var(--sub);font-size:13.5px;margin-bottom:6px}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:12px 0}
+th,td{border:1px solid var(--line);padding:8px 9px;text-align:left;vertical-align:top}
+th{background:#f4f5f7;font-weight:700;font-size:12px;color:var(--sub)}
+code{background:#f1f2f4;padding:1px 5px;border-radius:3px;font-size:12.5px}
+.k{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;
+ white-space:nowrap;letter-spacing:.04em}
+.k-same{background:var(--sameb);color:var(--same);border:1px solid #c3cfe8}
+.k-ref{background:var(--refb);color:var(--ref);border:1px solid #ecd0b2}
+.k-der{background:var(--derb);color:var(--der);border:1px solid #b6d9c4}
+.k-own{background:var(--ownb);color:var(--own);border:1px solid #d3c6ea}
+.k-no{background:var(--refb2);color:var(--ref2);border:1px solid #e8bcbc}
+.box{border:1px solid var(--line);border-left:3px solid var(--sub);background:#fff;
+ border-radius:5px;padding:12px 15px;margin:14px 0}
+.box.warn{border-left-color:var(--ref);background:var(--refb);border-color:#ecd0b2}
+.box.key{border-left-color:var(--own);background:var(--ownb);border-color:#d3c6ea}
+blockquote{margin:10px 0;padding:7px 0 7px 14px;border-left:3px solid var(--line);
+ color:var(--sub);font-size:13px}
+ul,ol{margin:8px 0 8px 21px;padding:0}li{margin:4px 0}
+.small{font-size:12.5px;color:var(--sub)}
+.cf{font-size:11px;color:var(--sub);white-space:nowrap}
+</style></head><body>
+
+<h1>本モデルと既存知の対応 ― 説明可能性のための地図</h1>
+<p class="lead">公理・中央命題・軸・論理が<b>どこから来たのか</b>、<b>何を約束し何を約束しないのか</b>を、要素ごとに書き出したもの。</p>
+
+<div class="box">
+<p><b>この資料が答える問いは一つです。</b>「なぜその要素がそこにあるのか」。</p>
+<p>説明可能性とは、出力の理由が出ることだけではありません。<b>設計そのものの出所が辿れること</b>です。
+本モデルは判定を機械で出しますが、その判定規則がどこから来たのかを言えなければ、
+「よく分からないが数字が出る箱」と同じになります。</p>
+<p><b>五つの関係で色分けしてあります。</b></p>
+<p>
+<span class="k k-same">同一</span> 既存の概念そのもの。名前を知らずに再発見していた
+<span class="k k-ref">再定式化</span> 既存の知見を、<b>機械で検査できる形</b>に書き直した
+<span class="k k-der">導出</span> 本モデルの原理から出る。借用が要らない
+<span class="k k-own">独自</span> 対応物をまだ見つけていない
+<span class="k k-no">食い違い</span> 実測が既存の想定と合わなかった
+</p>
+</div>
+
+<div class="box warn">
+<p><b>出典の確度について、先に断ります。</b>以下の文献は記憶に基づく参照であり、
+<b>年号・書名・主張の細部は外部に出す前に必ず確認してください</b>。
+本モデル自身が「出所の無い量を置くな」と要求している以上、この資料もその規律に従います。</p>
+<p><span class="cf">確度</span>の欄に <b>高</b>（広く知られた古典で、主張の要旨に自信がある）／
+<b>中</b>（要旨は合っているが細部の確認が要る）／<b>要確認</b>（最近のもの・孫引き）を付けました。</p>
+</div>
+
+<h2><span class="n">PART 1</span>三原理 ―― 中央命題はどこから来たか</h2>
+
+<p>本モデルの中心命題は「営業資料は説得の技術ではなく、<b>承認という資本が座席から座席へ運ばれる過程</b>である」。
+これを三つの原理に分けています。</p>
+
+<table>
+<tr><th style="width:15%">原理</th><th style="width:26%">本モデルの言い方</th><th style="width:30%">既存知</th><th style="width:9%">関係</th><th class="cf">確度</th></tr>
+
+<tr><td rowspan="3"><b>Π₁ 蓄積律</b><br><span class="small">承認は単調に積み上がる</span></td>
+<td rowspan="3">段を追うごとに承認 Γ が増える。前の段で得た承認は、後の段で失われない。<b>失われるなら、それは侮辱である</b></td>
+<td>古典論理の<b>単調性</b>（前提を足しても結論は減らない）。⑤で条件を開示すると承認が減る現象は<b>非単調</b>であり、そこだけ別扱いになる</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>Brandom『Making It Explicit』(1994)</b> の deontic scorekeeping ―― 会話は参加者ごとの<b>コミットメントと資格の帳簿</b>である。本モデルの Γ は座席ごとの帳簿</td>
+<td><span class="k k-same">同一</span></td><td class="cf">中</td></tr>
+<tr><td><b>Stalnaker の common ground</b>／<b>AGM の信念改訂</b>(1985) ―― 積み上げと、矛盾したときの取り下げ</td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">中</td></tr>
+
+<tr><td rowspan="3"><b>Π₂ 通関律</b><br><span class="small">∀k、各座席で通関する</span></td>
+<td rowspan="3">資料は一人に届くのではない。<b>読む座席すべて</b>で、その座席の基準 κ に両替できなければ先へ進まない。かつ、実際に費目を動かせる者 <code>∃act⟨w,d,o⟩</code> が居なければならない</td>
+<td><b>Webster &amp; Wind (1972) の buying center</b> ―― 組織購買は複数の役割（使用者・影響者・購買者・決定者・門番）で動く。<b>役割の分類はある</b></td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">高</td></tr>
+<tr><td><b>Star &amp; Griesemer (1989) の boundary object</b> ―― 異なる社会世界のあいだを、意味を変えながら渡る対象。資料はまさにこれ</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>Callon (1986) の翻訳</b> ―― 利害を各アクターの語へ翻訳しないと連合は成立しない</td>
+<td><span class="k k-same">同一</span></td><td class="cf">中</td></tr>
+
+<tr><td rowspan="2"><b>Π₃ 所在律</b><br><span class="small">λ×ε が一致するときだけ効く</span></td>
+<td rowspan="2">事例が効くのは、<b>拘束の所在と執行の型が同じとき</b>に限る。業種が同じでも所在が違えば効かない</td>
+<td><b>Cartwright の nomological machine / capacities</b>（1989, 1999）と <b>Cartwright &amp; Hardie の support factors</b> ―― 「あそこで効いたものがここで効く」には支援要因の一致が要る</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>Pawson &amp; Tilley の realist evaluation</b>（文脈×機序×結果）―― 機序は文脈が揃って初めて発火する</td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">中</td></tr>
+</table>
+
+<div class="box key">
+<p><b>Π₂ について、既存知が持っていないもの。</b></p>
+<p>buying center 研究は<b>役割を分類</b>します。boundary object は<b>渡ること</b>を言います。
+しかしどちらも「<b>この資料はこの座席を通るか</b>」を判定しません。</p>
+<p>本モデルは Π₂ を二つの連言に分けました ―― <b>conv（その座席の基準に両替できるか）</b>と
+<b>∃act（実際に費目を動かせる者が居るか）</b>。この分離は文献側に見当たりません。
+そして第6版で8セルが全部⑥で落ちたとき、<b>落ち方はちょうどこの二つでした</b> ――
+「金額に直せない」と「浮いても支払いは減らない」。</p>
+</div>
+
+<h2><span class="n">PART 2</span>六段 ①〜⑥ ―― 資料の骨格はどこから来たか</h2>
+
+<table>
+<tr><th style="width:9%">段</th><th style="width:24%">本モデル</th><th style="width:36%">既存知</th><th style="width:9%">関係</th><th class="cf">確度</th></tr>
+<tr><td><b>全体</b></td><td>①現状 → ②否定の内在 → ③問題化 → ④必然化 → ⑤消去 → ⑥提案</td>
+<td><b>Peirce の探究（doubt–belief）</b> ―― 実際の疑いから出発し、疑いが解けるまで止まらない。「机上の疑い」で始めない</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>②</b></td><td>①の事実を<b>別の単位で数え直して</b>驚きを作る</td>
+<td><b>Shklovsky の異化（ostranenie, 1917）</b>／<b>Weick の sensemaking</b>／<b>Alvesson &amp; Sandberg (2011) の問題化</b> ―― 自明の前提を揺らすことが問いを生む</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>③</b></td><td>状態に名前を与え、<b>各座席の様式語へ写す</b></td>
+<td><b>Mills (1940) vocabularies of motive</b>／<b>Yates &amp; Orlikowski (1992) genres of organizational communication</b>／<b>institutional logics</b>（Thornton &amp; Ocasio）―― 組織で通る語は制度が決めている</td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">中</td></tr>
+<tr><td><b>④</b></td><td>外の日付で「なぜ今か」を作る。<b>売り手都合の日付は使えない</b></td>
+<td>実務の「compelling event」。学術側では<b>Cohen–March–Olsen のゴミ箱モデル (1972)</b> と <b>Kingdon の政策の窓 (1984)</b> ―― <b>決定は機会の窓が開いたときにだけ起きる</b></td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">中</td></tr>
+<tr><td><b>⑤</b></td><td>他の手段を<b>能力ではなく条件で</b>落とす。「◯◯という条件の下では成立しない」</td>
+<td><b>Toulmin (1958) の論証モデル</b>の <b>qualifier と rebuttal</b> ―― 主張には限定と反証条件が付く。⑤はまさに rebuttal を先に自分で書く操作</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>⑤</b></td><td>落とすのに使った条件を、<b>自社案にも当てる</b>（自己適用）</td>
+<td>対応物を見つけていない。論証の誠実性の議論に近いが、<b>手続として要求する形</b>は見当たらない</td>
+<td><span class="k k-own">独自</span></td><td class="cf">―</td></tr>
+<tr><td><b>⑥</b></td><td>提案。量は<b>座席ごとに</b>置き、<b>誰がいつどの費目を減らすか</b>まで書く</td>
+<td>実務の MEDDIC（Economic Buyer / Metrics）に近いが、MEDDIC は<b>チェックリスト</b>であって、欠けたときに何が起きるかを言わない</td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">中</td></tr>
+</table>
+
+<div class="box warn">
+<p><b>②については、実測が設計に反証を突きつけています。</b></p>
+<p>25業界21件のうち <b>8件</b>が、②の問いの形を「<b>あなたは数えていない</b>」という決めつけとして受け取りました。</p>
+<blockquote>三十年そうやって回してきた宿に向かって、どなたの手元にあるでしょうか、はない。 ―― 観光・旅行・宿泊／社長</blockquote>
+<p>異化は<b>文学理論では読者を選ばない</b>が、<b>商談では相手が実務の当事者</b>です。
+同じ操作が、片方では発見になり、片方では侮辱になる。
+<b>異化をそのまま持ち込んだことが誤りでした</b>（A47）。担体を〈買い手の保有〉から〈単位〉へ移す必要があります。</p>
+<p class="k k-no" style="display:inline-block;margin-top:4px">食い違い</p>
+</div>
+
+<h2><span class="n">PART 3</span>六記法 N₁〜N₆ ―― 形式の道具はどこから来たか</h2>
+
+<table>
+<tr><th style="width:12%">記法</th><th style="width:24%">本モデル</th><th style="width:34%">既存知</th><th style="width:9%">関係</th><th class="cf">確度</th></tr>
+<tr><td><b>N₁ 承認演算子</b></td><td>座席 j が命題 φ を承認したことを一つの演算として書く</td>
+<td><b>Searle (1969) の発話行為</b>／Brandom の commitment–entitlement。<b>承認は状態ではなく行為</b></td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>N₂ 単位元と ⊥</b></td><td>各欄は <code>X ⊔ {⊥}</code>。<b>⊥ はいかなる値とも比較できない</b></td>
+<td><b>Kleene の三値論理</b>／<b>Codd の NULL</b>（データベース）／欠測データ論 ―― 「無い」と「分からない」は別物</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>N₃ 行為の三つ組</b></td><td><code>act⟨誰が, いつ, どの費目を⟩</code>。両替は写像ではなく<b>行為</b>である</td>
+<td>権限と責任の割り当て（RACI 等）に近いが、<b>費目まで型に含める</b>形は実務にも学術にも見当たらない</td>
+<td><span class="k k-own">独自</span></td><td class="cf">―</td></tr>
+<tr><td><b>N₄ 単位付き量</b></td><td>量は単位を持つ。単位が違えば比べられない</td>
+<td><b>次元解析</b>／<b>Stevens (1946) の尺度水準</b>／<b>Krantz ら『Foundations of Measurement』</b></td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>N₄′ 量は〈比較の相手〉を持つ</b></td><td>座席は基準を読むのではない。<b>払うものと戻るものを同じ単位で並べて</b>決める</td>
+<td><b>Espeland &amp; Stevens (1998) commensuration</b> ―― 比較可能にすること自体が社会的な作業である</td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">中</td></tr>
+<tr><td><b>N₅ 座席の型</b></td><td>座席は〈基準 κ・通し方 χ・合議か単独 γ・読むか・様式語〉を持つ</td>
+<td>buying center の役割分類に、<b>institutional logics（何を正当と見るか）</b>と<b>ジャンル（どの語で書かれた文書なら会議に載るか）</b>を重ねたもの</td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">中</td></tr>
+<tr><td><b>N₆ 要求の四つ組</b></td><td>要求＝⟨担体, 定義域, 充足条件, 強さ⟩。書けない要求は要求ではない</td>
+<td><b>要求工学</b>（Zave &amp; Jackson の要求定義、van Lamsweerde の KAOS、<b>RFC 2119 の MUST/SHOULD</b> ＝強さ）</td>
+<td><span class="k k-same">同一</span></td><td class="cf">中</td></tr>
+</table>
+
+<div class="box key">
+<p><b>N₆ を入れた効き目は、実測で出ています。</b>四つ組で自分の宣言欄を監査したところ、
+<b>一度も走らせずに</b>「複数を誘うのに欄が単数」という同型の欠陥が6件見つかりました。
+形式を整えることが、実際に欠陥を先に出しています。</p>
+</div>
+
+<h2><span class="n">PART 4</span>軸 ―― 商材座標と τ の形</h2>
+
+<p class="small">この部分は既に <code>統合検討-既存理論と本モデル.md</code> で詳しく突き合わせています。要点だけ再掲します。</p>
+
+<table>
+<tr><th style="width:14%">軸</th><th style="width:26%">本モデル</th><th style="width:34%">既存知</th><th style="width:9%">関係</th><th class="cf">確度</th></tr>
+<tr><td><b>ν 検証時点</b></td><td>買う前に分かる／使えば分かる／使っても分からない</td>
+<td><b>Nelson の探索財・経験財</b>、<b>Darby &amp; Karni の信頼財</b> ―― <b>三分類そのもの</b>。出典を書いていなかっただけ</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>θ 分割可能性</b></td><td>不可分／段階分割／完全分割</td><td><b>Rogers の試用可能性（trialability）</b></td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>σp 切替コスト</b></td><td>手続を切り替える組織的コスト</td><td>切替コスト研究（Burnham ら）。<b>ただし標本が B2C なので、成分を1本だけ採り閾値は採らない</b></td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">中</td></tr>
+<tr><td><b>β₁ 会計分類</b></td><td>資産計上／費用処理・固定／変動</td>
+<td><b>会計基準が明文で決めている</b>。加えて <b>cost stickiness（費用の下方硬直性）</b>研究が機序を与える</td>
+<td><span class="k k-same">同一</span></td><td class="cf">中</td></tr>
+<tr><td><b>事例の同型性</b><br><span class="small">ISO_KEYS</span></td>
+<td>事例が効く条件を〈拘束の所在の一致・執行座席の同型・暦の同型〉で測る</td>
+<td>認知科学の構造類似（Gentner ら）からの移植が考えられるが、<b>移植は要らない</b>。
+Π₃ が「同じ所在に属するときだけ効く」と既に言っており、<b>これはその系である</b>。
+所轄庁・系列という当初の鍵は λ の粗い代理変数で、<b>16/16 のセルで判定不能になっていた</b></td>
+<td><span class="k k-der">導出</span></td><td class="cf">―</td></tr>
+<tr><td><b>τ の形 A〜E</b></td><td>閉扉／開扉／逆算／漸増／禁制。<b>γ（勾配）×ρ（再来）</b>で決まる</td>
+<td>実務の compelling event の類型化。学術側の直接の対応は見つけていない。<b>D（漸増）だけは実測で型ずれが出ている</b>（25業界の 23/25 が、年次の段を漸増欄に書いた）</td>
+<td><span class="k k-own">独自</span>／<span class="k k-no">食い違い</span></td><td class="cf">―</td></tr>
+</table>
+
+<h2><span class="n">PART 5</span>実務のフレームワークとの関係 ―― 何が足りないのか</h2>
+
+<p>上司や営業に説明するとき、いちばん訊かれるのがここです。</p>
+
+<table>
+<tr><th style="width:16%">フレームワーク</th><th style="width:30%">何を与えるか</th><th>本モデルとの関係</th></tr>
+<tr><td><b>SPIN</b></td><td>質問の順序（状況→問題→示唆→解決）</td>
+<td><b>①〜④とほぼ同型</b>。ただし SPIN は<b>会話の技法</b>であって、<b>資料が通るかの判定を持たない</b>。本モデルの②③④は SPIN の各段に対応するが、各段に<b>停止条件</b>が付いている点が違う</td></tr>
+<tr><td><b>MEDDIC / MEDDPICC</b></td><td>案件の充足条件のチェックリスト（指標・決裁者・基準・過程・痛み・推進者）</td>
+<td><b>座席の分類として近い</b>。決定的な差は二つ ―― (1) <b>欠けたときに何が起きるかを言わない</b>（本モデルは停止理由が出る）、(2) <b>資料の中身と結びついていない</b>（本モデルは⑥の要素に落ちる）</td></tr>
+<tr><td><b>Challenger Sale</b></td><td>教える・仕立てる・支配する。買い手の前提を揺さぶる</td>
+<td><b>②の思想とほぼ同じ</b>。そして<b>同じ危険を抱えている</b> ―― 実測で 8/21 が「決めつけ」として受け取った。<b>Challenger の弱点を、本モデルは自分の実測で踏み抜いた</b></td></tr>
+<tr><td><b>JTBD</b></td><td>買い手が雇う「用事」から出発する</td>
+<td>①②の立て方に近い。ただし JTBD は<b>個人の用事</b>を主に扱い、<b>組織の座席と稟議</b>を扱わない。Π₂ の部分が空</td></tr>
+<tr><td><b>Value Proposition Canvas</b></td><td>痛み・利得・提供物の対応づけ</td>
+<td>⑥の表2（消す部分の対応）に近い。<b>単位と出所を要求しない</b>点が違う</td></tr>
+<tr><td><b>Gartner らの B2B 購買研究</b></td><td>関与者は平均6〜10名。合意形成が最大の障壁</td>
+<td><b>Π₂ の実証的な裏づけ</b>。本モデルはそこに<b>座席ごとの判定</b>を足している</td></tr>
+</table>
+
+<div class="box">
+<p><b>一行でまとめると。</b></p>
+<p>実務フレームワークは<b>何を書くべきか</b>を言います。本モデルは<b>何が書かれていないと止まるか</b>を言います。
+前者はチェックリスト、後者は<b>判定</b>です。この違いが、そのまま「他の生成AIと何が違うのか」への答えになります。</p>
+</div>
+
+<h2><span class="n">PART 6</span>方法の側 ―― 走らせ方の出所</h2>
+
+<table>
+<tr><th style="width:22%">本モデルの規律</th><th style="width:38%">既存知</th><th style="width:9%">関係</th><th class="cf">確度</th></tr>
+<tr><td><b>驚きから理論を直す</b>（アノマリー駆動）</td>
+<td><b>Timmermans &amp; Tavory (2012, 2014) の abductive analysis</b> ―― 驚きは理論との関係で生じる。理論を持たない観察に驚きは無い</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>LLM が作ったデータは帰納の場ではない</b></td>
+<td>同上。生成物は<b>理論を織り込んだ推測</b>であって観察ではない。帰納の場は閲覧ログにある</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>生成器・予測器・盲検買い手の三役分離</b></td>
+<td><b>NLP パイプラインの誤差伝播研究</b>における <b>oracle 置換</b>と同型。上流を固定して下流だけ走らせる</td>
+<td><span class="k k-same">同一</span></td><td class="cf">要確認</td></tr>
+<tr><td><b>走行前に予測を置く</b></td>
+<td><b>事前登録（pre-registration）</b>。外れの記録が資産になる</td>
+<td><span class="k k-same">同一</span></td><td class="cf">高</td></tr>
+<tr><td><b>失敗の所在を5つに分ける</b><br><span class="small">入力ν／モデル／指示／検査／配管</span></td>
+<td><b>Cemri ら (2025) MAST</b>（マルチエージェントの失敗分類：設計・エージェント間の不整合・タスク検証）と横串が一致する</td>
+<td><span class="k k-ref">再定式化</span></td><td class="cf">要確認</td></tr>
+<tr><td><b>検査の誤りが最も多い型である</b></td>
+<td>対応物を見つけていない。<b>実測が言っていること</b> ―― 一日で5件（⊥ の取り違え3件・浅い一致2件）</td>
+<td><span class="k k-own">独自</span></td><td class="cf">―</td></tr>
+<tr><td><b>導出 &gt; 較正</b><br><span class="small">原理から出るものが、実測から作った表に優先する</span></td>
+<td>外的妥当性・過学習の議論に対応するが、<b>降格の機構として実装している</b>例は見当たらない</td>
+<td><span class="k k-own">独自</span></td><td class="cf">―</td></tr>
+</table>
+
+<h2><span class="n">PART 7</span>独自だと考えているもの（4つ）</h2>
+
+<div class="box key">
+<ol>
+<li><b>Π₂ の二連言。</b>「その座席の基準に両替できるか」と「実際に費目を動かせる者が居るか」を分けたこと。
+文献は帰属可能性と費用の硬直性を別々に持っていますが、<b>一つの構造の二面として扱う統合はありません</b></li>
+<li><b>V（決裁権なき拒否権）と W（執行座席）の対。</b>止める人と動かす人を別の型として立て、
+両方が資料の必須要素に落ちること</li>
+<li><b>Γ^own と侮辱の関係。</b>買い手が資料の外で自分で積んだ承認を否定すると、
+それを受け入れるには買い手が<b>自分の資本を減らさねばならない</b>ので、Π₁ の単調な追加では受け取れない。
+―― Brown &amp; Levinson の<b>フェイス侵害</b>（1987）に近いが、<b>単調性の破れとして形式化</b>した点が違う<span class="cf">（確度 中）</span></li>
+<li><b>自己適用。</b>他の手段を落とすのに使った条件を、自社案にも当てることを<b>手続として要求する</b></li>
+</ol>
+</div>
+
+<h2><span class="n">PART 8</span>既存知が持っていて、本モデルがまだ持っていないもの</h2>
+
+<p>説明可能性のためには、こちらも書いておく必要があります。</p>
+
+<table>
+<tr><th style="width:26%">既存知</th><th>本モデルの欠落</th></tr>
+<tr><td><b>大N の実証</b></td><td>本モデルの実測はすべて <b>LLM の買い手</b>です。実在の買い手のデータはまだありません。<b>帰納の場は閲覧ログにあり、まだ接続されていません</b></td></tr>
+<tr><td><b>効果量の推定</b></td><td>「何%減るか」は、本モデルの原理からは出ません。<b>測るしかない</b>。いま出せるのは〈買い手の量 × 売り手の係数〉の<b>式</b>まで</td></tr>
+<tr><td><b>Brown &amp; Levinson のポライトネス</b></td><td>侮辱は形式化しましたが、<b>回避の方策（間接性・敬語・補償）は持っていません</b>。実測では、断り書きを二度書くと<b>逆に侮辱として読まれました</b>（7/21）</td></tr>
+<tr><td><b>ゴミ箱モデル／政策の窓</b></td><td>「決定の窓」は A41 で入れたばかりで、<b>着手日も縛ることに気づいたのは実測の後</b>です。窓の理論を先に読んでいれば設計に入っていたはずです</td></tr>
+<tr><td><b>切替コスト・PSS の実証</b></td><td>標本が B2C 中心のため<b>閾値を採っていません</b>。したがって σp の値は較正であって導出ではありません</td></tr>
+<tr><td><b>要求工学のトレーサビリティ</b></td><td>N₆ は要求の形を規定しましたが、<b>要求 → 検査 → テストの追跡</b>は仕様書側で債務のままです（A24〜A47 が未記載）</td></tr>
+</table>
+
+<h2><span class="n">PART 9</span>この資料の使い方</h2>
+
+<ul>
+<li><b>「なぜこの規則があるのか」と訊かれたら</b>、PART 1〜3 の該当行を見せる。<b>同一</b>なら「既知の概念です」、
+<b>導出</b>なら「原理から出ます」、<b>独自</b>なら「対応物を見つけていません」と答える</li>
+<li><b>「学術的な裏づけはあるのか」と訊かれたら</b>、<span class="k k-same">同一</span>と<span class="k k-ref">再定式化</span>の行を数える。
+ただし<b>本モデルの主張は「文献が正しいこと」ではなく「文献の知見を判定できる形にしたこと」</b>だと言う</li>
+<li><b>「新規性は何か」と訊かれたら</b>、PART 7 の4つ。ただし<b>PART 8 も一緒に見せる</b>。
+片方だけ出すと、この資料の信頼が落ちます</li>
+<li><b>文献を引く前に</b>、確度の欄を見る。<b>要確認</b>は外部に出す前に必ず原典に当たる</li>
+</ul>
+
+<div class="box warn">
+<p><b>最後に、この資料自身の限界。</b></p>
+<p>ここに並べた対応は、<b>後から見つけたもの</b>が大半です。ν が Nelson–Darby–Karni だったこと、
+Acct の硬さが cost stickiness だったことは、<b>アノマリーから発見した後に文献が名前を与えました</b>。</p>
+<p>つまり本モデルは<b>文献から演繹して作られていません</b>。走行の驚きから作られ、後から座標が付いた。
+説明可能性の資料としては、そのことを隠さないほうが強いと考えます ――
+<b>「文献に基づいて設計した」ではなく「作ったものが文献と一致した」</b>。前者は主張、後者は照合です。</p>
+</div>
+
+</body></html>
