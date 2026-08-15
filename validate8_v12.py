@@ -122,6 +122,10 @@ def to_declared(dd):
                         if dd.get("s6_price_items") else None),
         s6_price_tiers=(tuple(dict(x) for x in dd["s6_price_tiers"] if isinstance(x, dict))
                         if dd.get("s6_price_tiers") else None),
+        # A47／A46（第13.9版）。**配管が落ちるのはこれで三度目**（V3 を入れるまで再発する）
+        s2_asks_possession=dd.get("s2_asks_possession"),
+        s5_disclaimers=(tuple(str(x).strip() for x in dd["s5_disclaimers"] if str(x).strip())
+                        if dd.get("s5_disclaimers") is not None else None),
     )
 
 
