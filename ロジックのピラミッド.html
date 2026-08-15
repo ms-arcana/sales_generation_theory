@@ -46,6 +46,8 @@ blockquote{margin:10px 0;padding:7px 0 7px 14px;border-left:3px solid var(--line
 .p6{background:var(--t6b);border-color:#e8bcbc;color:var(--t6);width:98%}
 .pyr .side{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub);
  margin-top:12px;padding:0 4px}
+.pyr .ed{text-align:center;font-size:11px;color:var(--sub);letter-spacing:.03em;margin:2px 0}
+.pyr .ed b{color:var(--t1);font-weight:700}
 
 /* ---- ツリー ---- */
 .tree{margin:14px 0 6px}
@@ -82,6 +84,18 @@ blockquote{margin:10px 0;padding:7px 0 7px 14px;border-left:3px solid var(--line
 hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 .hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:34px}
 .hd .lv{font-size:10.5px;font-weight:700;letter-spacing:.14em;color:var(--sub)}
+.conn{font-size:12.5px;color:var(--sub);background:#f6f7f9;border:1px solid var(--line);
+ border-left:3px solid var(--t1);border-radius:0 5px 5px 0;padding:7px 13px;margin:10px 0 2px}
+.conn .ar{font-weight:700;color:var(--t1);margin-right:8px;letter-spacing:.06em}
+.edge{border:1px solid var(--line);border-radius:6px;background:var(--card);
+ padding:13px 16px;margin:16px 0}
+.edge>.eh{font-size:13px;font-weight:700;margin:0 0 4px;color:var(--t1)}
+.edge>.eh .ln{font-size:10.5px;letter-spacing:.12em;color:var(--sub);margin-right:9px}
+.tv{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+.tv div{flex:1 1 220px;border:1px solid var(--line);border-radius:5px;padding:9px 12px;
+ font-size:12.5px;background:#fafbfc}
+.tv div b{display:block;font-size:12px;color:var(--t1);margin-bottom:2px}
+.cut{color:var(--t6);font-weight:700}
 </style></head><body>
 
 <h1>ロジックのピラミッド ― 中央命題から実測まで</h1>
@@ -101,11 +115,17 @@ hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 
 <div class="pyr">
  <div class="row"><div class="bar p0"><b>中央命題</b><span>1本</span></div></div>
+ <div class="ed">↓　<b>述語の分解</b>　〈資本〉〈運ばれる〉〈座席で効く〉</div>
  <div class="row"><div class="bar p1"><b>三つの原理　Π₁ Π₂ Π₃</b><span>3本。これ以上は分解しない</span></div></div>
+ <div class="ed">↓　<b>型を要求する</b>　原理を書くのに必要な構文（内容は増えない）　／　λ・ε はここを飛ばして軸へ直接</div>
  <div class="row"><div class="bar p2"><b>七つの記法　N₁–N₆ ＋ N₄′</b><span>命題ではなく型。誤りを「書けなく」する</span></div></div>
+ <div class="ed">↓　<b>型に値を入れる</b>　Σ←N₁／ν←N₂・N₄′／τ←N₃／J←N₅／必須要素←N₆</div>
  <div class="row"><div class="bar p3"><b>軸と座標　ν・λ×ε・τ・κ・Form・Σ・J</b><span>原理が形を、軸が中身を与える</span></div></div>
+ <div class="ed">↓　<b>定義域を与える</b>　規則は軸の値の上の述語。定義域の無い規則は書けない</div>
  <div class="row"><div class="bar p4"><b>依存規則　R1–R20</b><span>ほぼ全部が原理からの導出。独立に立てたのは R17 のみ</span></div></div>
+ <div class="ed">↓　<b>走査と重さを付ける</b>　検査 ＝ 規則 ＋ 走査 ＋ 重さ ＋ 表示文（重さだけは実測 X4）</div>
  <div class="row"><div class="bar p5"><b>検査　check_ 28本／audit_ 2本／理由コード 178／回帰 239</b><span>規則を機械が読める形にしたもの</span></div></div>
+ <div class="ed">↕　<b>唯一、強さを測れる辺</b>　全体の合否では φ=+0.055（辺なし）／不備の型では 21/21（辺あり）</div>
  <div class="row"><div class="bar p6"><b>実測　アノマリー A1–A47／盲検買い手／25業界21件</b><span>唯一の外部入力。ここだけが理論の外にある</span></div></div>
  <div class="side"><span>↓ 導出（上が下を決める）</span><span>↑ 反証（下が上を書き換える）</span></div>
 </div>
@@ -115,6 +135,133 @@ hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 そして<b>横</b>には流れません ―― 検査を直しても規則は直りませんし、規則を足しても記法の穴は塞がりません。
 「同じ誤りが4回出たものは規則ではなく型である」（N₂ の由来）というのは、この横に流れないという性質のことです。</p>
 </div>
+
+<h2><span class="n">辺</span>層のあいだの関係 ― 何が何を決めているか</h2>
+<p class="lead">層を並べただけでは体系になりません。<b>辺</b>―― 上の層が下の層の何を決め、下の層が上の層の何を返すのか ―― を書いておきます。</p>
+
+<div class="box key">
+<p><b>辺の種類は、全部で一つです。</b></p>
+<div class="tv">
+ <div><b>上の層</b>〈型〉を与える。<br>「その主張は、どんな形でなら書けるか」</div>
+ <div><b>下の層</b>〈値〉を与える。<br>「その形に、実際に何が入るか」</div>
+</div>
+<p>だから<b>上の層を足しても内容は増えません</b>（書ける形が変わるだけ）。
+逆に<b>下の層を足しても上の穴は塞がりません</b>（型が無いものは、値をいくつ並べても書けない）。
+本モデルで最も高くついた誤りは、この向きを逆に扱ったとき ―― <b>規則を足して型の穴を塞ごうとした</b>ときに出ています。</p>
+</div>
+
+<div class="edge">
+<p class="eh"><span class="ln">辺 0 → 1</span>中央命題 → 三つの原理</p>
+<p class="small">中央命題を述語に割ると、そのまま三本になります。<b>後付けの対応ではなく、命題の分解です。</b></p>
+<table>
+<tr><th>命題の語</th><th>問い</th><th>原理</th></tr>
+<tr><td><b>承認という<u>資本</u></b></td><td>資本とは何か。どう振る舞うか</td><td><b>Π₁ 蓄積律</b>（積む・減らない・矛盾で全額失効）</td></tr>
+<tr><td><b>座席から座席へ<u>運ばれる</u></b></td><td>運ばれるとはどういうことか</td><td><b>Π₂ 通関律</b>（可能連言 ∧ 執行連言）</td></tr>
+<tr><td><b>その<u>座席</u>で（効く）</b></td><td>効く／効かないは何で決まるか</td><td><b>Π₃ 所在律</b>（λ が一致し、ε が一致する）</td></tr>
+</table>
+<p class="small"><b>この辺の強さ。</b>三本で閉じているかは検算されています ―― 第7版の「効かない証拠」12件が Π₃ の二座標で 12/12、
+A1・A5・A11・A12 が Π₂ の同一原理の別セルで 4/4。<b>四本目の原理を要求した実測は、まだ出ていません。</b></p>
+</div>
+
+<div class="edge">
+<p class="eh"><span class="ln">辺 1 → 2</span>三つの原理 → 七つの記法</p>
+<p class="small"><b>記法は原理から導出されたものではありません。</b>原理を<b>書くために必要な型</b>です。
+原理は「何が正しいか」を言い、記法は「正しくないことを書けなくする」。<br>
+だから記法の追加は主張を増やしません ―― 唯一の例外に見える N₄′ も、A29 の衝突を<b>消した</b>だけで新しい主張を足していません。</p>
+<table>
+<tr><th>原理</th><th>要求する記法</th><th>原理のどの部分か</th><th>その記法が無いと、何が<u>書けてしまう</u>か</th><th>実際に起きた誤り</th></tr>
+<tr><td rowspan="3"><b>Π₁</b><br>蓄積律</td><td><b>N₁</b> 承認演算子</td><td>Γ_s ⊢ φ そのもの</td><td>「世界について真」と「この段で承認済み」が同じ式になる</td><td>⟦|C|=1⟧ と Γ⊢|C|=1 を寄せて、第7版が閉じた矛盾が再び開いた</td></tr>
+<tr><td><b>N₂</b> 単位元と ⊥</td><td>Γ_s ⊬ ⊥ ／ Γ^init</td><td><b>空欄を値として積める。</b>未承認を承認済みとして数えることになる</td><td>R20 が記入欄を値と読み停止 0（→21）／R10a 6件誤検出／LT* の空集合上の max</td></tr>
+<tr><td><b>N₆</b> の〈強さ〉成分</td><td>cost の順序</td><td>「必須」と「望ましい」が同じ列に並ぶ</td><td>A27 必須要素と字数の衝突順序</td></tr>
+<tr><td rowspan="4"><b>Π₂</b><br>通関律</td><td><b>N₃</b> 行為の三つ組</td><td><b>執行連言そのもの</b>（∃act⟨w,d,o⟩）</td><td>人と対象を別々に検査できてしまう</td><td>「工場長が外注加工費を止める」が通った（第7版 §9.2）</td></tr>
+<tr><td><b>N₄ / N₄′</b></td><td>可能連言・担体が〈量〉のとき</td><td>単位のない量／<b>比較の相手がいない量</b>が書ける</td><td>A25 単位・基準の連結（型1）／<code>R20_RETURN_MISSING</code> 8/8</td></tr>
+<tr><td><b>N₅</b> 座席の型</td><td>basis(β⁺) の β の両端</td><td>座席が名前だけになり、κ と Form が座席に属さない</td><td>終端座席しか見ずに中間座席を飛ばした（R18 以前）</td></tr>
+<tr><td><b>N₆</b> 要求の四つ組</td><td><b>cross(x,β) を「要求」として物化したもの</b></td><td>∀/∃ が落ちる・定義域が消える</td><td>型1 量化子の潰れ／型4 順序・範囲の欠落（A30〜A33）</td></tr>
+<tr><td rowspan="2"><b>Π₃</b><br>所在律</td><td><b>N₃</b></td><td>act の w が ctrl の主体</td><td>拘束者が実在しなくても、向きが逆でも書ける</td><td>A7 向き／A8 適用範囲</td></tr>
+<tr><td><b>N₅</b></td><td>ctrl(y) は座席の属性</td><td>「誰の制御外か」が言えない</td><td>―</td></tr>
+</table>
+<div class="box">
+<p><b>N₆ だけは二つの原理から来ています。</b>四つ組の成分がそのまま辺になっています ――
+<b>担体</b>←Π₂ の x／<b>定義域</b>←Π₂ の β と座席／<b>充足条件</b>←Π₂ の conv ∧ act／<b>強さ</b>←Π₁ の cost 順序（重さの割当だけは実測 X4）。
+だから N₆ の破れ方が<b>型1（量化子の潰れ）と型4（順序・範囲の欠落）の二つに限られる</b>のは偶然ではありません。四つ組のどの成分を落としたか、です。</p>
+</div>
+</div>
+
+<div class="edge">
+<p class="eh"><span class="ln">辺 2 → 3</span>七つの記法 → 軸（ν・J・τ・Σ）</p>
+<p class="small"><b>記法が〈型〉、軸が〈値〉です。</b>軸は記法のインスタンスであって、別立ての概念ではありません。</p>
+<table>
+<tr><th>記法（型）</th><th>軸（値）</th><th>対応の中身</th><th>この辺が破れた実例</th></tr>
+<tr><td><b>N₁</b> Γ_s ⊢ φ</td><td><b>Σ</b> 六段①〜⑥</td><td>Σ は「<b>どの承認を、どの段で作るか</b>」の索引。段 s ↔ φ_s。<br>Π₁ の cost 順序がこの索引を<b>接尾辞</b>に縛る</td><td>σ_prod が {①④⑥} を返し、②③を残したまま⑤を承認済みにした ＝ <b>Π₁ と衝突</b>。〈導出 &gt; 較正〉で採らない</td></tr>
+<tr><td><b>N₂</b> X_⊥ = X ⊔ {⊥}</td><td><b>ν</b> の全欄</td><td><b>⊥ が実際に住んでいるのは ν です。</b>⊥ を置ける欄と置けない欄の区別が、そのまま入力仕様になる</td><td>記入欄【　】・「なし」「未定」・散文の否定を値と読んだ ―― <b>本日だけで5件</b></td></tr>
+<tr><td rowspan="2"><b>N₃</b> act⟨w,d,o⟩</td><td><b>τ</b> の各項</td><td><b>T軸4座標のうち2つは N₃ の射影です。</b><br>〈拘束者〉＝w／〈日付〉＝d／対象＝o。残る〈周期〉〈決定可否〉が T軸固有</td><td><b>A37：一つの日付欄が二つの o を持っていた</b>（決定と着手）／A41b：④の逆算日と⑥の決定日が別の o のまま同じ紙に載った</td></tr>
+<tr><td><b>⑥の実現</b>（<code>s6_realize</code>）</td><td>〈誰が・いつ・どの費目〉＝ ⟨w,d,o⟩ そのもの。A24 で<b>行為は集合</b>（三つ組の配列）</td><td>R13 系（<code>R13_NO_AUTHORITY_PAIR</code>・<code>R13_ACCOUNT_NOT_HELD</code>）</td></tr>
+<tr><td><b>N₄′</b> 量は〈単位〉と〈比較の相手〉を持つ</td><td><b>ν</b> の量欄・<b>⑥の表1</b></td><td>6欄が N₄′ の成分そのもの ―― 座席／基準／払う＋単位／戻る＋単位／何あたり／出所</td><td><code>R20_RETURN_MISSING</code> 8/8。17行中<b>4行しか値が無い</b>（金額のものは 6/6 が空）</td></tr>
+<tr><td><b>N₅</b> 座席の型</td><td><b>J</b> 座席列</td><td>J = ⟨j₁…j_n⟩、各 j = ⟨κ, Form(j), ctrl, 順序⟩。<b>κ と Form は座席の属性であって案件の属性ではない</b></td><td>Form を推測で埋めると A23 が「当たっているように見えて当たっていない」状態になる。<b>承認していない語を辞書に入れない</b></td></tr>
+<tr><td><b>N₆</b> 要求の四つ組</td><td><b>Σ × J</b> の各マスに立つ必須要素</td><td>要求は段と座席の<b>交差</b>に立つ。「⑥に必要」ではなく「⑥で購買部長に必要」</td><td><code>audit_requirements()</code> 8件。<b>うち3件は監査を対単位に書き直して初めて出た</b>（集合単位だと同順位の衝突が黙る）</td></tr>
+</table>
+<div class="box warn">
+<p><b>ただし、記法を通らない軸が四つあります。</b>λ・ε・θ・β₁ は、<b>Π₃ が値そのものを列挙しています</b>（λ は8値、ε は2値）。
+ここだけ<b>原理 → 軸の直接の辺</b>で、記法を経由しません。<br>
+<b>帰結：この四つには型検査が効きません。</b>妥当性を見ているのは <code>check_axis_values</code> の列挙照合だけです。
+新しい λ を足したくなったとき、それが本当に所在なのかを機械は言えません。</p>
+</div>
+</div>
+
+<div class="edge">
+<p class="eh"><span class="ln">辺 3 → 4</span>軸 → 依存規則</p>
+<p class="small"><b>規則は、軸の値の上の述語です。</b>だから <b>定義域を持たない規則は書けません</b> ―― N₆ の〈定義域〉成分がそれを強制します。</p>
+<table>
+<tr><th>定義域（軸）</th><th>その上に立つ規則</th></tr>
+<tr><td><b>τ</b>（時間）</td><td>R5・R6・R12a（4座標の定義）／A41 決定の窓／<code>check_dates_v7</code>（決定 ≤ 着手 ≤ 実現）</td></tr>
+<tr><td><b>J</b>（座席列）</td><td>R9・R11（語の通関）／<b>R18</b>（中間座席の迂回禁止 ＝ Π₂ の ∀k）</td></tr>
+<tr><td><b>ν の量</b></td><td>R10a/b/c・R14（型検査）／<b>R20</b>（決定可能性）</td></tr>
+<tr><td><b>Σ</b>（段）</td><td><code>check_staircase</code>（接尾辞条件。Π₁ に直結）／A27（必須要素と字数の衝突順序）</td></tr>
+<tr><td><b>λ×ε</b>（所在）</td><td>R1／A7 向き／A8 適用範囲</td></tr>
+<tr><td><b>Γ^own</b></td><td>R17 侮辱検査</td></tr>
+</table>
+</div>
+
+<div class="edge">
+<p class="eh"><span class="ln">辺 4 → 5</span>依存規則 → 検査</p>
+<div class="tv">
+ <div><b>検査 ＝</b>規則 ＋ 定義域の走査 ＋ 重さ ＋ 表示文</div>
+ <div><b>重さ</b>停止／要判断／記入欄。<b>この割当だけは実測</b>（X4）</div>
+ <div><b>表示文</b><code>messages.json</code>（停止113・要判断65）</div>
+</div>
+<p class="small"><b>この辺が切れる型は二つしかありません。</b></p>
+<ol>
+<li><b>規則は正しいのに、走査が浅い。</b>―― 浅い一致5件。<code>own_retracted</code>／「タダ」／<code>SLOT_RE</code>／散文の物差し／<b><code>R20</code> の <code>is_bottom</code></b></li>
+<li><b>走査もしたのに、出力に載らない。</b>―― 配管。<code>cells8_v10.run()</code> の白名簿に鍵を足し忘れ、<code>lt_months</code> と <code>today</code> が計算済みなのに決定表へ届かなかった</li>
+</ol>
+<p class="small">1 は<b>停止が不自然に少ない</b>ことで、2 は<b>回帰</b>でしか見つかりません。だから見つけ方が別で、直す面も別（1 と 2 はどちらも VS Code 側）。</p>
+</div>
+
+<div class="edge">
+<p class="eh"><span class="ln">辺 5 → 6</span>検査 → 実測</p>
+<p class="small"><b>この辺だけは、強さを数で測れます。</b>そして測った結果、<b>全体の水準ではほぼ切れています。</b></p>
+<table>
+<tr><th>水準</th><th>測った値</th><th>言えること</th></tr>
+<tr><td><b>資料全体の合否</b></td><td>φ = <b>+0.055</b>／⑦通過でも 50% 差し戻し・⑦停止でも 44% 差し戻し／無条件通過 0/21</td><td><b class="cut">辺は無い。</b>「⑦を通れば買い手も通す」とは言えない</td></tr>
+<tr><td><b>個別の不備の型</b></td><td>買い手が挙げた上位3つが 21/21、うち〈空欄〉は <code>R20</code> が 8/8 で捕捉</td><td><b>辺は在る。</b>「買い手が必ず指摘する型を、送る前に機械が名指しできる」</td></tr>
+</table>
+<div class="box warn">
+<p><b>主張はこの二段で書き分けなければなりません。</b>「精度」という語を使わないのはこのためです。
+言えるのは<b>型の水準</b>まで。合否の水準まで言った瞬間、最初の実案件で反証されます。</p>
+</div>
+</div>
+
+<h3>切れている辺・細い辺（既知の6本）</h3>
+<p class="q">説明可能性の本体は、<b>在る辺</b>ではなく<b>無い辺を言えること</b>です。</p>
+<table>
+<tr><th>#</th><th>切れている／細い辺</th><th>帰結</th><th>状態</th></tr>
+<tr><td>1</td><td><b>Π₂ の担体〈命題〉に記法が無い</b>（valid(φ, χ_j) 未実装）</td><td>4担体のうち1つは、通関を検査できない</td><td>X5・未実装</td></tr>
+<tr><td>2</td><td><b>N₃′ 様相が未実装</b>（⟨w,d,o,m⟩）</td><td>執行連言に〈できる／しなければならない〉の区別が入らない</td><td>A38・設計のみ</td></tr>
+<tr><td>3</td><td><b>N₁ → Σ の辺が、②の担体を決めていない</b></td><td>②を〈保有〉で書くか〈単位〉で書くかが未規定 → 決めつけとして着弾</td><td><b>A47・8/21</b></td></tr>
+<tr><td>4</td><td><b>λ・ε・θ・β₁ が記法を通らない</b></td><td>この四つに型検査が効かない。列挙照合のみ</td><td>X3</td></tr>
+<tr><td>5</td><td><b>検査 → 実測が全体水準で φ≈0</b></td><td>合否は予測できない。型の水準でしか主張できない</td><td>実測済み・仕様どおり</td></tr>
+<tr><td>6</td><td><b>Π₁ の cost 単調性は独立の対象を持たない</b></td><td>第1式の系なので、実質は Σ の接尾辞条件に吸収済み</td><td>第12.5版で訂正済み</td></tr>
+</table>
 
 <div class="hd"><span class="lv">LEVEL 0</span><h2 style="margin:0;border:0;padding:0">頂点 ― 中央命題</h2></div>
 
@@ -129,9 +276,14 @@ hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 <li><span class="node"><span class="tag gx">反証条件</span><span class="ttl">この命題が偽になるとき</span><span class="dsc">通過／不通過が座席と承認の語で説明できず、文章の巧拙だけで動くとき</span></span></li>
 <li><span class="node"><span class="tag gx">未達</span><span class="ttl">いま言えないこと</span><span class="dsc">⑦の検査は買い手の判定を<b>予測していない</b>（φ=+0.055／無条件通過 0/21）。言えるのは「全員が挙げる不備を送る前に潰せる」まで</span></span></li>
 </ul></div>
+<p class="conn"><span class="ar">↓ 下へ</span>命題の三つの述語が、そのまま三つの原理になる（辺 0→1）。
+<b>四本目の原理を要求した実測は、まだ一件も出ていない。</b></p>
 
 <div class="hd"><span class="lv">LEVEL 1</span><h2 style="margin:0;border:0;padding:0">三つの原理</h2></div>
 <p class="q"><b>この層が答える問い：</b>承認とは何か。運ばれるとはどういうことか。効くとはどういうことか。</p>
+<p class="conn"><span class="ar">↑ 上へ</span>中央命題の三つの述語〈資本〉〈運ばれる〉〈座席で効く〉の分解。
+<span class="ar" style="margin-left:14px">↓ 下へ</span><b>記法に〈型〉を要求する</b>（Π₁→N₁・N₂・N₆／Π₂→N₃・N₄′・N₅・N₆／Π₃→N₃・N₅）。
+ただし <b>λ・ε は記法を飛ばして軸へ直接</b>値を渡す。</p>
 
 <div class="tree"><ul>
 
@@ -195,6 +347,8 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 <div class="hd"><span class="lv">LEVEL 2</span><h2 style="margin:0;border:0;padding:0">七つの記法</h2></div>
 <p class="q"><b>この層が答える問い：</b>その主張は、そもそも<b>書けるのか</b>。
 <b>由来：</b>第7版の内部検査が見つけた12件のうち9件は型・束縛・定義域の誤りだった。<b>命題を足しても再発する。記法で書けなくするのが正しい。</b></p>
+<p class="conn"><span class="ar">↑ 上へ</span>原理を<b>書くために</b>必要な型。導出された内容ではないので、記法を足しても主張は増えない。
+<span class="ar" style="margin-left:14px">↓ 下へ</span><b>軸に〈値の入れ物〉を与える</b> ―― N₁→Σ／N₂→ν の全欄／N₃→τ と ⑥の実現／N₄′→量欄と表1／N₅→J／N₆→Σ×J の各マス。</p>
 
 <div class="tree"><ul>
 <li><span class="node"><span class="tag g2">N₁</span><span class="ttl">承認演算子</span><span class="dsc">原子式は ⟦φ⟧（世界について真）か Γ_s ⊢ φ（段 s で承認済み）のみ。裸の φ は構文エラー</span></span>
@@ -227,6 +381,8 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 
 <div class="hd"><span class="lv">LEVEL 3</span><h2 style="margin:0;border:0;padding:0">軸と座標</h2></div>
 <p class="q"><b>この層が答える問い：</b>その形に、<b>どんな中身が入るのか</b>。原理は形を与えるだけで、中身は与えません（X3）。</p>
+<p class="conn"><span class="ar">↑ 上へ</span>各軸は記法の<b>インスタンス</b>（Σ←N₁／ν←N₂・N₄′／τ←N₃／J←N₅／必須要素←N₆）。別立ての概念ではない。
+<span class="ar" style="margin-left:14px">↓ 下へ</span><b>規則の定義域になる。</b>規則はここに挙がった軸のどれかの上の述語としてしか書けない。</p>
 
 <div class="tree"><ul>
 <li><span class="node"><span class="tag g3">ν</span><span class="ttl">入力 ― 買い手・売り手・商材</span><span class="dsc">この層に嘘が入ると、下の全部が正しく動いても出力は誤る（失敗の所在①）</span></span>
@@ -262,6 +418,8 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 <div class="hd"><span class="lv">LEVEL 4</span><h2 style="margin:0;border:0;padding:0">依存規則 R1–R20</h2></div>
 <p class="q"><b>この層が答える問い：</b>何が満たされていなければ、その主張を紙に載せてはいけないか。<br>
 <b>重要：</b>ほぼ全部が上の層からの<b>導出</b>です。独立に立てたのは第8版の R17 一本だけでした。以後 R18・R20 が追加されています。</p>
+<p class="conn"><span class="ar">↑ 上へ</span>規則 ＝ 〈原理が言う条件〉を〈軸の値〉に当てはめた述語。<b>だから定義域の無い規則は書けない</b>（N₆ の〈定義域〉成分が強制）。
+<span class="ar" style="margin-left:14px">↓ 下へ</span>検査に<b>走査の対象と順序</b>を渡す。重さ（停止／要判断／記入欄）はここでは決まらず、実測が決める（X4）。</p>
 
 <div class="tree"><ul>
 <li><span class="node"><span class="tag g1">Π₁ から</span><span class="ttl">蓄積・単調・無矛盾に由来する規則</span></span>
@@ -295,6 +453,8 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 <div class="hd"><span class="lv">LEVEL 5</span><h2 style="margin:0;border:0;padding:0">検査</h2></div>
 <p class="q"><b>この層が答える問い：</b>その規則を、機械はどう読むか。<br>
 <b>本モデルで最も欠陥が多い層です。</b>誤りの型はほぼ一つ ―― <b>浅い一致</b>と <b>⊥ を値として扱うこと</b>。</p>
+<p class="conn"><span class="ar">↑ 上へ</span>検査 ＝ 規則 ＋ 定義域の走査 ＋ 重さ ＋ 表示文。<b>上の三層が正しくても、ここで壊れる。</b>
+<span class="ar" style="margin-left:14px">↓ 下へ</span>実測に<b>停止と要判断の一覧</b>を渡す。渡した先で買い手の指摘と突き合わせたものが φ。</p>
 
 <div class="tree"><ul>
 <li><span class="node"><span class="tag g5">構成</span><span class="ttl"><code>sales_logic.py</code>　2,228行・標準ライブラリのみ</span><span class="dsc">sha256[:12] = <code>a6d1c8416305</code>／外部API・乱数・時刻に依存しない／109マイクロ秒/件</span></span>
@@ -326,6 +486,9 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 <div class="hd"><span class="lv">LEVEL 6</span><h2 style="margin:0;border:0;padding:0">実測 ― 唯一の外部入力</h2></div>
 <p class="q"><b>この層が答える問い：</b>上の六層は、実際に当たっているのか。<br>
 <b>ここだけが理論の外にあります。</b>ここが動かないなら、上の層は何を足しても意味を持ちません。</p>
+<p class="conn"><span class="ar">↑ 上へ</span><b>唯一の上向きの辺。</b>ただし全体の合否では φ≈0 で辺が立っておらず、
+辺が在るのは<b>個別の不備の型</b>の水準だけ（21/21 の三つ）。
+<span class="ar" style="margin-left:14px">↓ 下へ</span>無し。ここが最下層。</p>
 
 <div class="tree"><ul>
 <li><span class="node"><span class="tag g6">A1–A23</span><span class="ttl">第5〜11版</span><span class="dsc">SPEC8.md に記載済み・実装済み</span></span></li>
@@ -406,6 +569,10 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 <p><b>上の三層（原理・記法・軸）は、この一年でほとんど動いていません。</b>畳めたし、畳んでも何も落ちませんでした。</p>
 <p><b>下の三層（規則・検査・実測）は、毎日動いています。</b>そして動いた原因の大半は
 <b>モデルの誤りではなく検査の誤り</b>でした。</p>
+<p><b>そして辺の側で言えば</b> ―― 上から下へは<b>型 → 値</b>の一本しかありません。
+原理は記法に型を要求し、記法は軸に入れ物を与え、軸は規則に定義域を与え、規則は検査に走査を渡す。
+<b>下から上へ立っている辺は一本だけ</b>（実測 → 検査）で、しかも<b>全体の合否の水準では立っていません</b>。
+無い辺は6本、名前をつけて外に出してあります。</p>
 <p><b>だから説明可能性の主張はこう置けます</b> ――
 「判定規則は3つの原理から導出されており、導出できないものは7つに限って外に出してある。
 実測は47件のアノマリーとして番号で管理され、番号は1箇所でだけ払い出す。
