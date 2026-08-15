@@ -17,12 +17,13 @@
 
 ```bash
 python3 test_sales_logic.py
-python3 -c "from sales_logic import audit_requirements as a; print(len(a()))"
+python3 -c "from sales_logic import audit_requirements as a, audit_symbols as b; print(len(a()), len(b()))"
+python3 audit_model.py
 python3 feasible136.py
 python3 regen_v13.py
 ```
 
-期待値は `273項目すべて ok` ／ `8` ／ `8セルとも解が在る` ／ `決定表の差分は A41b の2欄だけ`。
+期待値は `314項目すべて ok` ／ `8 0` ／ `8セルとも解が在る` ／ `整合性チェックの (3)(4)(5) が「なし」`。
 外部ネットワーク・乱数・時刻に依存しません。標準ライブラリのみ。
 
 ## 守ること
@@ -34,11 +35,13 @@ python3 regen_v13.py
 4. **as-run（`decisions8_v10.json`・`prompts8_v11_arm*.json`）を上書きしない。**
 5. **`_stamp` を持つ JSON は `stamp.load()` で読む。**`json.load` だと包みが返ります。
 6. **版はタグで指す。**短縮ハッシュで指さない。
+7. **記号を足す前に `GLOSSARY` を見る。**同じ記号が既に在るなら、書き分け（`distinct`）を
+   書かないと `audit_symbols()` が落とします（N₆ 追補「担体は一つ」・第14版）。
 
 ## この設計で最も多い欠陥
 
-**モデルの誤りではなく、検査の誤りです。**「浅い一致」が1日で5件出ました。
-第13.7版で6件目を踏みかけています（日付照合を本文全体に当てると 8/8 誤検出、④限定で 0/8）。
+**モデルの誤りではなく、検査の誤りです。**「浅い一致」は **A54** として畳みました（8件）。
+**監査の道具にも出ます** ―― `audit_model.py` の正規表現が `R6b` を拾えず、理由コードを 199 と数えていた（正しくは 254）。
 
 ```
 own_retracted の数え方   散文の否定を非 null と数えた            12→6
