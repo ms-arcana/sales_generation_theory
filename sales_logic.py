@@ -1736,29 +1736,43 @@ def check_quantity_sources(copy: Dict[str, str], dec: Declared,
     seats = list(quantities_by_seat(dec))   # N₄′：同上
     if not chain or not seats:
         return f, j                      # A23 側で既に要判断へ積まれている
-    src = dec.s6_quantity_sources
-    if src is None and dec.s6_quantities:      # N₄′：五つ組が出所を持っている
-        src = {_q_seat(q): str(q.get('source', '')) for q in dec.s6_quantities if _q_seat(q)}
-        src = {k: v for k, v in src.items() if v}
-    if src is None:
+    # 第14.2版：**A49 で `source` を割ったとき、この橋を直し忘れていた。**
+    # 旧 `source` しか見ていないので、`pay_source`/`ret_source` で申告されると
+    # 出所が一つも読めず `A28_SOURCE_UNDECLARED` が出る。**A49 の実装漏れ。**
+    # 座席あたりの出所は**集合**である（払う側と戻る側で別々でよい）。
+    srcs: Dict[str, List[str]] = {}
+    if dec.s6_quantity_sources:                # 旧欄（走行データとの突合のため残す）
+        for k, v in dec.s6_quantity_sources.items():
+            if str(v).strip():
+                srcs.setdefault(k, []).append(str(v).strip())
+    for q in (dec.s6_quantities or ()):        # N₄′ の五つ組（A49 で割った二欄を含む）
+        nm = _q_seat(q)
+        if not nm:
+            continue
+        for key in ("pay_source", "ret_source", "source"):
+            v = str(q.get(key, "")).strip()
+            if v and v not in srcs.get(nm, []):
+                srcs.setdefault(nm, []).append(v)
+    if not srcs:
         j.append(Judgment("A28_SOURCE_UNDECLARED", ",".join(seats)))
         return f, j
     needs_sales = []
     for name in seats:
-        s = src.get(name)
-        if s is None:
+        vals = srcs.get(name)
+        if not vals:
             j.append(Judgment("A28_SOURCE_MISSING", name)); continue
-        if s not in Q_SRC:
-            j.append(Judgment("A28_SOURCE_UNKNOWN", f"{name}={s}")); continue
-        if s == "試算":
-            needs_sales.append(name)
-            if not any(w in body for w in EST_MARKS):
-                f.append(Finding("A28_ESTIMATE_UNMARKED", "stop", f"{name}:{s}"))
-        elif s == "営業記入":
-            needs_sales.append(name)
-            if not re.search(SLOT_RE, body):
-                f.append(Finding("A28_SLOT_ABSENT", "stop", f"{name}:{s}"))
-    grounded = [n for n in seats if src.get(n) in Q_SRC_GROUNDED]
+        for s in vals:
+            if s not in Q_SRC:
+                j.append(Judgment("A28_SOURCE_UNKNOWN", f"{name}={s}")); continue
+            if s == "試算":
+                needs_sales.append(name)
+                if not any(w in body for w in EST_MARKS):
+                    f.append(Finding("A28_ESTIMATE_UNMARKED", "stop", f"{name}:{s}"))
+            elif s == "営業記入":
+                needs_sales.append(name)
+                if not re.search(SLOT_RE, body):
+                    f.append(Finding("A28_SLOT_ABSENT", "stop", f"{name}:{s}"))
+    grounded = [n for n in seats if any(v in Q_SRC_GROUNDED for v in srcs.get(n, []))]
     if grounded:
         f.append(Finding("A28_GROUNDED", "info", ",".join(grounded)))
 
