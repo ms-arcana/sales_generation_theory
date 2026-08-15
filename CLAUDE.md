@@ -21,13 +21,22 @@ python3 test_sales_logic.py
 python3 -c "from sales_logic import audit_requirements as a, audit_symbols as b; print(len(a()), len(b()))"
 python3 audit_model.py
 python3 triage_codes.py
+python3 audit_matchers.py
+python3 render_slides.py --check
 python3 feasible136.py
 python3 regen_v13.py
 ```
 
-期待値は `327項目すべて ok` ／ `8 0` ／ `8セルとも解が在る` ／ `整合性チェックの (3)(4)(5) が「なし」`
-／ 仕分けの `(c) 配線されていない: なし`。
+期待値は `340項目すべて ok` ／ `8 0` ／ `8セルとも解が在る` ／ `整合性チェックの (3)(4)(5) が「なし」`
+／ 仕分けの `(c) 配線されていない: なし` ／ レンダラの残る停止が `R20_PAY_MISSING`・`R20_RETURN_MISSING` の二つだけ。
 外部ネットワーク・乱数・時刻に依存しません。標準ライブラリのみ。
+
+25業界21件の採点し直しだけは、別枝の走行物が要ります（無ければ飛ばして構いません）。
+
+```bash
+git fetch industry-run.bundle refs/heads/industry23-it-consulting:refs/remotes/bundle/industry23
+python3 rescore21.py
+```
 
 `regen_v13.py` は `decisions8_v13.json` と `prompts8_v13_arm*.json` を**書き直します**。
 中身は同じでも `_stamp` が今の版で上書きされ、**その表を作ったコードの来歴が消えます**。

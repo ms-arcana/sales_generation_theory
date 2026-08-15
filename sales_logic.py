@@ -1932,7 +1932,9 @@ def _q_seat(q: Dict[str, object]) -> str:
     return str(q.get("seat", "")).strip()
 
 
-EXPR_MARKS = ("×", "✕", "＊", "*", "×", "掛ける")
+# 第14.1版：`×`（U+00D7）が二度入っていた。`any(m in s …)` なので**振る舞いは変わらない**が、
+# 表の傷は物差しの傷になる（`audit_matchers.py` (4)）。重複を落とす。**語は一つも減らしていない。**
+EXPR_MARKS = ("×", "✕", "＊", "*", "掛ける")
 
 
 def is_expr(v) -> bool:

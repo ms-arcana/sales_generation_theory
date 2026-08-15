@@ -1563,4 +1563,83 @@ check("A53 生成スキーマに欠けている申告欄を機械が名指しで
       {"s2_asks_possession", "s5_disclaimers"} <= set(_AM.reqs_not_in_gen_schema("wf_gen137.js")),
       _AM.reqs_not_in_gen_schema("wf_gen137.js"))
 
+print("\n── 第14.1版 V1 物差しの全数検分（`audit_matchers.py`）―― 表の不変量を固定する")
+# 本文290件・業界資料に全部当て直して出たもの。**当たり方ではなく、表の性質を固定する。**
+import sales_logic as _V1
+from sales_logic import UNIT_TOKENS as _UT, EXPR_MARKS as _EM, UNIT_UNKNOWN as _UU
+
+# `unit_in_value` は「最初に見つかった一つ」で判定する。長い語が先に無いと「万円」を「万」と読む。
+_wrong = [(a, b) for i, a in enumerate(_UT) for j, b in enumerate(_UT)
+          if a != b and a in b and i < j]
+check("V1 UNIT_TOKENS は長い語が先（unit_in_value は最初の一致で判定する）", not _wrong, _wrong)
+check("V1 「180万〜900万」に単位欄「円」なら、万を取り違えずに拾う",
+      _V1.unit_in_value("180万〜900万", "円") == "万")
+check("V1 「1,400万円」に単位欄「万円」なら食い違いなし",
+      _V1.unit_in_value("1,400万円", "万円") is None)
+
+# 表の重複は物差しの傷。× が二度入っていた（第14.1版で落とした。振る舞いは不変）
+check("V1 EXPR_MARKS に重複は無い", len(_EM) == len(set(_EM)), _EM)
+check("V1 記入欄は式ではない", not _V1.is_expr("【　　　】"))
+
+# ⊥ の判定は is_bottom を通す。生の表だけでは記入欄が ⊥ と読まれない
+check("V1 記入欄【　　　】は ⊥（is_bottom）", _V1.is_bottom("【　　　】"))
+check("V1 記入欄は UNIT_UNKNOWN の中には無い（だから生の表で引いてはいけない）",
+      "【　　　】" not in _UU)
+import ast as _ast
+_raw = set()
+for _fn in [n for n in _ast.walk(_ast.parse(open("sales_logic.py", encoding="utf-8").read()))
+            if isinstance(n, _ast.FunctionDef)]:
+    if _fn.name == "is_bottom":
+        continue                                  # ここだけが表を引いてよい
+    for _n in _ast.walk(_fn):
+        if isinstance(_n, _ast.Compare) and any(isinstance(o, (_ast.In, _ast.NotIn)) for o in _n.ops):
+            for _c in _n.comparators:
+                if isinstance(_c, _ast.Name) and _c.id == "UNIT_UNKNOWN":
+                    _raw.add((_fn.name, _n.lineno))
+# **いまは4箇所ある（債務）。増やさないことだけを固定する。**直したらこの数を下げる。
+check("V1 ⊥ を生の表で判定する箇所を増やさない（いま4箇所・すべて check_decidable）",
+      len(_raw) <= 4 and {f for f, _ in _raw} <= {"check_decidable"}, sorted(_raw))
+
+print("\n── 第14.1版 決定的レンダラ（`render_slides.py`）―― LLM を呼ばずに⑥を組む")
+# **自分の検査で自分の出力を検める。**最初の実装は二つとも自分で踏んだ。
+import render_slides as _RS
+import stamp as _stamp
+_RECS = _stamp.load("decisions8_v13.json")
+
+# (1) 設計語を紙に出さない ―― 括弧内に「拘束の所在」と書いて R9_V0 が 6/8 で立った
+_leak = []
+for _r in _RECS:
+    _c, _, _, _ = _RS.build(_r)
+    _leak += [(_r["id"], w) for w in _V1.V0 if w in _c["⑥"]]
+    _leak += [(_r["id"], p) for p in _V1.V0_RE if __import__("re").search(p, _c["⑥"])]
+check("レンダラ 設計語を紙に出さない（テンプレートからも漏れる）", not _leak, _leak[:4])
+
+# (2) 暦の算術を書き直さない ―― 写した add_months が繁忙期を避けず A43 が 5/8 で立った
+check("レンダラ 暦は sales_logic の関数を使う（担体を二つにしない）",
+      _RS.add_months is _V1.add_months and _RS.earliest_realize is _V1.earliest_realize)
+_busy = []
+for _r in _RECS:
+    _, _, _rz = _RS.dates_of(_r)
+    if _rz and int(_rz[5:7]) in set(_r.get("busy_months") or ()):
+        _busy.append((_r["id"], _rz))
+check("レンダラ 実現日が繁忙期に落ちない（A43）", not _busy, _busy)
+
+# (3) 数字を作らない ―― 決定表に無い量は記入欄（⊥）で出す
+_q = _RS.build(_RECS[0])[1]["s6_quantities"]
+check("レンダラ 決定表に無い量は記入欄で出す（⊥ を ⊥ のまま）",
+      all(_V1.is_bottom(x["pay"]) and _V1.is_bottom(x["ret"]) for x in _q), _q[:1])
+
+# (4) 残る停止は R20 の二つだけ ―― **生成の失敗ではなく入力の欠落**
+import io as _io, contextlib as _cl
+import validate8_v12 as _V12
+_codes = set()
+for _r in _RECS:
+    _c, _d, _, _ = _RS.build(_r)
+    with _cl.redirect_stdout(_io.StringIO()):
+        _, _, _v = _V12.score(_r, {"cell_id": _r["id"], "declared": _d,
+                                   "slides": [{"stage": s, "text": t} for s, t in _c.items()]})
+    _codes |= {f.code for f in _v["findings"] if f.level == "stop"}
+check("レンダラ 8セルで残る停止は R20 の二つだけ（入力側の欠落・設計メモ §4 の三つ目）",
+      _codes == {"R20_PAY_MISSING", "R20_RETURN_MISSING"}, sorted(_codes))
+
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
