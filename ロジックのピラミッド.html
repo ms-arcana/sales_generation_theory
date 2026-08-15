@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ロジックのピラミッド ― 中央命題から実測まで</title>
+<style>
+:root{--ink:#1f2328;--sub:#5d6470;--line:#d8dce3;--bg:#fbfbfc;--card:#fff;
+ --t0:#4a3b8c;--t0b:#f0edfa;--t1:#2f4a86;--t1b:#eef2fb;--t2:#1f6b7a;--t2b:#e8f4f6;
+ --t3:#2f7a4d;--t3b:#e9f5ee;--t4:#8a5320;--t4b:#fdf1e7;--t5:#7a5a1f;--t5b:#faf3e2;
+ --t6:#a33a3a;--t6b:#fbecec;--warn:#a33a3a}
+*{box-sizing:border-box}
+body{margin:0;padding:30px 22px 80px;background:var(--bg);color:var(--ink);
+ font:15px/1.8 -apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+ max-width:1080px;margin-inline:auto}
+h1{font-size:22px;margin:0 0 6px;letter-spacing:.01em}
+h2{font-size:16.5px;margin:46px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+h2 .n{font-size:10.5px;color:var(--sub);letter-spacing:.14em;margin-right:10px;font-weight:700}
+h3{font-size:14.5px;margin:26px 0 8px}
+p{margin:9px 0}
+.lead{color:var(--sub);font-size:13.5px;margin-bottom:6px}
+.small{font-size:12.5px;color:var(--sub)}
+code{background:#f1f2f4;padding:1px 5px;border-radius:3px;font-size:12.5px}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:12px 0}
+th,td{border:1px solid var(--line);padding:8px 9px;text-align:left;vertical-align:top}
+th{background:#f4f5f7;font-weight:700;font-size:12px;color:var(--sub)}
+ul,ol{margin:8px 0 8px 21px;padding:0}li{margin:4px 0}
+.box{border:1px solid var(--line);border-left:3px solid var(--sub);background:var(--card);
+ border-radius:5px;padding:12px 15px;margin:14px 0}
+.box.warn{border-left-color:var(--warn);background:var(--t6b);border-color:#e8bcbc}
+.box.key{border-left-color:var(--t0);background:var(--t0b);border-color:#d3c6ea}
+blockquote{margin:10px 0;padding:7px 0 7px 14px;border-left:3px solid var(--line);
+ color:var(--sub);font-size:13px}
+
+/* ---- ピラミッド全体像 ---- */
+.pyr{margin:22px 0 8px}
+.pyr .row{display:flex;align-items:stretch;gap:10px;margin:5px 0}
+.pyr .bar{flex:0 0 auto;margin-inline:auto;border-radius:6px;padding:9px 16px;
+ border:1px solid;text-align:center;position:relative}
+.pyr .bar b{display:block;font-size:14px;line-height:1.5}
+.pyr .bar span{display:block;font-size:11.5px;opacity:.85;line-height:1.5}
+.p0{background:var(--t0b);border-color:#cfc4ea;color:var(--t0);width:44%}
+.p1{background:var(--t1b);border-color:#c3cfe8;color:var(--t1);width:53%}
+.p2{background:var(--t2b);border-color:#b5d6dc;color:var(--t2);width:62%}
+.p3{background:var(--t3b);border-color:#b6d9c4;color:var(--t3);width:71%}
+.p4{background:var(--t5b);border-color:#e3d3a8;color:var(--t5);width:80%}
+.p5{background:var(--t4b);border-color:#ecd0b2;color:var(--t4);width:89%}
+.p6{background:var(--t6b);border-color:#e8bcbc;color:var(--t6);width:98%}
+.pyr .side{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub);
+ margin-top:12px;padding:0 4px}
+
+/* ---- ツリー ---- */
+.tree{margin:14px 0 6px}
+.tree ul{list-style:none;margin:0;padding-left:20px}
+.tree>ul{padding-left:0}
+.tree li{position:relative;padding:3px 0 3px 0;margin:0}
+.tree ul ul{position:relative}
+.tree ul ul>li{padding-left:20px}
+.tree ul ul>li::before{content:"";position:absolute;left:0;top:0;bottom:0;
+ border-left:1px solid var(--line)}
+.tree ul ul>li::after{content:"";position:absolute;left:0;top:16px;width:14px;
+ border-top:1px solid var(--line)}
+.tree ul ul>li:last-child::before{bottom:auto;height:16px}
+.node{display:inline-block;padding:2px 0;vertical-align:top}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:3px;
+ white-space:nowrap;letter-spacing:.03em;margin-right:7px;vertical-align:1px}
+.g0{background:var(--t0b);color:var(--t0);border:1px solid #cfc4ea}
+.g1{background:var(--t1b);color:var(--t1);border:1px solid #c3cfe8}
+.g2{background:var(--t2b);color:var(--t2);border:1px solid #b5d6dc}
+.g3{background:var(--t3b);color:var(--t3);border:1px solid #b6d9c4}
+.g4{background:var(--t5b);color:var(--t5);border:1px solid #e3d3a8}
+.g5{background:var(--t4b);color:var(--t4);border:1px solid #ecd0b2}
+.g6{background:var(--t6b);color:var(--t6);border:1px solid #e8bcbc}
+.gx{background:#eef0f3;color:var(--sub);border:1px solid var(--line)}
+.ttl{font-weight:700}
+.dsc{color:var(--sub);font-size:12.5px}
+.dsc::before{content:" ― "}
+.impl{font-size:11.5px;color:var(--sub);white-space:nowrap}
+.fml{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+ background:#f6f7f9;border:1px solid var(--line);border-radius:4px;padding:6px 9px;
+ margin:6px 0;display:block;overflow-x:auto;color:#2b3038;white-space:pre;line-height:1.65}
+.q{font-size:12.5px;color:var(--sub);margin:2px 0 10px}
+.q b{color:var(--ink)}
+hr{border:0;border-top:1px solid var(--line);margin:34px 0}
+.hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:34px}
+.hd .lv{font-size:10.5px;font-weight:700;letter-spacing:.14em;color:var(--sub)}
+</style></head><body>
+
+<h1>ロジックのピラミッド ― 中央命題から実測まで</h1>
+<p class="lead">公理・中央命題・軸・論理・検査・実測を、<b>上が下を導き、下が上を反証する</b>一本の階層に並べたもの。</p>
+
+<div class="box key">
+<p><b>読み方は二方向あります。</b></p>
+<p><b>↓ 上から下は〈導出〉。</b>上の層が下の層を決めます。下の層に何かを足したくなったら、
+まず「上のどれから出るか」を言えなければなりません。出ないなら、それは<b>較正</b>であって導出ではなく、
+別の業界へ持ち出せません（規律：<b>〈導出 &gt; 較正〉</b>）。</p>
+<p><b>↑ 下から上は〈反証〉。</b>実測が合わないとき、直すのは<b>いちばん下の層から順に疑う</b>のが規律です。
+本モデルで最も多い欠陥は原理の誤りではなく<b>検査の誤り</b>で、1日に5件出たことがあります。
+実測が上の層まで登り切った例は少なく、登り切ったときだけ記法や原理が変わります（A29 → N₄′）。</p>
+</div>
+
+<h2><span class="n">全体像</span>七つの層</h2>
+
+<div class="pyr">
+ <div class="row"><div class="bar p0"><b>中央命題</b><span>1本</span></div></div>
+ <div class="row"><div class="bar p1"><b>三つの原理　Π₁ Π₂ Π₃</b><span>3本。これ以上は分解しない</span></div></div>
+ <div class="row"><div class="bar p2"><b>七つの記法　N₁–N₆ ＋ N₄′</b><span>命題ではなく型。誤りを「書けなく」する</span></div></div>
+ <div class="row"><div class="bar p3"><b>軸と座標　ν・λ×ε・τ・κ・Form・Σ・J</b><span>原理が形を、軸が中身を与える</span></div></div>
+ <div class="row"><div class="bar p4"><b>依存規則　R1–R20</b><span>ほぼ全部が原理からの導出。独立に立てたのは R17 のみ</span></div></div>
+ <div class="row"><div class="bar p5"><b>検査　check_ 28本／audit_ 2本／理由コード 178／回帰 239</b><span>規則を機械が読める形にしたもの</span></div></div>
+ <div class="row"><div class="bar p6"><b>実測　アノマリー A1–A47／盲検買い手／25業界21件</b><span>唯一の外部入力。ここだけが理論の外にある</span></div></div>
+ <div class="side"><span>↓ 導出（上が下を決める）</span><span>↑ 反証（下が上を書き換える）</span></div>
+</div>
+
+<div class="box">
+<p><b>層のあいだの関係は一方向ではありません。</b>上から下へは<b>決定</b>が流れ、下から上へは<b>反証</b>が流れます。
+そして<b>横</b>には流れません ―― 検査を直しても規則は直りませんし、規則を足しても記法の穴は塞がりません。
+「同じ誤りが4回出たものは規則ではなく型である」（N₂ の由来）というのは、この横に流れないという性質のことです。</p>
+</div>
+
+<div class="hd"><span class="lv">LEVEL 0</span><h2 style="margin:0;border:0;padding:0">頂点 ― 中央命題</h2></div>
+
+<div class="box key">
+<p style="font-size:16px;margin:2px 0"><b>営業資料は、説得の技術ではない。<br>
+承認という資本が、座席から座席へ運ばれる過程である。</b></p>
+</div>
+
+<div class="tree"><ul>
+<li><span class="node"><span class="tag g0">系</span><span class="ttl">製品の言い方</span><span class="dsc">「文章を書く機械」ではなく「<b>この買い手・この状況で、何が通り何が落ちるかを機械的に決める機械</b>」</span></span></li>
+<li><span class="node"><span class="tag g0">系</span><span class="ttl">出力の順序</span><span class="dsc">判定が先、文章はあと。表と定型文は決定表から決定的に出る（⑥の必須要素16のうち13）</span></span></li>
+<li><span class="node"><span class="tag gx">反証条件</span><span class="ttl">この命題が偽になるとき</span><span class="dsc">通過／不通過が座席と承認の語で説明できず、文章の巧拙だけで動くとき</span></span></li>
+<li><span class="node"><span class="tag gx">未達</span><span class="ttl">いま言えないこと</span><span class="dsc">⑦の検査は買い手の判定を<b>予測していない</b>（φ=+0.055／無条件通過 0/21）。言えるのは「全員が挙げる不備を送る前に潰せる」まで</span></span></li>
+</ul></div>
+
+<div class="hd"><span class="lv">LEVEL 1</span><h2 style="margin:0;border:0;padding:0">三つの原理</h2></div>
+<p class="q"><b>この層が答える問い：</b>承認とは何か。運ばれるとはどういうことか。効くとはどういうことか。</p>
+
+<div class="tree"><ul>
+
+<li><span class="node"><span class="tag g1">Π₁</span><span class="ttl">蓄積律 ― 合意は資本である</span><span class="dsc">論証は買い手が無料で差し出せるものから始まり、有料のもので終わる</span></span>
+ <span class="fml">Γ_s = Γ_s^init ∪ {φ_s}       ¬( Γ_s ⊢ ⊥ )   ∀s</span>
+ <ul>
+ <li><span class="node"><span class="tag g1">1-1</span><span class="ttl">単調性</span><span class="dsc">Γ は集合。承認は何度使っても減らない（contraction を持つ／線形論理ではない）</span></span></li>
+ <li><span class="node"><span class="tag g1">1-2</span><span class="ttl">無矛盾</span><span class="dsc">ある段が先行段と矛盾した瞬間に<b>承認が全額失効</b>する（爆発律）</span></span></li>
+ <li><span class="node"><span class="tag g1">1-3</span><span class="ttl">系：段の順序は cost の順序</span><span class="dsc">ゆえに Σ は ⟨①…⑥⟩ の<b>接尾辞</b>でなければならない</span> <span class="impl">→ <code>check_staircase</code></span></span></li>
+ <li><span class="node"><span class="tag g1">1-4</span><span class="ttl">系：侮辱は単調性の破れ</span><span class="dsc">偽なる主張ではなく「積んだ資本を減らせ」という要求</span></span>
+   <span class="fml">insult(φ) ⟺ ∃χ ∈ Γ^own. Γ_{s−1} ∪ {φ} ⊢ ¬χ</span>
+   <ul>
+   <li><span class="node"><span class="tag gx">分岐</span><span class="ttl">攻撃先が Γ_s／裁定者性</span><span class="dsc">⊥。全額失効</span></span></li>
+   <li><span class="node"><span class="tag gx">分岐</span><span class="ttl">攻撃先が Γ^own（資料の外で積んだもの）</span><span class="dsc">≺ 上の後退＝侮辱</span> <span class="impl">→ <code>check_insult</code>／R17</span></span></li>
+   <li><span class="node"><span class="tag g6">実測</span><span class="ttl">A46 断り書きが逆に侮辱として着弾</span><span class="dsc">7/21。R17 への過剰適応。<b>回数の制約で機械化できる</b></span></span></li>
+   </ul></li>
+ <li><span class="node"><span class="tag gx">同定</span><span class="ttl">Γ^own = Γ^pre</span><span class="dsc">縮退で落とした段を供給するものと、取り消してはならないものは同じ集合</span></span></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag g1">Π₂</span><span class="ttl">通関律 ― 資本は、それを使う座席まで運ばれなければ使えない</span></span>
+ <span class="fml">cross(x,β) ⟺ conv(x, basis(β⁺))  ∧  ∃ act⟨w,d,o⟩. auth(w,o) ∧ tgt(o) = x
+             └─── 可能 ───┘       └────────── 執行 ──────────┘</span>
+ <ul>
+ <li><span class="node"><span class="tag g1">2-1</span><span class="ttl">可能連言 conv は担体の型でディスパッチする</span><span class="dsc">語／量／命題／提案で別定義。単一の合格判定ではない</span></span>
+   <ul>
+   <li><span class="node"><span class="tag gx">語 ℓ</span><span class="ttl">ℓ ∈ Form(j)</span><span class="dsc">通らないなら既存語との対応を併記</span> <span class="impl">→ R11</span></span></li>
+   <li><span class="node"><span class="tag gx">量 q</span><span class="ttl">κ(q) と κ_j が両替可能</span><span class="dsc">両替経路を同枚に明記</span> <span class="impl">→ A1・A6</span></span></li>
+   <li><span class="node"><span class="tag gx">命題 φ</span><span class="ttl">valid(φ, χ_j)</span><span class="dsc"><b>未実装</b>（X5）</span></span></li>
+   <li><span class="node"><span class="tag gx">提案 P</span><span class="ttl">κ(P) と κ_j が両替可能</span><span class="dsc">κ_j の量を併記</span> <span class="impl">→ A5</span></span></li>
+   </ul></li>
+ <li><span class="node"><span class="tag g1">2-2</span><span class="ttl">執行連言 ⟨w,d,o⟩ は三つ組であって三条件ではない</span><span class="dsc">人と対象を別々に検査すると「工場長が外注加工費を止める」が通ってしまう</span> <span class="impl">→ N₃</span></span></li>
+ <li><span class="node"><span class="tag g1">2-3</span><span class="ttl">∀k ― 各リンクで濾す</span><span class="dsc">終端座席だけ見ると中間座席を飛ばす。買い手が「私の座席を通過させず<b>迂回する設計</b>だ」と言い当てた</span> <span class="impl">→ R18</span></span></li>
+ <li><span class="node"><span class="tag g1">2-4</span><span class="ttl">通関であって濾過ではない</span><span class="dsc">処方はすべて<b>加算</b>。通らないものは落ちるのではなく、書き足せば通る</span></span></li>
+ <li><span class="node"><span class="tag g1">2-5</span><span class="ttl">境界 β は座席間だけではない</span></span>
+   <ul>
+   <li><span class="node"><span class="tag gx">j_k → j_{k+1}</span><span class="ttl">起案し運ぶ行為</span></span></li>
+   <li><span class="node"><span class="tag gx">紙 → 世界</span><span class="ttl">費目を減らす行為 W</span> <span class="impl">→ A12／R13</span></span></li>
+   <li><span class="node"><span class="tag gx">世界 → 紙</span><span class="ttl">データを受け取った行為（受領記録）</span> <span class="impl">→ A15／R15</span></span></li>
+   <li><span class="node"><span class="tag gx">世界 → 紙</span><span class="ttl">日付を握っている当事者の同定・拘束者の実在と向き</span> <span class="impl">→ A7・A8</span></span></li>
+   <li><span class="node"><span class="tag gx">要点</span><span class="ttl">四つとも同じ ⟨w,d,o⟩</span><span class="dsc">型が無かったために、四人の別々の買い手が別々に同じ穴を見つけた</span></span></li>
+   </ul></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag g1">Π₃</span><span class="ttl">所在律 ― 拘束と証拠は、同じ所在に属していなければならない</span></span>
+ <span class="fml">binds(c,y) ⟺ λ(c) ∉ ctrl(y) ∧ y ∈ scope(λ(c))
+effective(e,c) ⟺ λ(e) = λ(c) ∧ ε(e) = ε(c)</span>
+ <ul>
+ <li><span class="node"><span class="tag g1">3-1</span><span class="ttl">λ ― 所在の8値</span><span class="dsc">手段／関係／決定主体／正当化／買い手の資源／制度／市場／上位者</span></span></li>
+ <li><span class="node"><span class="tag g1">3-2</span><span class="ttl">ε ― 根拠の様式2値</span><span class="dsc">構造（この種類は原理的にできない）／非対称（この個体は持ち、あの個体は持たない）</span></span></li>
+ <li><span class="node"><span class="tag g1">3-3</span><span class="ttl">向き（A7）と適用範囲（A8）</span><span class="dsc">拘束が効くのは、被拘束者の制御<b>外</b>にあり、かつ被拘束者がその範囲に<b>入る</b>とき</span> <span class="impl">→ <code>check_binder_dim</code>・<code>check_applies</code></span></span></li>
+ <li><span class="node"><span class="tag g3">検算</span><span class="ttl">「効かない証拠」12件</span><span class="dsc">λ の不一致で10件、ε の不一致で2件。<b>二座標そろって 12/12</b></span></span></li>
+ </ul></li>
+</ul></div>
+
+<div class="box">
+<p><b>この層で「3本」であることの意味。</b>第7版までは中心命題7本・依存規則16本・条件15本ありました。
+A1・A5・A11・A12 は<b>同じ一つの原理の別のセル</b>で、原理に名前が無かったので四度別々に発見されていました。
+R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したものでした。<b>畳んだのは表現であって、内容ではありません。</b></p>
+</div>
+
+<div class="hd"><span class="lv">LEVEL 2</span><h2 style="margin:0;border:0;padding:0">七つの記法</h2></div>
+<p class="q"><b>この層が答える問い：</b>その主張は、そもそも<b>書けるのか</b>。
+<b>由来：</b>第7版の内部検査が見つけた12件のうち9件は型・束縛・定義域の誤りだった。<b>命題を足しても再発する。記法で書けなくするのが正しい。</b></p>
+
+<div class="tree"><ul>
+<li><span class="node"><span class="tag g2">N₁</span><span class="ttl">承認演算子</span><span class="dsc">原子式は ⟦φ⟧（世界について真）か Γ_s ⊢ φ（段 s で承認済み）のみ。裸の φ は構文エラー</span></span>
+  <ul><li><span class="node"><span class="tag gx">注意</span><span class="ttl">Γ ⊢ 側へ寄せてはならない</span><span class="dsc">⟦|C|=1⟧ と Γ ⊢ |C|=1 は別の式。寄せると第7版が閉じた矛盾が再び開く</span></span></li></ul></li>
+
+<li><span class="node"><span class="tag g2">N₂</span><span class="ttl">単位元と未定義</span><span class="dsc">各欄は X_⊥ = X ⊔ {⊥}。<b>⊥ は X のいかなる値とも比較できない</b></span></span>
+  <ul>
+  <li><span class="node"><span class="tag gx">⊥ の範囲</span><span class="ttl">空文字・None・記入欄【　】・「なし」「未定」・散文での否定</span><span class="dsc">全部 ⊥</span></span></li>
+  <li><span class="node"><span class="tag g6">実測</span><span class="ttl">同型の誤りが5回以上</span><span class="dsc">R10a の6件誤検出／2∉Σ のときの単位／W 非実在 vs 未聞取り／LT* の空集合上の max／<b>R20 が記入欄を値と読んだ（停止 0→21）</b></span></span></li>
+  <li><span class="node"><span class="tag gx">規律</span><span class="ttl">4回同じ誤りが出たものは規則ではなく型である</span><span class="dsc">この記法そのものの由来</span></span></li>
+  </ul></li>
+
+<li><span class="node"><span class="tag g2">N₃</span><span class="ttl">行為の三つ組 act⟨w,d,o⟩</span><span class="dsc">世界を変える／世界から取る主張は、この形でしか書けない</span> <span class="impl">A7・A8・A12/R13・A15/R15 が4規則ではなく1型になる</span></span>
+  <ul><li><span class="node"><span class="tag gx">N₃′</span><span class="ttl">様相 ⟨w,d,o,m⟩</span><span class="dsc"><b>設計のみ・未実装</b>（A38）</span></span></li></ul></li>
+
+<li><span class="node"><span class="tag g2">N₄</span><span class="ttl">単位付き量</span><span class="dsc">量は裸で書けない。単位を伴う</span> <span class="impl">→ R10a/b/c・R14</span></span></li>
+
+<li><span class="node"><span class="tag g2">N₄′</span><span class="ttl">量は〈単位〉と〈比較の相手〉を持つ</span><span class="dsc">第13.5b版。座席・基準・払う・戻る・何あたり・出所 の6欄で申告する</span> <span class="impl">→ R20・<code>check_decidable</code></span></span>
+  <ul>
+  <li><span class="node"><span class="tag g3">解決</span><span class="ttl">A29（担体＝量の同順位対）を解いた</span><span class="dsc">N₆ 監査の未解決が 9 → <b>8</b> に減った。<b>記法の追加が規則の衝突を消した唯一の例</b></span></span></li>
+  <li><span class="node"><span class="tag g6">実測</span><span class="ttl">R20_RETURN_MISSING 8/8</span><span class="dsc">量の17行のうち〈戻る〉が値として在るのは4行。<b>金額のものは6/6が空</b></span></span></li>
+  <li><span class="node"><span class="tag gx">次</span><span class="ttl">〈式〉の状態を足す</span><span class="dsc">値／<b>式（買い手の量 × 売り手の係数・係数の出所つき）</b>／⊥ の三状態。式なら停止しない</span></span></li>
+  </ul></li>
+
+<li><span class="node"><span class="tag g2">N₅</span><span class="ttl">座席の型</span><span class="dsc">座席は名前ではなく ⟨κ, Form, ctrl, 順序⟩ を持つ対象</span></span></li>
+
+<li><span class="node"><span class="tag g2">N₆</span><span class="ttl">要求の四つ組 ⟨担体, 定義域, 充足条件, 強さ⟩</span><span class="dsc">「必須要素」を文字列で持たない。型1（量化子の潰れ）と型4（順序・範囲の欠落）を書けなくする</span> <span class="impl">→ <code>audit_requirements()</code> ＝ <b>8件</b></span></span>
+  <ul><li><span class="node"><span class="tag g6">実測</span><span class="ttl">監査そのものが集合単位で書かれていた</span><span class="dsc">3件目を別の強さで足すと同順位の衝突が黙る。<b>対単位に書き直して 3件の隠れた衝突が出た</b></span></span></li></ul></li>
+</ul></div>
+
+<div class="hd"><span class="lv">LEVEL 3</span><h2 style="margin:0;border:0;padding:0">軸と座標</h2></div>
+<p class="q"><b>この層が答える問い：</b>その形に、<b>どんな中身が入るのか</b>。原理は形を与えるだけで、中身は与えません（X3）。</p>
+
+<div class="tree"><ul>
+<li><span class="node"><span class="tag g3">ν</span><span class="ttl">入力 ― 買い手・売り手・商材</span><span class="dsc">この層に嘘が入ると、下の全部が正しく動いても出力は誤る（失敗の所在①）</span></span>
+ <ul>
+ <li><span class="node"><span class="tag g3">導出</span><span class="ttl">商材座標</span><span class="dsc">λ×ε・θ・β₁・ISO_KEYS。<b>ISO_KEYS は導出</b>で、業界をまたいで持ち出せる</span></span></li>
+ <li><span class="node"><span class="tag g4">較正</span><span class="ttl">busy_months（買い手の繁忙期）</span><span class="dsc">買い手の逐語から取った。<b>較正なので他業界へ持ち出さない</b></span> <span class="impl">→ A43</span></span></li>
+ <li><span class="node"><span class="tag g3">導出</span><span class="ttl">ω（効果が数字に出るまで）</span><span class="dsc">実現日の下限を決める</span> <span class="impl">→ <code>check_realize</code></span></span></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag g3">J</span><span class="ttl">座席列 ― 誰を通るか</span><span class="dsc">κ（何で判断するか）と Form(j)（その座席の会議と稟議に実際に載る語）を持つ</span></span>
+ <ul>
+ <li><span class="node"><span class="tag gx">κ</span><span class="ttl">判断基準</span><span class="dsc">実務性／価格／財源／説明可能性 …</span> <span class="impl">→ A5・R9</span></span></li>
+ <li><span class="node"><span class="tag gx">Form(j)</span><span class="ttl">様式の語</span><span class="dsc">出所は買い手の公開資料。<b>こちらが考える語ではない</b>。承認していない語を辞書に入れない</span> <span class="impl">→ R11・A23</span></span></li>
+ <li><span class="node"><span class="tag g6">実測</span><span class="ttl">「自分の語で書かれていない」16/21</span><span class="dsc">生成で語を作ると必ずこうなる。これが「AI臭い」の正体</span></span></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag g3">τ</span><span class="ttl">T軸 ― 時間の4座標</span><span class="dsc">日付・拘束者・周期・決定可否</span></span>
+ <ul>
+ <li><span class="node"><span class="tag gx">形</span><span class="ttl">A／B／C／D の4形</span> <span class="impl">→ R5・R6・R12a・<code>check_tau</code></span></span></li>
+ <li><span class="node"><span class="tag g6">実測</span><span class="ttl">A42 ― D（逓増）の型ずれ</span><span class="dsc"><b>25業界のうち 23/25</b> が固定日と反復語の両方を持つのに D と型付けされていた。検出のみ、処置は未着手</span> <span class="impl">→ <code>audit_tau_forms</code></span></span></li>
+ <li><span class="node"><span class="tag g3">派生</span><span class="ttl">決定の窓（A41）</span><span class="dsc">④から落とした τ 項が、⑥の決定日をまだ縛る</span> <span class="impl">→ <code>decision_gates</code>・<code>check_gates</code></span></span></li>
+ <li><span class="node"><span class="tag g6">次</span><span class="ttl">A41b ― 窓は着手日も縛る</span><span class="dsc">「委員会が開かれる前に動き出すことはできない」。④の逆算日と⑥の決定日の書き分けも規定が無い</span></span></li>
+ <li><span class="node"><span class="tag g3">三段</span><span class="ttl">決定日 ≤ 着手日 ≤ 実現日</span><span class="dsc">着手 ≥ 決定＋LT／実現 ≥ 着手＋ω／実現 ∉ 繁忙期</span> <span class="impl">→ <code>check_dates_v7</code>・A37</span></span></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag g3">Σ</span><span class="ttl">段 ― ①現状 ②否定の内在 ③問題化 ④必然化 ⑤消去 ⑥提案</span><span class="dsc">Π₁ の系により、Σ は ⟨①…⑥⟩ の<b>接尾辞</b>でなければならない</span></span>
+ <ul>
+ <li><span class="node"><span class="tag g6">衝突</span><span class="ttl">σ_prod（低額×低頻度で {①④⑥}）は Π₁ と衝突していた</span><span class="dsc">②③を残したまま⑤を承認済みにする。<b>〈導出 &gt; 較正〉により採らない</b></span></span></li>
+ <li><span class="node"><span class="tag g6">実測</span><span class="ttl">A47 ― ②の問い返しが決めつけとして着弾</span><span class="dsc">8/21。<b>②の設計そのものへの反証</b>。担体を〈保有〉から〈単位〉へ移す</span></span></li>
+ </ul></li>
+</ul></div>
+
+<div class="hd"><span class="lv">LEVEL 4</span><h2 style="margin:0;border:0;padding:0">依存規則 R1–R20</h2></div>
+<p class="q"><b>この層が答える問い：</b>何が満たされていなければ、その主張を紙に載せてはいけないか。<br>
+<b>重要：</b>ほぼ全部が上の層からの<b>導出</b>です。独立に立てたのは第8版の R17 一本だけでした。以後 R18・R20 が追加されています。</p>
+
+<div class="tree"><ul>
+<li><span class="node"><span class="tag g1">Π₁ から</span><span class="ttl">蓄積・単調・無矛盾に由来する規則</span></span>
+ <ul>
+ <li><span class="node"><span class="tag g4">R2・R3・R4・R7・R12b・R16</span><span class="ttl">実は一つの規則</span><span class="dsc">Π₁ ＋ 全称結論の自己適用。「自社にも同じ基準を当てたか」</span> <span class="impl"><code>check_R4</code>・<code>check_R7</code>・<code>check_dates_v7</code></span></span></li>
+ <li><span class="node"><span class="tag g4">R8</span><span class="ttl">Γ^pre の申告</span><span class="dsc">Π₁（Γ^init）＋ N₂</span> <span class="impl"><code>check_gamma_pre</code></span></span></li>
+ <li><span class="node"><span class="tag g4">R10a/b/c・R14</span><span class="ttl">量の型検査</span><span class="dsc">Π₁ ＋ N₄</span> <span class="impl"><code>check_declared</code></span></span></li>
+ <li><span class="node"><span class="tag g4">R17</span><span class="ttl">侮辱検査</span><span class="dsc">§1.1.1 で ≺ に対象を与えたことから出る。<b>第8版で唯一の新設</b></span> <span class="impl"><code>check_insult</code></span></span></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag g1">Π₂ から</span><span class="ttl">通関に由来する規則</span></span>
+ <ul>
+ <li><span class="node"><span class="tag g4">R9・R11</span><span class="ttl">語の通関</span><span class="dsc">担体＝語。V₀ は ∀j. V₀ ∩ Form(j) = ∅ の極限</span> <span class="impl"><code>check_v0</code>・<code>check_declared</code></span></span></li>
+ <li><span class="node"><span class="tag g4">R13</span><span class="ttl">量の執行（誰が・いつ・どの費目）</span><span class="dsc">Π₂ 執行連言 ＋ N₃</span> <span class="impl"><code>check_realize</code>・<code>check_W</code></span></span></li>
+ <li><span class="node"><span class="tag g4">R15</span><span class="ttl">受領記録（世界→紙）</span> <span class="impl"><code>check_tau</code></span></span></li>
+ <li><span class="node"><span class="tag g4">R18</span><span class="ttl">中間座席の迂回禁止</span><span class="dsc">Π₂ の ∀k。終端座席だけ見ていた実装への処置</span> <span class="impl"><code>check_chain</code></span></span></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag g1">Π₃ から</span><span class="ttl">所在に由来する規則</span></span>
+ <ul><li><span class="node"><span class="tag g4">R1</span><span class="ttl">λ(D₅) ∈ ctrl</span> <span class="impl"><code>fire_rules</code></span></span></li></ul></li>
+
+<li><span class="node"><span class="tag g2">記法から</span><span class="ttl">型が直接生む規則</span></span>
+ <ul>
+ <li><span class="node"><span class="tag g4">R5・R6・R12a</span><span class="ttl">T軸4座標の定義そのもの</span> <span class="impl"><code>check_tau</code>・<code>check_tau_order</code></span></span></li>
+ <li><span class="node"><span class="tag g4">R20</span><span class="ttl">決定可能性</span><span class="dsc">N₄′ から。座席ごとに〈払う〉と〈戻る〉が単位つきで在るか。<b>停止6種＋要判断4種</b></span> <span class="impl"><code>check_decidable</code></span></span></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag gx">払い出し</span><span class="ttl">最大は R20。次は R21</span><span class="dsc">番号は<code>アノマリー台帳.md</code>一箇所でだけ払い出す（A36〜A39 が二箇所で衝突した反省）</span></span></li>
+</ul></div>
+
+<div class="hd"><span class="lv">LEVEL 5</span><h2 style="margin:0;border:0;padding:0">検査</h2></div>
+<p class="q"><b>この層が答える問い：</b>その規則を、機械はどう読むか。<br>
+<b>本モデルで最も欠陥が多い層です。</b>誤りの型はほぼ一つ ―― <b>浅い一致</b>と <b>⊥ を値として扱うこと</b>。</p>
+
+<div class="tree"><ul>
+<li><span class="node"><span class="tag g5">構成</span><span class="ttl"><code>sales_logic.py</code>　2,228行・標準ライブラリのみ</span><span class="dsc">sha256[:12] = <code>a6d1c8416305</code>／外部API・乱数・時刻に依存しない／109マイクロ秒/件</span></span>
+ <ul>
+ <li><span class="node"><span class="tag gx">28本</span><span class="ttl"><code>check_*</code></span><span class="dsc">staircase／axis_values／seats／cost／D5_binder／gamma_pre／applies／binder／tau／gates／tau_order／delta／W／binder_dim／C_singleton／R4／R7／v0／unit_presence／seat_words／quantity_sources／blocks／realize／decidable／insult／chain／dates_v7／declared</span></span></li>
+ <li><span class="node"><span class="tag gx">2本</span><span class="ttl"><code>audit_*</code></span><span class="dsc"><code>audit_requirements</code>（N₆ 監査＝8件）・<code>audit_tau_forms</code>（A42）</span></span></li>
+ <li><span class="node"><span class="tag gx">178</span><span class="ttl">理由コード（表示文つき）</span><span class="dsc">停止 113 ＋ 要判断 65。<code>messages.json</code></span></span></li>
+ <li><span class="node"><span class="tag gx">239</span><span class="ttl">回帰項目・全通過</span><span class="dsc"><b>各項目が買い手の逐語と対応づけてある</b></span></span></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag g5">位置</span><span class="ttl">検査は三箇所に分かれる</span></span>
+ <ul>
+ <li><span class="node"><span class="tag gx">生成前</span><span class="ttl">ν を読んで決定表を作る（<code>compile_deal</code>）</span><span class="dsc">ここで止まれば、そもそも生成しない</span></span></li>
+ <li><span class="node"><span class="tag gx">生成の指示</span><span class="ttl">決定表 → プロンプト</span><span class="dsc"><b>形式系の語彙を生成器へ渡さない</b>（BAN）</span></span></li>
+ <li><span class="node"><span class="tag gx">生成後</span><span class="ttl"><code>validate_copy</code></span><span class="dsc">停止／要判断／記入欄の3段の重さ。この割当だけは実測（X4）</span></span></li>
+ </ul></li>
+
+<li><span class="node"><span class="tag g6">この層の欠陥</span><span class="ttl">1日で5件出た「浅い一致」</span></span>
+ <ul>
+ <li><span class="node"><span class="tag gx">1</span><span class="ttl"><code>own_retracted</code></span><span class="dsc">散文の否定を非 null と数えた　12→6</span></span></li>
+ <li><span class="node"><span class="tag gx">2</span><span class="ttl">「タダ」の照合</span><span class="dsc">接続詞の「ただ、」に当たった　16→2</span></span></li>
+ <li><span class="node"><span class="tag gx">3</span><span class="ttl"><code>SLOT_RE</code></span><span class="dsc">括弧の中に空白しか無い前提。9個置いて0個判定</span></span></li>
+ <li><span class="node"><span class="tag gx">4</span><span class="ttl">散文で苦情を数える物差し</span><span class="dsc">前の版の語彙で較正されていた（申告16／散文3）</span></span></li>
+ <li><span class="node"><span class="tag gx">5</span><span class="ttl"><code>R20</code> の <code>is_bottom</code></span><span class="dsc">記入欄【　　　】を「値が在る」と読んだ。<b>停止 0 → 21件</b></span></span></li>
+ <li><span class="node"><span class="tag gx">規律</span><span class="ttl">停止が減ったら、まず検査を疑う</span><span class="dsc">走行前の予測にそう書いておいたから 5 が出た</span></span></li>
+ </ul></li>
+</ul></div>
+
+<div class="hd"><span class="lv">LEVEL 6</span><h2 style="margin:0;border:0;padding:0">実測 ― 唯一の外部入力</h2></div>
+<p class="q"><b>この層が答える問い：</b>上の六層は、実際に当たっているのか。<br>
+<b>ここだけが理論の外にあります。</b>ここが動かないなら、上の層は何を足しても意味を持ちません。</p>
+
+<div class="tree"><ul>
+<li><span class="node"><span class="tag g6">A1–A23</span><span class="ttl">第5〜11版</span><span class="dsc">SPEC8.md に記載済み・実装済み</span></span></li>
+<li><span class="node"><span class="tag g6">A24–A35</span><span class="ttl">第12版系</span><span class="dsc">行為は集合／単位・基準の連結（型1）／残余の周期／必須要素と字数の衝突順序／⑥の量の出所／記入欄の照合が浅い</span></span></li>
+<li><span class="node"><span class="tag g3">A29</span><span class="ttl">担体＝量の同順位対</span><span class="dsc"><b>N₄′ が解いた。</b>実測が記法の層まで登り切った唯一の例</span></span></li>
+<li><span class="node"><span class="tag g3">A37 / A37b</span><span class="ttl">LT を⑥の日付へ（決定／着手／実現の三段）</span><span class="dsc">狙った苦情 <b>7/16 → 0/16</b>。走らせる前に指示文を読んで A37b が出た（<b>担体が二つ</b>）。読まずに走らせていたら8セル中6セルが充足不能な指示だった</span></span></li>
+<li><span class="node"><span class="tag g3">A41 / A43</span><span class="ttl">決定の窓／実現日の季節</span><span class="dsc">実装・走行済み。A43 は停止0でω も繁忙期も 8/8 で守られた</span></span></li>
+<li><span class="node"><span class="tag g6">A41b</span><span class="ttl">窓は着手日も縛る</span><span class="dsc"><b>未着手・次の一手。</b>B6 の数は動かなかったが<b>苦情の中身が変わった</b>のが今回いちばん重要な発見</span></span></li>
+<li><span class="node"><span class="tag g6">A42</span><span class="ttl">D の型ずれ</span><span class="dsc">25業界で 23/25。検出のみ</span></span></li>
+<li><span class="node"><span class="tag g6">A44</span><span class="ttl">営業へ回した空欄が、資料を殺す</span><span class="dsc"><b>21/21。</b>機械側は <code>R20_RETURN_MISSING</code> 8/8 で確認。出口は〈式〉</span></span></li>
+<li><span class="node"><span class="tag g6">A45 / A45b</span><span class="ttl">幅のある金額は稟議に載らない／価格の内訳が無い</span><span class="dsc"><b>20/21・21/21。未着手。売り手の数字だけで閉じるので最も安い</b></span></span></li>
+<li><span class="node"><span class="tag g6">A46 / A47</span><span class="ttl">断り書きが侮辱として着弾／②の問い返しが決めつけとして着弾</span><span class="dsc">7/21・8/21。A47 は<b>②の設計そのものへの反証</b></span></span></li>
+<li><span class="node"><span class="tag gx">払い出し</span><span class="ttl">最大は A47。次は A48</span><span class="dsc">走行レポートも同じ番号空間を使う（別立てにしたのが衝突の原因）</span></span></li>
+</ul></div>
+
+<h3>実測が言っていること（要約）</h3>
+<table>
+<tr><th>測ったもの</th><th>結果</th><th>意味</th></tr>
+<tr><td>⑦の検査と買い手の判定の相関</td><td><b>φ = +0.055</b>／無条件通過 0/21</td><td>⑦は買い手を<b>予測していない</b>。「通れば売れる」とは言えない</td></tr>
+<tr><td>買い手が挙げた理由の上位3つ</td><td>いずれも <b>21/21</b>（量の出所／内訳／空欄）</td><td>三つとも機械で検査できる。<b>これが売り</b></td></tr>
+<tr><td>上位3タグの分散</td><td><b>0</b>（全業界で 100%）</td><td>業界差を検出する力が無い（床効果）。ただし<b>業界非依存の証明としては決定的</b></td></tr>
+<tr><td>A37 の効果</td><td>7/16 → 0/16</td><td>狙った的に当たった。機械側も 4/4</td></tr>
+<tr><td>R20 の停止</td><td>8/8 セル・21件</td><td>欠落は生成器ではなく<b>入力側</b>。売り手が買い手の数字を持っていない</td></tr>
+</table>
+
+<hr>
+
+<h2><span class="n">直交</span>ピラミッドを横切るもの ― 失敗の所在（5つ）</h2>
+<p class="q">層の上下とは別に、<b>「壊れたのはどこか」</b>を指す座標が要ります。これが無いと、検査の欠陥をモデルの誤りと読み違えます。</p>
+<table>
+<tr><th>#</th><th>所在</th><th>症状の見え方</th><th>直す面</th></tr>
+<tr><td>1</td><td><b>入力 ν</b></td><td>全部正しく動いて、出力だけ誤る</td><td>聞き取り・既定値（Cowork）</td></tr>
+<tr><td>2</td><td><b>モデル</b></td><td>規則どうしが衝突する／同じ穴が別の座標で再発する</td><td>Cowork のみ</td></tr>
+<tr><td>3</td><td><b>生成の指示</b></td><td>指示が充足不能／形式系の語が漏れる</td><td>Cowork</td></tr>
+<tr><td>4</td><td><b>検査</b></td><td><b>停止が不自然に少ない</b>／数が版をまたいで比べられない</td><td>VS Code（検証）</td></tr>
+<tr><td>5</td><td><b>配管</b></td><td>計算はされているのに、出力に載っていない</td><td>VS Code（回帰）</td></tr>
+</table>
+<div class="box warn">
+<p><b>5 の実例。</b><code>cells8_v10.run()</code> の白名簿に鍵を足し忘れて、
+<code>lt_months</code> と <code>today</code> が計算済みなのに決定表へ載っていませんでした。
+<b>「計算した」と「届いた」は別です。</b>この型は回帰でしか捕まりません
+（<code>compile_deal</code> の鍵と白名簿を突き合わせる）。</p>
+</div>
+
+<h2><span class="n">外</span>ピラミッドの外に置いたもの</h2>
+<p class="q">原理から<b>導けない</b>と明示したものです。隠さずに外へ出しておくことが、説明可能性の本体です。</p>
+<table>
+<tr><th>#</th><th>内容</th><th>なぜ導けないか</th></tr>
+<tr><td>X1</td><td>σ_prod の閾値（100万・四半期・年次）</td><td>経験的ヒューリスティック。しかも Π₁ と衝突していた（採らない）</td></tr>
+<tr><td>X2</td><td>A2 の発火条件</td><td>原理は「何が正しいか」を言うが「買い手がいつ検算するか」は言わない</td></tr>
+<tr><td>X3</td><td>各所在の<b>内容</b>（scope の粒度・rk の順序と例外1マス）</td><td>原理は形を与えるだけ</td></tr>
+<tr><td>X4</td><td>失敗の重さ（停止／記入欄／降格）の割当</td><td>実測</td></tr>
+<tr><td>X5</td><td>層の割当（生成前／生成後）</td><td>情報がいつ手に入るかという工学的事実</td></tr>
+<tr><td>X6</td><td>θ_auto・α・h／「予測は生成器に出させない」</td><td>決定理論とメタ規則。Γ の理論と直交</td></tr>
+<tr><td><b>X7</b></td><td><b>効果量（何%減るか・何名増えるか）</b></td><td>決定的にも LLM でも出せない。<b>測るしかない。</b>出せるのは〈買い手の量 × 売り手の係数〉の<b>式</b>まで</td></tr>
+</table>
+
+<h2><span class="n">向き</span>下から上へ ― 反証がどう登るか</h2>
+<p class="q">実測が合わないとき、<b>どこまで登らせるか</b>を決める手順です。登りすぎると理論が壊れ、登らなすぎると同じ穴が別の座標で再発します。</p>
+
+<div class="tree"><ul>
+<li><span class="node"><span class="tag g6">段0</span><span class="ttl">まず採点器（検査）を疑う</span><span class="dsc">停止が減った／数が版をまたいで動いた ―― この二つはほぼ検査の欠陥。<b>実績5件</b></span></span></li>
+<li><span class="node"><span class="tag g5">段1</span><span class="ttl">配管を疑う</span><span class="dsc">計算されているのに載っていないだけではないか</span></span></li>
+<li><span class="node"><span class="tag g4">段2</span><span class="ttl">規則の適用範囲を疑う</span><span class="dsc">規則は正しいが、掛ける対象が足りていない（A41 → 決定日にしか掛けていなかった）</span></span></li>
+<li><span class="node"><span class="tag g3">段3</span><span class="ttl">軸の中身を疑う</span><span class="dsc">型付けが誤っている（A42 の D／23件）</span></span></li>
+<li><span class="node"><span class="tag g2">段4</span><span class="ttl">記法を疑う</span><span class="dsc"><b>同じ誤りが4回出たら、規則ではなく型。</b>ここまで登った実例は A29 → N₄′ の一件</span></span></li>
+<li><span class="node"><span class="tag g1">段5</span><span class="ttl">原理を疑う</span><span class="dsc"><b>まだ一度も無い。</b>畳んだ第8版以降、Π₁–Π₃ に触れた実測は出ていない</span></span></li>
+</ul></div>
+
+<div class="box">
+<p><b>いま段4より上へ登りかけているものが一つあります。</b>A47（②の問い返しが決めつけとして着弾）は、
+規則でも検査でもなく<b>②という段の設計そのもの</b>への反証です。担体を〈保有〉から〈単位〉へ移す案が出ていますが、
+これは Σ の中身を変えるので、<b>Cowork でのみ触る</b>ことになります。</p>
+</div>
+
+<h2><span class="n">要約</span>一枚で言うと</h2>
+<div class="box key">
+<p><b>上の三層（原理・記法・軸）は、この一年でほとんど動いていません。</b>畳めたし、畳んでも何も落ちませんでした。</p>
+<p><b>下の三層（規則・検査・実測）は、毎日動いています。</b>そして動いた原因の大半は
+<b>モデルの誤りではなく検査の誤り</b>でした。</p>
+<p><b>だから説明可能性の主張はこう置けます</b> ――
+「判定規則は3つの原理から導出されており、導出できないものは7つに限って外に出してある。
+実測は47件のアノマリーとして番号で管理され、番号は1箇所でだけ払い出す。
+そして<b>いちばん壊れやすいのは検査であって原理ではない</b>と、こちらが先に知っている」。</p>
+</div>
+
+<p class="small" style="margin-top:34px">
+出典：<code>SPEC8.md</code>（第11版）／<code>アノマリー台帳.md</code>（A47・R20 まで）／
+<code>sales_logic.py</code> sha256[:12] <code>a6d1c8416305</code>・2,228行・回帰239全通過・N₆監査8件／
+<code>messages.json</code>（停止113・要判断65）／第13.5版・第13.6版レポート／25業界21件走行。<br>
+数はすべて本日この場で実行して確かめたものです。文献との対応は
+<b>『既存知との対応 ― 説明可能性の地図』</b>を、工程の流れは<b>『モデル-流れの図解』</b>を参照。
+</p>
+
+</body></html>
