@@ -7,6 +7,7 @@
 
   today ≤ 決定 ≤ min(決定期限, 決定の窓)
   着手  ≥ 決定 ＋ LT
+  着手  ≥ 決定の窓            ← A41b（第13.7版）
   実現  ≥ 着手 ＋ ω
   実現の月 ∉ 繁忙期
 
@@ -26,9 +27,14 @@ def feasible(rec):
     hi = min(ub) if ub else date(t0.year + 5, t0.month, 1)
     lt, om = rec["lt_months"], rec["omega"]
     busy = set(rec.get("busy_months") or ())
+    # A41b（第13.7版）：着手は〈決定＋LT〉と〈決定の窓〉の**両方より後**でなければならない。
+    gate_lo = max([iso_date(g[0]) for g in (rec.get("decision_gates") or []) if iso_date(g[0])],
+                  default=None)
     d = t0
     while d <= hi:                       # 決定日を総当たり（日単位）
         s = add_months(d, lt)
+        if gate_lo and s < gate_lo:
+            s = gate_lo
         r = add_months(s, om)
         for k in range(0, 24):           # 実現日は最短からひと月ずつ後ろへ
             rr = add_months(r, k)

@@ -1084,7 +1084,10 @@ for _c in _dec37:
     if _f37:
         _bad37.append((_c["id"], [x.code for x in _f37]))
 check("A37b 8セルとも、指示を満たす〈決定日・着手日〉が実在する（充足可能）", not _bad37, _bad37)
-check("A37b 決定表は decide_deadline を持ち、start_deadline と同値（鍵名は据え置き）",
+# 第13.7版で意味を変えた。第13.6版までは decide_deadline ＝ start_deadline（逆算そのもの）
+# だったが、A41b で **decide_deadline は実効値 min(逆算, 窓)** になった。
+# 逆算のみの値は decide_deadline_tau が持つ。as-run（v12）は旧意味のまま据え置く。
+check("A37b as-run（第13.6版）では decide_deadline ＝ start_deadline（旧意味・据え置き）",
       all(_c.get("decide_deadline") == _c.get("start_deadline") for _c in _dec37))
 
 
@@ -1205,5 +1208,68 @@ print("\n── 第13.5b版：四つの制約が重なった指示が、充足�
 from feasible136 import feasible as _feas
 _infeasible = [r["id"] for r in _load41("decisions8_v12.json") if not _feas(r)]
 check("充足可能性 8セルとも〈決定・着手・実現〉の解が在る", not _infeasible, _infeasible)
+
+
+print("\n── 第13.7版 A41b：窓は着手日も縛る／決定期限は資料に一つだけ")
+# 第13.6版で B6 の数は 4/4 のまま動かなかったが、**苦情の中身が変わった**。
+#   「着手 2027-03-01 が、根拠に置いた一巡の締め 2027-05-31 より前に来ていて順序が逆」
+#   「⑥の決定 2026-09-30 と、④の逆算 2026-12-30 が三か月ずれている」
+# 二つとも機械の欠落だった。E1 は逆算が None（tau_ok に A/C 型が無い）ので
+# **決定期限が一つも渡っていない**。生成器は仕方なく自分で 2026-12-30 を作った。
+from sales_logic import effective_decide_deadline, check_s4_dates
+from datetime import date as _d41
+check("A41b 逆算と窓の両方があれば、早いほうが実効の決定期限",
+      effective_decide_deadline(_d41(2026, 12, 28), (("2026-09-30", "委員会", None),))
+      == _d41(2026, 9, 30))
+check("A41b 逆算が無ければ、窓そのものが決定期限になる（E1 の型）",
+      effective_decide_deadline(None, (("2027-05-31", "入試委員会", None),)) == _d41(2027, 5, 31))
+check("A41b 窓が無ければ逆算のまま",
+      effective_decide_deadline(_d41(2026, 12, 28), ()) == _d41(2026, 12, 28))
+check("A41b どちらも無ければ ⊥", effective_decide_deadline(None, ()) is None)
+
+_f, _j = check_gates(Declared(s6_decide_date="2027-05-01", s6_start_date="2027-03-01",
+                              s6_self_check=True), _G)
+check("A41b 着手が窓より前なら停止（委員会が開かれる前には動き出せない）",
+      "A41B_START_BEFORE_GATE" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_gates(Declared(s6_decide_date="2027-05-01", s6_start_date="2027-08-01",
+                              s6_self_check=True), _G)
+check("A41b 着手が窓以降なら通る", not _f, [x.code for x in _f])
+
+# ④に出してよい日付は〈使える日付〉と〈**逆算由来の**決定期限〉だけ。窓由来のものは出せない。
+check("A41b ④に機械の知らない日付があれば停止",
+      "A41B_S4_FOREIGN_DATE" in
+      [x.code for x in check_s4_dates({"④": "2026-12-30 までに決めていただく"},
+                                      ("2027-06-30",), None)[0]])
+check("A41b ④の逆算由来の決定期限は出してよい",
+      not check_s4_dates({"④": "2026-12-28 までに決める"}, ("2027-06-30",), "2026-12-28")[0])
+check("A41b ④に窓由来の決定期限は渡さない（許可集合に入れない）",
+      "A41B_S4_FOREIGN_DATE" in
+      [x.code for x in check_s4_dates({"④": "2027-05-31 までに決める"},
+                                      ("2027-06-30",), None)[0]])
+check("A41b ④が無ければ何も出ない", not any(check_s4_dates({}, ("2027-06-30",), None)))
+
+# 検分：第13版 as-run の8セルに当てて誤検出が出ないことを固定する（浅い一致を6件目にしない）
+_v13 = _load41("verified8_v13.json")
+_dec13 = {r["id"]: r for r in _load41("decisions8_v12.json")}
+_fp = [r["id"] for r in _v13
+       if check_s4_dates(r["copy"],
+                         tuple(x[1] for x in _dec13[r["id"]]["tau_ok"]),
+                         _dec13[r["id"]].get("start_deadline"))[0]]
+check("A41b 第13版 as-run の8セルで誤検出ゼロ（tau_ok ∪ 逆算 で足りる）", not _fp, _fp)
+
+# 決定表：E1 は窓が実効の決定期限になり、逆算のみの欄とは別値になる
+_dl = {c["id"]: compile_deal(c["nu"], _C.SELLERS[c["seller"]], _C.TODAY) for c in _C.CELLS}
+check("A41b E1 の decide_deadline は窓の日付（生成器に期限を作らせない）",
+      all(_dl[k]["decide_deadline"] == "2027-05-31" for k in ("E1-P1", "E1-P2")),
+      {k: _dl[k]["decide_deadline"] for k in ("E1-P1", "E1-P2")})
+check("A41b E1 の decide_deadline_tau は ⊥（逆算は無い）",
+      all(_dl[k]["decide_deadline_tau"] is None for k in ("E1-P1", "E1-P2")))
+check("A41b 窓を持たない6セルでは実効値＝逆算のまま",
+      all(_dl[k]["decide_deadline"] == _dl[k]["decide_deadline_tau"]
+          for k in _dl if k not in ("E1-P1", "E1-P2")))
+check("A41b 実効の決定期限は必ず窓以前（同じ資料に二つの期限を出さない）",
+      all(not _dl[k]["decision_gates"] or
+          _dl[k]["decide_deadline"] <= min(g[0] for g in _dl[k]["decision_gates"])
+          for k in _dl))
 
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")

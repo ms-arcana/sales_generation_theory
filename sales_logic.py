@@ -995,10 +995,60 @@ def check_gates(dec: Declared, gates: Sequence[Tuple[str, str, int]],
         j.append(Judgment("A41_GATE_UNCHECKED", f"窓{first} 決定日の申告なし"))
     elif d0 > first:
         f.append(Finding("A41_DECIDE_AFTER_GATE", "stop", f"決定{d0} > 窓{first}"))
+    # A41b（第13.7版）：**窓は決定日だけでなく着手日も縛る。**
+    # 第13.6版で E1 の買い手が言った ――
+    #   「着手 2027-03-01 が、根拠に置いた一巡の締め 2027-05-31 より前に来ていて順序が逆」
+    # 委員会が開かれる前に動き出すことはできない。決定は窓を通って初めて締まるのだから、
+    # 着手はその窓以降である。`着手 ≥ 決定＋LT` と両立するかは走行前に総当たりで確かめる
+    # （`feasible136.py`。着手には上限が無いので、両方の下限の max を取れば必ず解が在る）。
+    d1 = iso_date(dec.s6_start_date) if dec.s6_start_date else None
+    if d1 and d1 < first:
+        f.append(Finding("A41B_START_BEFORE_GATE", "stop", f"着手{d1} < 窓{first}"))
     # ④に出してはならない（〈今やる理由〉の担体ではない）。出ていれば A8 の趣旨を破る
     for gd, gb, _w in gates:
         if s4_text and (gd in s4_text or (gb and gb in s4_text)):
             f.append(Finding("A41_GATE_IN_S4", "stop", f"{gd}/{gb}"))
+    return f, j
+
+
+# A41b：④に出てよい日付を、日付の文字列そのもので数える。
+# 第13.6版 §4-3 の教訓 ―― 版をまたいで比べるなら、**語彙に依存しない物差し**を使う。
+S4_DATE_RE = re.compile(r"(20\d{2})\s*[-/年]\s*(\d{1,2})\s*[-/月]\s*(\d{1,2})\s*日?")
+
+
+def dates_in(text: str) -> List[str]:
+    """本文に現れる〈日まで特定した日付〉を ISO へ正規化して返す（年月だけの記述は取らない）"""
+    return sorted({f"{y}-{int(m):02d}-{int(d):02d}" for y, m, d in S4_DATE_RE.findall(text or "")})
+
+
+def check_s4_dates(copy: Dict[str, str],
+                   tau_ok_dates: Sequence[str],
+                   decide_deadline_tau: Optional[str]
+                   ) -> Tuple[List[Finding], List[Judgment]]:
+    """A41b：**④に出てよい日付は〈使える日付〉と〈逆算由来の決定期限〉だけ。**
+
+    第13.6版の「三か月ずれている」は、生成器が④で**機械の知らない日付**を作ったから起きた。
+    ⑤⑥には機械が知らない日付が正当に出る（決定日・着手日・実現日・段階導入の時期）ので、
+    **本文全体に当てると 8/8 が誤検出になる**。④だけに限ると第13版 as-run で 0/8 だった
+    （検分済み。回帰に固定してある）。
+
+    窓由来の決定期限をここに渡してはならない ―― 窓は買い手の内側なので④に出せない（A41）。
+    したがって呼び手は `decide_deadline` ではなく `decide_deadline_tau` を渡す。
+    """
+    f, j = [], []
+    s4 = copy.get("④") if copy else None
+    if not s4:
+        return f, j
+    if not tau_ok_dates:
+        # 許可集合そのものが ⊥。N₂ ―― ⊥ はいかなる値とも比較できない。
+        # ここを空集合として比べると「全部が外来」になる（浅い一致の6件目になるところだった）。
+        if dates_in(s4):
+            j.append(Judgment("A41B_S4_DATES_UNCHECKED", "使える日付が渡っていない"))
+        return f, j
+    allowed = set(tau_ok_dates) | ({decide_deadline_tau} if decide_deadline_tau else set())
+    extra = [d for d in dates_in(s4) if d not in allowed]
+    for d in extra:
+        f.append(Finding("A41B_S4_FOREIGN_DATE", "stop", f"④{d} は機械が知らない日付"))
     return f, j
 
 
@@ -1043,6 +1093,32 @@ def start_deadline(ok: List[TauItem], lt: int) -> Optional[date]:
     """
     ds = [sub_months(t.d, lt) for t in ok if t.form in ("A", "C") and t.d]
     return min(ds) if ds else None
+
+
+def effective_decide_deadline(tau_deadline: Optional[date],
+                              gates: Sequence[Tuple[str, str, Optional[int]]]
+                              ) -> Optional[date]:
+    """A41b（第13.7版）：**同じ資料に、決定期限が二つ出てはならない。**
+
+    第13.6版で買い手が言った ――
+
+      「⑥の決定 2026-09-30 と、**④の逆算 2026-12-30 が三か月ずれている**」 ―― E1-P1
+
+    調べたら、**どちらの日付も機械は知らなかった**。E1 は `tau_ok` に A/C 型が無いので
+    `start_deadline` が ⊥ になり、**決定期限が一つも指示文へ渡っていなかった**。
+    生成器は仕方なく自分で 2026-12-30 を作り、⑥では別の日を書いた。
+    **欠落が二つの期限を生んだ**のであって、生成器が勝手をしたのではない。
+
+    実効の決定期限は、④からの逆算と〈決定の窓〉の**早いほう**である。
+    片方が ⊥ ならもう一方。両方 ⊥ なら ⊥（N₂：⊥ は値ではない。既定値に落とさない）。
+
+    **④に書いてよいのは逆算由来のものだけ**である（窓は買い手の内側なので A41）。
+    そのため呼び手は二つを別の鍵で持つ ―― `decide_deadline`（実効・⑥用）と
+    `decide_deadline_tau`（逆算のみ・④用）。
+    """
+    cands = [x for x in [tau_deadline] if x]
+    cands += [d for d in (iso_date(g[0]) for g in gates) if d]
+    return min(cands) if cands else None
 
 
 def check_tau_order(ok: List[TauItem], lt: int) -> List[Finding]:
@@ -1289,6 +1365,11 @@ def compile_deal(n: Nu, seller: Seller, today: date,
                  + audit_tau_forms(n))                     # A42：D と置いた項の型ずれ
     findings, judgments = apply_calibration(findings, judgments, industry)
     stop = [x for x in findings if x.level == "stop"]
+    # A41b：逆算由来（④へ渡してよい）と実効値（⑥を縛る）を分けて持つ
+    _gates = [(t.d.isoformat(), "／".join(t.binders), t.wait_months)
+              for t in decision_gates(n, today)]
+    _dl_tau = start_deadline(tau_ok, effective_LT(n))
+    _dl_eff = effective_decide_deadline(_dl_tau, _gates)
     return {
         "sigma": S, "sigma_by": by, "out_of_scope": False,
         "industry": industry, "calibrated": industry is None or industry in CALIBRATED_ON,
@@ -1306,15 +1387,15 @@ def compile_deal(n: Nu, seller: Seller, today: date,
         "chain": [(j.name, sorted(j.kappa), sorted(j.form), j.origin)
                   for j in n.J if j.reads],
         # A37b：鍵名は旧走行との突合のために据え置く。担体は〈決定期限〉であって着手期限ではない。
-        "start_deadline": (start_deadline(tau_ok, effective_LT(n)).isoformat()
-                           if start_deadline(tau_ok, effective_LT(n)) else None),
-        "decide_deadline": (start_deadline(tau_ok, effective_LT(n)).isoformat()
-                            if start_deadline(tau_ok, effective_LT(n)) else None),
+        "start_deadline": (_dl_tau.isoformat() if _dl_tau else None),
+        # A41b（第13.7版）：⑥に渡す実効の決定期限＝ min(逆算, 決定の窓)。
+        # ④へ渡してよいのは逆算由来のほうだけなので、二つの鍵に分ける。
+        "decide_deadline": (_dl_eff.isoformat() if _dl_eff else None),
+        "decide_deadline_tau": (_dl_tau.isoformat() if _dl_tau else None),
         "lt_months": n.LT_months,          # A37：⑥の日付に掛ける（買い手が決めてから動くまで）
         "today": today.isoformat(),
         # A41：④から落とした〈買い手の内側の窓〉。④には出さず、⑥の決定日を縛る
-        "decision_gates": [(t.d.isoformat(), "／".join(t.binders), t.wait_months)
-                           for t in decision_gates(n, today)],
+        "decision_gates": _gates,
         "omega": n.prod.omega if n.prod else None,        # A43：効果発現ラグ（導出）
         "busy_months": list(n.busy_months),               # A43：買い手の繁忙期（入力・空＝⊥）
         "talk_guide": talk_guide(n, S, uncal),
@@ -2023,7 +2104,9 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
                   lt_months: Optional[int] = None,
                   gates: Sequence[Tuple[str, str, int]] = (),
                   omega: Optional[int] = None,
-                  busy_months: Sequence[int] = ()) -> dict:
+                  busy_months: Sequence[int] = (),
+                  tau_ok_dates: Sequence[str] = (),
+                  decide_deadline_tau: Optional[str] = None) -> dict:
     """第12.1版：商材座標と業界を受け取れるようにした。
 
     第10版は「較正表は業界の関数ではなく商材座標の関数である」と言い、`expr_ok_of` を入れたが、
@@ -2040,6 +2123,8 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
                            omega, busy_months); f += f3; j += j3   # A37・A43
     f4, j4 = check_dates_v7(dec, deadline, today, lt_months); f += f4; j += j4   # A37
     fg, jg = check_gates(dec, gates, copy.get("④", "")); f += fg; j += jg        # A41
+    fs, js = check_s4_dates(copy, tau_ok_dates, decide_deadline_tau)             # A41b
+    f += fs; j += js
     fq, jq = check_decidable(dec, chain); f += fq; j += jq                       # R20 / N₄′
     f5, j5 = check_insult(dec, gamma_own or {}); f += f5; j += j5
     f6, j6 = check_chain(dec, chain, kept, ex); f += f6; j += j6

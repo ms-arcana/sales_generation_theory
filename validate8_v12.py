@@ -124,7 +124,10 @@ def score(d, g):
     v = validate_copy(copy, D, kappa_final=d["kappa_n"], stages=sigma,
                       n_seats=len(d["seats"]),
                       executors=[(a, cs) for a, cs in (d.get("executors") or [])],
-                      deadline=d.get("start_deadline"),
+                      # 配管の修正（第13.7版）：A37b で decide_deadline を足したのに、
+                      # 生成後検査は旧鍵 start_deadline を読んだままだった。値が同じ間は
+                      # 露見しないが、A41b で実効値が別値になるので**ここが誤りになる**。
+                      deadline=d.get("decide_deadline") or d.get("start_deadline"),
                       gamma_own=d.get("gamma_own") or {},
                       chain=[tuple(x) for x in (d.get("chain") or [])],
                       unwilling=d.get("unwilling") or [],
@@ -135,7 +138,9 @@ def score(d, g):
                       lt_months=d.get("lt_months"),                      # A37
                       gates=[tuple(g) for g in (d.get("decision_gates") or [])],   # A41
                       omega=d.get("omega"),                              # A43（導出）
-                      busy_months=d.get("busy_months") or ())            # A43（較正）
+                      busy_months=d.get("busy_months") or (),            # A43（較正）
+                      tau_ok_dates=[x[1] for x in (d.get("tau_ok") or [])],        # A41b
+                      decide_deadline_tau=d.get("decide_deadline_tau"))            # A41b
     return copy, D, v
 
 
