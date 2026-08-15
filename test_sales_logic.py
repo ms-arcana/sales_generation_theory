@@ -1385,4 +1385,40 @@ for _m in _seen45:
         _bad45.append(_m)
 check(f"A45 第13.6版の⑥に出た金額表記 {len(_seen45)} 種をすべて読めた", not _bad45, _bad45[:8])
 
+print("\n── 第13.9版 A47 ②の問いの向き／A46 断りの回数")
+# どちらも検査を足して直る話ではなく、**生成の指示側の制約**。25業界で 8/21・7/21。
+from sales_logic import check_s2_form, check_disclaimers
+_S2BAD = {"②": "いま、埋まっているかどうかを週単位で数えた表は、どなたの手元にあるでしょうか。"}
+_S2OK = {"②": "同じ稼働を〈客室1室・1泊あたりの人時〉で数え直すと、年ごとに差が出ます。"}
+_f, _j = check_s2_form(Declared(s2_asks_possession=False), _S2BAD)
+check("A47 ②の保有を問う疑問文は停止（買い手が現に拒んだ一文）",
+      "A47_S2_POSSESSION_QUESTION" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_s2_form(Declared(s2_asks_possession=False), _S2OK)
+check("A47 単位に向けた②なら通る", not _f and not _j, ([x.code for x in _f], [x.code for x in _j]))
+_f, _j = check_s2_form(Declared(s2_asks_possession=True), _S2OK)
+check("A47 申告が True なら紙側が綺麗でも停止",
+      "A47_S2_ASKS_POSSESSION" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_s2_form(Declared(), _S2OK)
+check("A47 申告が無ければ申し送る",
+      any(x.code == "A47_S2_FORM_UNDECLARED" for x in _j), [x.code for x in _j])
+_f, _j = check_disclaimers(Declared(s5_disclaimers=("現在の体制の当否", "現在の体制の当否")), {})
+check("A46 同じ対象への断りが二度なら停止（二度言うと否定になる）",
+      "A46_DISCLAIMER_REPEATED" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_disclaimers(Declared(s5_disclaimers=("現在の体制の当否", "過去の選定の当否")), {})
+check("A46 対象が違えば通る", not _f, [x.code for x in _f])
+_f, _j = check_disclaimers(Declared(s5_disclaimers=()), {"⑥": "ではありません。" * 5})
+check("A46 紙側で断りが多すぎれば申し送る（回数で数える＝版をまたげる）",
+      any(x.code == "A46_DISCLAIMER_MANY" for x in _j), [x.code for x in _j])
+# 検分の固定：実データ17件に当てて、停止は**1件だけ**（E2-P1 の実在の一文）
+import glob as _g46, json as _j46
+_stops = 0
+for _p in sorted(_g46.glob("gen136/out_*.json")) + ["gen137/out_E1-P1.json"]:
+    _c = {x["stage"]: x["text"] for x in _j46.load(open(_p, encoding="utf-8"))["slides"]}
+    _stops += len(check_s2_form(Declared(s2_asks_possession=False), _c)[0])
+    _stops += len(check_disclaimers(Declared(s5_disclaimers=()), _c)[0])
+for _r in _load41("verified8_v13.json"):
+    _stops += len(check_s2_form(Declared(s2_asks_possession=False), _r["copy"])[0])
+    _stops += len(check_disclaimers(Declared(s5_disclaimers=()), _r["copy"])[0])
+check("A47/A46 実データ17件での停止は1件だけ（誤検出ゼロ）", _stops == 1, _stops)
+
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")

@@ -280,6 +280,10 @@ class Declared:
     s6_price_unit: Optional[str] = None           # 円／万円 など
     s6_price_items: Optional[Tuple[Dict[str, object], ...]] = None   # 内訳 ⟨name, amount, unit⟩
     s6_price_tiers: Optional[Tuple[Dict[str, object], ...]] = None   # 階層 ⟨label, qty, qty_unit, amount⟩
+    # A47（第13.9版）：②の問いは、買い手の保有ではなく単位に向ける（25業界 8/21）
+    s2_asks_possession: Optional[bool] = None
+    # A46（第13.9版）：同じ断りは1回まで。二度言うと否定になる（25業界 7/21）
+    s5_disclaimers: Optional[Tuple[str, ...]] = None   # 何について断ったか（対象。文言ではない）
     # N₄′（第13.5b版）：**量は〈単位〉だけでなく〈比較の相手〉を持つ。**
     # N₄ は「量は単位を持つ」としか言っていない。だから s6_kappa_by_seat は
     # 〈座席 → 基準〉の二つ組で足りているように見えた。ところが座席は基準を読むのではなく、
@@ -615,6 +619,7 @@ CALIBRATED_CODES: Dict[str, str] = {
     # A45（第13.8版）：幅の比の閾値。**実測は二点しかない**（2.3倍で 20/21 が拒否／1.8倍は未検証）。
     # 内訳の欠落（A45b）と単価の逆行（A45c）は算術なので降格しない ―― 較正値を含まない。
     "A45_RANGE_TOO_WIDE": "PRICE_RATIO_MAX",
+    # A46（第13.9版）：断りの回数の上限。実測は段あたり 0〜7 で、閾値3 は較正値
     "A2_C_NOT_SINGLETON": "ISO_KEYS",     # 所轄庁・系列は規制産業の語。非規制業界では常に空
 }
 
@@ -1998,6 +2003,80 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
     return f, j
 
 
+# ══════════════════════════════════════════════ A47 ②の問いの向き／A46 断りの回数
+# どちらも **検査を足して直る話ではなく、生成の指示側の制約**である。
+# A47 は②の設計そのものへの反証で、A46 は R17 への過剰適応。
+S2_QUESTION_RE = re.compile(r"[^。！？\n]*(?:か[。？]|？)")
+POSSESSION_WORDS = ("お手元", "手元", "お持ち", "ありますか", "把握", "持っていますか",
+                    "集計され", "残っていますか", "どなた", "お分かり")
+# 断り書きの定型。**語彙ではなく回数で数える**（版をまたいで比べられる物差し）。
+DISCLAIM_RE = re.compile(r"(?:ではありません|ではない。|ておりません|ていません|しません。|ものではありません)")
+DISCLAIM_MAX = 3          # 較正値。実測は段あたり 0〜7（8セル×3走行）
+
+
+def check_s2_form(dec: Declared, copy: Dict[str, str]) -> Tuple[List[Finding], List[Judgment]]:
+    """A47：**②の問いは、買い手の保有ではなく単位に向ける。**
+
+    ②は「①の事実を別の単位で数え直して驚きを作る」段である（異化）。
+    ところがその**問いの形**が、買い手には「あなたは数えていない」という決めつけとして届いた。
+
+      「三十年そうやって回してきた宿に向かって、**どなたの手元にあるでしょうか、はない**」
+      ―― 観光・旅行・宿泊／社長。**25業界で 8/21**
+
+    モデルは τ に `known ∈ {既知, 未知}` を既に持っている。
+    **既知の量に「持っていますか」と問うのは、規則違反であるはず**だった。
+
+    ```
+    いまの②  「その数字は、どなたの手元にありますか」   → 買い手の不作為を問う形
+    あるべき② 「同じ数字を、この単位で見るとこうなります」 → 単位を問う形
+    ```
+
+    紙側でも照合する（A23 の紙側と同型 ―― **申告だけで通さない**）。
+    検分：8セル×3走行の②本文17件に当てて、保有を問う疑問文は **1件**（E2-P1・第13.6版）。
+    25業界データの中の当該一文も取れる。**誤検出 0。**
+    """
+    f, j = [], []
+    s2 = (copy or {}).get("②", "")
+    qs = [m.group(0).strip() for m in S2_QUESTION_RE.finditer(s2)] if s2 else []
+    pos = [q for q in qs if any(w in q for w in POSSESSION_WORDS)]
+    if dec.s2_asks_possession is None:
+        j.append(Judgment("A47_S2_FORM_UNDECLARED"))
+    elif dec.s2_asks_possession is True:
+        f.append(Finding("A47_S2_ASKS_POSSESSION", "stop", "②が買い手の保有を問うている（申告）"))
+    for q in pos:
+        f.append(Finding("A47_S2_POSSESSION_QUESTION", "stop", q[:60]))
+    if qs and not pos:
+        j.append(Judgment("A47_S2_QUESTION", f"②に疑問文 {len(qs)}件"))
+    return f, j
+
+
+def check_disclaimers(dec: Declared, copy: Dict[str, str]
+                      ) -> Tuple[List[Finding], List[Judgment]]:
+    """A46：**同じ断りは1回まで。二度言うと否定になる。**
+
+    R17（侮辱検査）を守ろうとした**過剰適応**である。25業界で 7/21。
+    断り書きは〈この紙が言っていないこと〉についてのメタな言明であり、
+    二度繰り返すと「あなたはそう読むだろうが違う、本当に違う」という形になって、
+    **買い手の読み方そのものへの否定**に転じる。
+
+    回数で数えるので**版をまたいで比べられる**（語彙に較正されない）。
+    検分：8セル×3走行で段あたり 0〜7件。**第13.7版の E1-P1 の⑥が7件で最多**だった。
+    """
+    f, j = [], []
+    ds = dec.s5_disclaimers
+    if ds is None:
+        j.append(Judgment("A46_DISCLAIMER_UNDECLARED"))
+    else:
+        norm = [str(x).strip() for x in ds if str(x).strip()]
+        for t in sorted({x for x in norm if norm.count(x) > 1}):
+            f.append(Finding("A46_DISCLAIMER_REPEATED", "stop", t[:50]))
+    for st, txt in (copy or {}).items():
+        n = len(DISCLAIM_RE.findall(txt or ""))
+        if n > DISCLAIM_MAX:
+            j.append(Judgment("A46_DISCLAIMER_MANY", f"{st} に断りの文 {n}件（上限 {DISCLAIM_MAX}）"))
+    return f, j
+
+
 def check_insult(dec: Declared, gamma_own: Dict[str, str]) -> Tuple[List[Finding], List[Judgment]]:
     """R17（第8版）：侮辱は単調性の破れである。
 
@@ -2282,6 +2361,8 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
     f += fs; j += js
     fq, jq = check_decidable(dec, chain); f += fq; j += jq                       # R20 / N₄′
     fp, jp = check_price(dec, industry); f += fp; j += jp                        # A45/A45b/A45c
+    f2s, j2s = check_s2_form(dec, copy); f += f2s; j += j2s                      # A47
+    fd, jd = check_disclaimers(dec, copy); f += fd; j += jd                      # A46
     f5, j5 = check_insult(dec, gamma_own or {}); f += f5; j += j5
     f6, j6 = check_chain(dec, chain, kept, ex); f += f6; j += j6
     f += check_seat_words(copy, dec, chain)      # A23 の紙側（申告だけで通さない）
@@ -2421,6 +2502,11 @@ REQS: Tuple[Req, ...] = (
         "単位は下限・上限の読み方を決めるので、両者より先に効く"),
     Req("s6_price_items", "価格", "価格を構成する費目", "n", "", "-",
         "内訳が在り、和が総額に一致する（A45b。一致しないのは Π₁ の無矛盾に反する）", "導出＋"),
+    Req("s2_asks_possession", "問いの向き", "②の問い", "1",
+        "②は①を別の単位で数え直す一つの段であり、問いの向きも一つ（A47）",
+        "-", "False であること。買い手の保有ではなく単位に向ける", "導出"),
+    Req("s5_disclaimers", "断り", "この紙が否定しないと断った対象", "n", "", "-",
+        "同じ対象への断りは1回まで。二度言うと否定になる（A46・R17 への過剰適応）", "導出"),
     Req("s6_price_tiers", "価格", "価格の階層（期間・数量）", "n", "", "-",
         "単位あたり価格が数量に対して単調非増加（A45c）。逆行は買い手が必ず検算する", "導出",
         "本提案の金額（s6_price_low/high）とは衝突しない。**階層は選択肢の一覧であって "
