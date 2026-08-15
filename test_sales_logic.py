@@ -1304,6 +1304,19 @@ for _miss, _code in (("ret_basis", "R20_EXPR_NO_BASIS"),
 _f, _j = check_decidable(Declared(s6_quantities=(_qe(ret="240万", **_EXPR),)), _CH2)
 check("R20 値が在るなら式は見ない（値が優先）",
       not [x for x in _f if x.code.startswith("R20_EXPR")], [x.code for x in _f])
+# 第13.7版の走行で出た欠陥。生成器は式を**ret の欄に直接**書いた（成分の欄も埋めていた）。
+# `is_bottom(ret)` が False なので「値が在る」と読まれ、式の検査が一度も走らなかった。
+# **状態は三つ（値／式／⊥）で、二分では足りない。浅い一致の6件目。**
+_RUN137 = _qe(ret="〈貴学の月あたり媒体別実績突き合わせ人時〉× 1.0", **_EXPR)
+_f, _j = check_decidable(Declared(s6_quantities=(_RUN137,)), _CH2)
+check("R20 式を ret の欄に直接書いても〈式〉として読む（値と読まない）",
+      any(x.code == "R20_RETURN_AS_EXPR" for x in _j), ([x.code for x in _f], [x.code for x in _j]))
+check("R20 式のときは、戻る欄の単位語を値の単位ずれと数えない",
+      not [x for x in _f if x.code == "R20_UNIT_IN_VALUE" and "戻る" in x.ref],
+      [x.ref for x in _f if x.code == "R20_UNIT_IN_VALUE"])
+_f, _j = check_decidable(Declared(s6_quantities=(_qe(ret="買い手の量 × 係数"),)), _CH2)
+check("R20 式だけ書いて成分の欄が空なら停止（R20_EXPR_IN_VALUE）",
+      "R20_EXPR_IN_VALUE" in [x.code for x in _f], [x.code for x in _f])
 
 
 print("\n── 第13.8版 A45／A45b／A45c：層(i) の算術 ―― 売り手の数字だけで閉じる")

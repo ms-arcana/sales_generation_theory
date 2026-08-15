@@ -1787,6 +1787,24 @@ def _q_seat(q: Dict[str, object]) -> str:
     return str(q.get("seat", "")).strip()
 
 
+EXPR_MARKS = ("×", "✕", "＊", "*", "×", "掛ける")
+
+
+def is_expr(v) -> bool:
+    """その欄は〈式〉か。**式は値ではない。**（第13.7版の走行で出た）
+
+    R20 の三状態（値／式／⊥）を `is_bottom` の二分岐で書いていたため、
+    生成器が式を `ret` の欄に直接書いたとき「値が在る」と読み、
+    **式の検査が一度も走らなかった**（`R20_RETURN_AS_EXPR` が 0 件）。
+    走行前に「M1 が減って M2 が立たなければ、まず検査を疑う」と書いておいたので出た。
+    **浅い一致の6件目。**値と ⊥ の二分では足りず、状態は三つある。
+    """
+    if v is None:
+        return False
+    s = str(v)
+    return any(m in s for m in EXPR_MARKS)
+
+
 # ══════════════════════════════════════════════════════════ A45／A45b／A45c 層(i) の算術
 # 25業界21件で、買い手が挙げた理由の上位に並んだ三つ。**どれも売り手の数字だけで閉じる。**
 #   「1,400万から3,200万は2.3倍の開き、これは見積ではなく相場表だ」            20/21
@@ -1931,7 +1949,15 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
         den = str(q.get("per", "")).strip()
         if is_bottom(pay):
             f.append(Finding("R20_PAY_MISSING", "stop", f"{s}={str(pay).strip()[:20]}"))
-        if is_bottom(ret):
+        # 三状態（値／式／⊥）。第13.7版の走行で、生成器が式を `ret` の欄に直接書き、
+        # `is_bottom` が「値が在る」と読んで式の検査を素通りした。**状態は三つある。**
+        has_expr_fields = not all(is_bottom(q.get(k)) for k in
+                                  ("ret_expr", "ret_basis", "ret_coef", "coef_source"))
+        ret_is_expr = has_expr_fields or is_expr(ret)
+        if ret_is_expr and not has_expr_fields:
+            f.append(Finding("R20_EXPR_IN_VALUE", "stop",
+                             f"{s} 戻る欄に式が書かれているが成分の欄が ⊥"))
+        if ret_is_expr:
             # A44 の出口（第13.8版）：**戻る額は、値でなくても〈式〉なら決められる。**
             # 25業界 21/21 が「営業へ回した空欄が資料を殺す」と言い、機械側も 8/8 で停止した。
             # だが 17行のうち13行は記入欄で、これは生成器の出来ではなく
@@ -1939,12 +1965,8 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
             # 買い手の側で決定可能であるために、値そのものは要らない ――
             # 〈買い手の量 × 売り手の係数〉と**係数の出所**が在れば、買い手が自分で埋められる。
             # 係数に出所を要求するのは A28 と同型（出所のない量は置けない）。
-            basis = q.get("ret_basis")
-            coef = q.get("ret_coef")
-            csrc = q.get("coef_source")
-            if all(is_bottom(x) for x in (q.get("ret_expr"), basis, coef, csrc)):
-                f.append(Finding("R20_RETURN_MISSING", "stop", f"{s}={str(ret).strip()[:20]}"))
-            else:
+            basis, coef, csrc = q.get("ret_basis"), q.get("ret_coef"), q.get("coef_source")
+            if has_expr_fields:
                 if is_bottom(basis):
                     f.append(Finding("R20_EXPR_NO_BASIS", "stop", f"{s} 掛ける相手が ⊥"))
                 if is_bottom(coef):
@@ -1953,13 +1975,18 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
                     f.append(Finding("R20_EXPR_COEF_UNSOURCED", "stop", f"{s} 係数の出所が ⊥"))
                 if not any(is_bottom(x) for x in (basis, coef, csrc)):
                     j.append(Judgment("R20_RETURN_AS_EXPR",
-                                      f"{s} {str(basis).strip()} × {str(coef).strip()}"))
+                                      f"{s} {str(basis).strip()[:28]} × {str(coef).strip()[:16]}"))
+        elif is_bottom(ret):
+            f.append(Finding("R20_RETURN_MISSING", "stop", f"{s}={str(ret).strip()[:20]}"))
         if pu in UNIT_UNKNOWN or ru in UNIT_UNKNOWN:
             j.append(Judgment("R20_UNIT_UNDECLARED", f"{s} 払う={pu or '⊥'} 戻る={ru or '⊥'}"))
         elif pu != ru:
             f.append(Finding("R20_UNIT_MISMATCH", "stop", f"{s} {pu} vs {ru}"))
         # 値の中に混ざった単位（"180万〜900万" と書いて単位欄は "円"）
         for lab, v, u in (("払う", pay, pu), ("戻る", ret, ru)):
+            # 式の文字列に単位語が混ざるのは正常（「× 1.0（円／円）」）。値のときだけ見る。
+            if lab == "戻る" and ret_is_expr:
+                continue
             bad = unit_in_value(v, u) if not is_bottom(v) else None
             if bad:
                 f.append(Finding("R20_UNIT_IN_VALUE", "stop", f"{s} {lab}「{bad}」≠単位欄「{u}」"))

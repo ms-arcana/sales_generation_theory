@@ -112,6 +112,16 @@ def to_declared(dd):
         s6_to_sales=to_sales,
         s6_quantities=quants,                              # N₄′
         s6_table_rows=dd.get("s6_table_rows"),             # 形式
+        # 第13.7版の走行で出た**配管の欠陥**（V3 と同型・二版連続）。
+        # 生成器は s6_price_* を現に申告していたのに、この層で落ちていて
+        # A45／A45b／A45c が一度も走らず `A45_PRICE_UNDECLARED` だけが出ていた。
+        s6_price_low=dd.get("s6_price_low"),
+        s6_price_high=dd.get("s6_price_high"),
+        s6_price_unit=dd.get("s6_price_unit"),
+        s6_price_items=(tuple(dict(x) for x in dd["s6_price_items"] if isinstance(x, dict))
+                        if dd.get("s6_price_items") else None),
+        s6_price_tiers=(tuple(dict(x) for x in dd["s6_price_tiers"] if isinstance(x, dict))
+                        if dd.get("s6_price_tiers") else None),
     )
 
 
