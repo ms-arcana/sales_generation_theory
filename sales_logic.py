@@ -677,6 +677,14 @@ AXIS_DOMAIN: Dict[str, Set[str]] = {
     "src": {"法令", "公的暦", "自然・需要", "契約", "売り手都合"},
 }
 
+# A51（第13.10版）：**入力に ⊥ を書く場所が無かった。**
+# `Product` は全成分に既定値を持つので、**聞き取っていない欄が黙って特定の値になる**
+# （`nu="使えば分かる"`・`theta="段階分割"`…）。型2 そのもの ―― 未定義を既定値と読む。
+# 全部の定義域に「不明」を足し、**⊥ を明示できるようにする**。値としては使わせない
+# （`check_axis_values` が要判断へ回す）。
+BOTTOM_TOKEN = "不明"      # A51：入力に ⊥ を書く場所。既定値と未聞取りを区別する
+AXIS_DOMAIN = {k: (v | {BOTTOM_TOKEN}) for k, v in AXIS_DOMAIN.items()}
+
 
 def check_axis_values(n: Nu) -> List[Judgment]:
     """入力 ν の列挙値が、表の定義域に入っているか（N2 を表引きへ適用する）。
@@ -688,6 +696,12 @@ def check_axis_values(n: Nu) -> List[Judgment]:
 
     def chk(axis: str, val, where: str):
         if val is None:
+            # A51（第13.10版）：**None も ⊥ である。**黙って通してはいけない。
+            j.append(Judgment("A51_AXIS_UNDECLARED", where))
+            return
+        if val == BOTTOM_TOKEN:
+            # ⊥ を明示できるようになった。値としては使わせず、人へ回す
+            j.append(Judgment("A51_AXIS_BOTTOM", where))
             return
         if val not in AXIS_DOMAIN[axis]:
             j.append(Judgment("AXIS_VALUE_UNKNOWN", f"{where}={val!r}"))
@@ -718,6 +732,63 @@ def check_axis_values(n: Nu) -> List[Judgment]:
                               f"C_move={n.C_move!r} θ={p.theta!r} σp={p.sigma_p!r} "
                               f"試用 {old_t}->{trial_of(n)} 移行 {old_m}->{migration_of(n)}"))
     return j
+
+
+def audit_axis_types() -> List[Judgment]:
+    """A48（第13.10版）：**「軸」は二種類の対象を指していた。**
+
+    ν・τ・J・Σ は記法が型を与えている（N₂・N₃・N₅・N₁）ので、型検査が効く。
+    ところが **λ・ε と商材座標の7成分は、記法を通らない** ―― Π₃ と既存研究が
+    値域そのものを列挙している。**この群には型検査が無く、`check_axis_values` の
+    列挙照合だけ**である。新しい λ を足したくなったとき、それが本当に所在なのかを機械は言えない。
+
+    ここで棚卸しして、**人の承認が要る箇所として明示する**（`audit_requirements` と同じ位置づけ）。
+    """
+    untyped = {
+        "λ 所在": "Π₃ が8値を列挙", "ε 様式": "Π₃ が2値を列挙",
+        "ν 検証時点": "Nelson / Darby-Karni", "θ 分割試用": "Rogers",
+        "σp 切替コスト": "Burnham ら", "ω 発現ラグ": "MMM の carryover",
+        "α 帰属可能性": "Selviaridis", "β₁ 会計分類": "会計基準 / cost stickiness",
+        "β₂ 予算内外": "稟議の実証",
+    }
+    return [Judgment("A48_AXIS_NO_TYPE_CHECK", f"{k}（{v}）") for k, v in sorted(untyped.items())]
+
+
+def buyer_quantities(n: Nu) -> List[Tuple[str, str]]:
+    """A52：**入力に在る〈買い手の量〉。**⑥の〈戻る〉の式が掛ける相手はここから採る。
+
+    第13.6版以降、⑥の量の〈戻る〉は 17行中13行が記入欄だった。A44（21/21）。
+    第13.8版で〈式〉の出口を作ったが、**式が掛ける相手が入力に在るとは限らない** ――
+    第13.7版の走行では、3座席のうち1つ（理事会の「予算科目『広報外注費』の年間執行額」）が
+    **入力のどこにも無い量**だった。生成器が発明している。
+
+    在るのは τ の量である（`q` / `q_low`〜`q_high` / `q_source`）。
+    **決定表と指示文に出していなかったから、生成器は発明するしかなかった。**
+    """
+    out = []
+    for t in n.tau:
+        if t.q:
+            rng = (f"{t.q_low}〜{t.q_high}" if t.q_low is not None else "")
+            out.append((str(t.q), f"{rng}／出所 {t.q_source or '⊥'}"))
+    return out
+
+
+def check_basis_in_input(dec: Declared, basis_names: Sequence[str]) -> List[Judgment]:
+    """A52 の紙側：⑥の式が掛ける相手が、入力に在る買い手の量と照合できるか。
+
+    機械は真偽を見られない（A22）ので**要判断**。照合は部分一致ではなく、
+    入力側の量の名前が式の担体に**含まれるか**で見る（名前は長いので完全一致は取れない）。
+    """
+    out = []
+    for q in (dec.s6_quantities or ()):
+        b = q.get("ret_basis")
+        if is_bottom(b):
+            continue
+        bs = str(b)
+        if not any(nm and (nm in bs or bs in nm) for nm in basis_names):
+            out.append(Judgment("A52_BASIS_NOT_IN_INPUT",
+                                f"{_q_seat(q)}：{bs[:40]} は入力の量に無い"))
+    return out
 
 
 def check_seats(n: Nu) -> List[Finding]:
@@ -1136,6 +1207,67 @@ def effective_decide_deadline(tau_deadline: Optional[date],
     return min(cands) if cands else None
 
 
+def earliest_realize(today: date, lt: int, omega: int,
+                     busy: Sequence[int] = (), gate: Optional[date] = None) -> date:
+    """今日から数えて、**最も早くても費目が減るのはいつか**。
+
+    決定は今日でもよい／着手は決定＋LT かつ〈決定の窓〉以降／実現は着手＋ω かつ繁忙期を避ける。
+    A50 で「④の境界日に間に合うか」を見るための下限である。
+    """
+    s = add_months(today, lt)
+    if gate and s < gate:
+        s = gate
+    r = add_months(s, omega or 0)
+    for _ in range(24):
+        if r.month not in set(busy or ()):
+            break
+        r = add_months(r, 1)
+    return r
+
+
+def check_bound_reachable(n: Nu, ok: List[TauItem], today: date,
+                          gates: Sequence[TauItem] = ()) -> List[Judgment]:
+    """A50（第13.10版）：**④で「なぜ今か」に据えた日に、提案は間に合っているか。**
+
+    第13.9版の逆方向 oracle で、A/B 両版・2/2 座席が decisive に挙げた唯一の項目 ――
+
+      「④で急ぐ理由に据えた 2027-06-30 の三か月後に着手 2027-09-01 が置かれており、
+        **提案自身がその日に間に合っていない**」 ―― 学部長会
+      「④が言う〈様式と定義が固まらないまま受審の年に入る〉という損失を、
+        本提案の日程が**そのまま起こす**」
+
+    `start_deadline` は τ の **A/C 形からしか逆算しない**。E1 の境界日は `Ec`（解禁日）なので、
+    **何も縛っていなかった。**A41b は〈窓〉を締めたが、境界日と⑥の日程の関係は空いていた。
+
+    **停止にはしない。**8セルに当てると **4/8 が充足不能**になる ―― 売り手のリードタイムと
+    買い手の窓では、その期日に物理的に間に合わない。機械は「間に合わなくてもその日を
+    根拠に使ってよいか」を決められない（A22 と同型：機械は照合しかできない）。
+    落とさず**申し送り、指示文に明記させる**。
+    """
+    out = []
+    lo = min((t.d for t in gates if t.d), default=None)
+    e = earliest_realize(today, effective_LT(n), (n.prod.omega if n.prod else 0),
+                         n.busy_months, lo)
+    for t in ok:
+        if t.d and e > t.d:
+            out.append(Judgment("A50_BOUND_UNREACHABLE",
+                                f"{t.d}（{t.form}）に最速の実現 {e} が間に合わない"))
+    return out
+
+
+def check_realize_bound(dec: Declared, tau_ok_dates: Sequence[str]) -> List[Judgment]:
+    """A50 の紙側 ―― ⑥の実現日が、④の境界日を越えていないか（申告だけで通さない）"""
+    out = []
+    if not tau_ok_dates or not dec.s6_realize:
+        return out
+    b = min(d for d in (iso_date(x) for x in tau_ok_dates) if d)
+    for tri in dec.s6_realize:
+        d = iso_date(tri[1]) if len(tri) > 1 else None
+        if d and d > b:
+            out.append(Judgment("A50_REALIZE_AFTER_BOUND", f"実現{d} > ④の境界{b}"))
+    return out
+
+
 def check_tau_order(ok: List[TauItem], lt: int) -> List[Finding]:
     """R12：C の着手期限日が、同一 τ 内の A の終端日より後にあってはならない"""
     out = []
@@ -1385,6 +1517,9 @@ def compile_deal(n: Nu, seller: Seller, today: date,
               for t in decision_gates(n, today)]
     _dl_tau = start_deadline(tau_ok, effective_LT(n))
     _dl_eff = effective_decide_deadline(_dl_tau, _gates)
+    # A50（第13.10版）：④の境界日に、提案が物理的に間に合うか
+    judgments = judgments + check_bound_reachable(n, tau_ok, today, decision_gates(n, today))
+    _bq = buyer_quantities(n)      # A52：⑥の式が掛ける相手に使える〈買い手の量〉
     return {
         "sigma": S, "sigma_by": by, "out_of_scope": False,
         "industry": industry, "calibrated": industry is None or industry in CALIBRATED_ON,
@@ -1411,6 +1546,7 @@ def compile_deal(n: Nu, seller: Seller, today: date,
         "today": today.isoformat(),
         # A41：④から落とした〈買い手の内側の窓〉。④には出さず、⑥の決定日を縛る
         "decision_gates": _gates,
+        "buyer_quantities": _bq,          # A52：⑥の〈戻る〉の式が掛ける相手
         "omega": n.prod.omega if n.prod else None,        # A43：効果発現ラグ（導出）
         "busy_months": list(n.busy_months),               # A43：買い手の繁忙期（入力・空＝⊥）
         "talk_guide": talk_guide(n, S, uncal),
@@ -1750,6 +1886,8 @@ def check_realize(dec: Declared, executors: Sequence[Tuple[str, Sequence[str]]],
 
 
 UNIT_UNKNOWN = ("", "―", "-", "未定", "不明", "⊥", "None", "null")
+# A28／A49：量の出所の列挙。**払うと戻るは別の出所を持つ**（A49・第13.10版）
+SOURCE_KINDS = ("買い手データ", "公開統計", "売り手の実績", "試算", "営業記入")
 # 単位の語。**値の文字列の中に**単位が混ざっていると、宣言された単位と食い違っていても
 # 文字列比較では見えない（第13.6版の実測：pay="180万〜900万" / pay_unit="円"）。
 UNIT_TOKENS = ("億円", "万円", "千円", "人時", "人月", "時間", "円", "点", "件", "名",
@@ -1997,9 +2135,25 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
                 f.append(Finding("R20_UNIT_IN_VALUE", "stop", f"{s} {lab}「{bad}」≠単位欄「{u}」"))
         if den in UNIT_UNKNOWN:
             j.append(Judgment("R20_DENOMINATOR_MISSING", s))
-        src = str(q.get("source", "")).strip()
-        if src in UNIT_UNKNOWN:
-            j.append(Judgment("R20_SOURCE_UNDECLARED", s))
+        # A49（第13.10版）：**〈出所〉の欄が二つの担体を持っていた。**
+        # 第13.7版の走行で、生成器が「払う＝自社の運用手順に基づく試算／戻る＝式（係数は…）」と
+        # **連結して**申告し、列挙値と一致しないので `A28_SOURCE_UNKNOWN` が 3/3 座席で立った。
+        # A37／A37b／A41／A48／A48b に続く**6件目の〈一つの語／欄が二つの担体〉**。欄を割る。
+        psrc = str(q.get("pay_source", "")).strip()
+        rsrc = str(q.get("ret_source", "")).strip()
+        legacy = str(q.get("source", "")).strip()
+        if not psrc and not rsrc:
+            if legacy in UNIT_UNKNOWN:
+                j.append(Judgment("R20_SOURCE_UNDECLARED", s))
+            elif legacy not in SOURCE_KINDS:
+                # 旧欄に二つ分を連結して書いた形。**これが A49 の現れ方そのもの**
+                j.append(Judgment("A49_SOURCE_MERGED", f"{s}={legacy[:40]}"))
+        else:
+            for lab, v in (("払う", psrc), ("戻る", rsrc)):
+                if v in UNIT_UNKNOWN:
+                    j.append(Judgment("R20_SOURCE_UNDECLARED", f"{s}／{lab}"))
+                elif v not in SOURCE_KINDS:
+                    j.append(Judgment("A28_SOURCE_UNKNOWN", f"{s}／{lab}={v[:30]}"))
     return f, j
 
 
@@ -2340,7 +2494,8 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
                   omega: Optional[int] = None,
                   busy_months: Sequence[int] = (),
                   tau_ok_dates: Sequence[str] = (),
-                  decide_deadline_tau: Optional[str] = None) -> dict:
+                  decide_deadline_tau: Optional[str] = None,
+                  basis_names: Sequence[str] = ()) -> dict:
     """第12.1版：商材座標と業界を受け取れるようにした。
 
     第10版は「較正表は業界の関数ではなく商材座標の関数である」と言い、`expr_ok_of` を入れたが、
@@ -2363,6 +2518,8 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
     fp, jp = check_price(dec, industry); f += fp; j += jp                        # A45/A45b/A45c
     f2s, j2s = check_s2_form(dec, copy); f += f2s; j += j2s                      # A47
     fd, jd = check_disclaimers(dec, copy); f += fd; j += jd                      # A46
+    j += check_realize_bound(dec, tau_ok_dates)                                 # A50
+    j += check_basis_in_input(dec, basis_names)                                 # A52
     f5, j5 = check_insult(dec, gamma_own or {}); f += f5; j += j5
     f6, j6 = check_chain(dec, chain, kept, ex); f += f6; j += j6
     f += check_seat_words(copy, dec, chain)      # A23 の紙側（申告だけで通さない）

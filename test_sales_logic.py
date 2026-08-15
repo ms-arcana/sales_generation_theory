@@ -1421,4 +1421,71 @@ for _r in _load41("verified8_v13.json"):
     _stops += len(check_disclaimers(Declared(s5_disclaimers=()), _r["copy"])[0])
 check("A47/A46 実データ17件での停止は1件だけ（誤検出ゼロ）", _stops == 1, _stops)
 
+print("\n── 第13.10版 A50／A48／A49／A51／A52")
+from sales_logic import (earliest_realize, check_bound_reachable, check_realize_bound,
+                         audit_axis_types, buyer_quantities, check_basis_in_input,
+                         BOTTOM_TOKEN, AXIS_DOMAIN)
+from datetime import date as _d50
+# A50：④の境界日に、提案が物理的に間に合うか（第13.9版で A/B 両版 2/2 が decisive に挙げた）
+check("A50 最速の実現は 決定→着手(＋LT・窓)→実現(＋ω・繁忙期回避) で決まる",
+      earliest_realize(_d50(2026, 8, 6), 3, 3, (10, 11, 12, 1, 2)) == _d50(2027, 3, 6),
+      earliest_realize(_d50(2026, 8, 6), 3, 3, (10, 11, 12, 1, 2)))
+check("A50 窓があると着手が押し下げられ、実現も後ろへ",
+      earliest_realize(_d50(2026, 8, 6), 3, 3, (10, 11, 12, 1, 2), _d50(2027, 5, 31))
+      == _d50(2027, 8, 28))
+_a50 = {c["id"]: [x.ref for x in check_bound_reachable(
+            c["nu"], [t for t in c["nu"].tau if t.d], _C.TODAY,
+            __import__("sales_logic").decision_gates(c["nu"], _C.TODAY))]
+        for c in _C.CELLS}
+check("A50 8セル中4セルで、④の境界日に間に合わない（総当たりの充足可能性と一致）",
+      sum(1 for v in _a50.values() if v) == 4, {k: len(v) for k, v in _a50.items()})
+check("A50 停止ではなく要判断（4/8 を止めると走行が成立しない・機械は是非を決められない）",
+      all(isinstance(x, str) for v in _a50.values() for x in v))
+_f50 = check_realize_bound(Declared(s6_realize=(("店長", "2028-03-31", "媒体費"),)),
+                           ("2027-06-30",))
+check("A50 紙側：⑥の実現日が④の境界を越えたら申し送る",
+      any(x.code == "A50_REALIZE_AFTER_BOUND" for x in _f50), [x.code for x in _f50])
+
+# A48：記法を通らない軸の棚卸し
+check("A48 型検査が効かない軸を9本、棚卸しで名指しする", len(audit_axis_types()) == 9,
+      len(audit_axis_types()))
+check("A48 λ と ε が必ず含まれる",
+      sum(1 for x in audit_axis_types() if x.ref.startswith(("λ", "ε"))) == 2)
+
+# A51：入力に ⊥ を書く場所
+check("A51 すべての定義域に ⊥（不明）が入っている",
+      all(BOTTOM_TOKEN in v for v in AXIS_DOMAIN.values()))
+_n51 = _C.CELLS[0]["nu"]
+import copy as _cp51
+_nu51 = _cp51.deepcopy(_n51)
+from dataclasses import replace as _rp51
+_nu51.prod = _rp51(_nu51.prod, theta=BOTTOM_TOKEN)
+check("A51 ⊥ と申告したら、値として使わず申し送る",
+      any(x.code == "A51_AXIS_BOTTOM" for x in check_axis_values(_nu51)),
+      [x.code for x in check_axis_values(_nu51)])
+
+# A52：⑥の式が掛ける相手が、入力に在るか
+_bq = buyer_quantities(_n51)
+check("A52 入力の買い手の量が拾える（τ の q）", len(_bq) == 2, _bq)
+_ok52 = check_basis_in_input(
+    Declared(s6_quantities=({"seat": "学部長会", "ret_basis": _bq[0][0]},)), [q[0] for q in _bq])
+check("A52 入力に在る量なら通る", not _ok52, [x.ref for x in _ok52])
+_ng52 = check_basis_in_input(
+    Declared(s6_quantities=({"seat": "理事会",
+                             "ret_basis": "予算科目「広報外注費」の年間執行額"},)),
+    [q[0] for q in _bq])
+check("A52 入力に無い量を掛けていたら申し送る（第13.7版の理事会の行がこれ）",
+      any(x.code == "A52_BASIS_NOT_IN_INPUT" for x in _ng52), [x.code for x in _ng52])
+
+# A49：〈出所〉の欄を割る
+_f49, _j49 = check_decidable(Declared(s6_quantities=(
+    _qe(ret="26", source="払う＝自社の運用手順に基づく試算／戻る＝式（係数は本契約の定義）"),)), _CH2)
+check("A49 出所を連結して書いていたら申し送る（第13.7版で 3/3 座席）",
+      any(x.code == "A49_SOURCE_MERGED" for x in _j49), [x.code for x in _j49])
+_f49, _j49 = check_decidable(Declared(s6_quantities=(
+    _qe(ret="26", source="", pay_source="試算", ret_source="売り手の実績"),)), _CH2)
+check("A49 割って申告すれば通る",
+      not [x for x in _j49 if x.code in ("A49_SOURCE_MERGED", "A28_SOURCE_UNKNOWN")],
+      [x.code for x in _j49])
+
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")

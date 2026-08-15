@@ -154,7 +154,8 @@ def score(d, g):
                       omega=d.get("omega"),                              # A43（導出）
                       busy_months=d.get("busy_months") or (),            # A43（較正）
                       tau_ok_dates=[x[1] for x in (d.get("tau_ok") or [])],        # A41b
-                      decide_deadline_tau=d.get("decide_deadline_tau"))            # A41b
+                      decide_deadline_tau=d.get("decide_deadline_tau"),           # A41b
+                      basis_names=[q[0] for q in (d.get("buyer_quantities") or [])])  # A52
     return copy, D, v
 
 
