@@ -1272,4 +1272,104 @@ check("A41b 実効の決定期限は必ず窓以前（同じ資料に二つの�
           _dl[k]["decide_deadline"] <= min(g[0] for g in _dl[k]["decision_gates"])
           for k in _dl))
 
+
+print("\n── 第13.8版 R20〈式〉：戻る額は、値でなくても〈式〉なら決められる")
+# A44（21/21）の唯一の出口。第13.6版は 8/8 が R20_RETURN_MISSING で停止していたが、
+# 17行中13行は記入欄で、**売り手が買い手の数字を持っていない**という入力側の欠落だった。
+# 買い手の側で決定可能であるためには、値そのものは要らない ――
+# 〈買い手の量 × 売り手の係数〉の式と、**係数の出所**が在れば、買い手が自分で埋められる。
+def _qe(seat="店長", **kw):
+    d = {"seat": seat, "kappa": "財源", "pay": "180万", "pay_unit": "円",
+         "ret": "【　　　】", "ret_unit": "円", "per": "1店舗あたり", "source": "実測"}
+    d.update(kw); return d
+_CH2 = (("店長", ["財源"], ["粗利"], "現場"),)
+_f, _j = check_decidable(Declared(s6_quantities=(_qe(),)), _CH2)
+check("R20 式が無ければ、これまでどおり停止（対照）",
+      "R20_RETURN_MISSING" in [x.code for x in _f], [x.code for x in _f])
+_EXPR = dict(ret_expr="月間チラシ配布枚数 × 1枚あたり削減額",
+             ret_basis="月間チラシ配布枚数", ret_coef="1枚あたり2.4円",
+             coef_source="自社12社の実測平均（2025年度）")
+_f, _j = check_decidable(Declared(s6_quantities=(_qe(**_EXPR),)), _CH2)
+check("R20 式が揃っていれば停止しない（買い手が自分の量を入れれば決まる）",
+      "R20_RETURN_MISSING" not in [x.code for x in _f], [x.code for x in _f])
+check("R20 式で決めるときは、そう申し送る",
+      any(x.code == "R20_RETURN_AS_EXPR" for x in _j), [x.code for x in _j])
+for _miss, _code in (("ret_basis", "R20_EXPR_NO_BASIS"),
+                     ("ret_coef", "R20_EXPR_NO_COEF"),
+                     ("coef_source", "R20_EXPR_COEF_UNSOURCED")):
+    _e = dict(_EXPR); _e[_miss] = "【　　　】"
+    _f, _j = check_decidable(Declared(s6_quantities=(_qe(**_e),)), _CH2)
+    check(f"R20 式の {_miss} が ⊥ なら停止（{_code}）",
+          _code in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_decidable(Declared(s6_quantities=(_qe(ret="240万", **_EXPR),)), _CH2)
+check("R20 値が在るなら式は見ない（値が優先）",
+      not [x for x in _f if x.code.startswith("R20_EXPR")], [x.code for x in _f])
+
+
+print("\n── 第13.8版 A45／A45b／A45c：層(i) の算術 ―― 売り手の数字だけで閉じる")
+from sales_logic import parse_amount, check_price
+# 検分：買い手が実際に検算した表記を、そのまま読めること（浅い一致を7件目にしない）
+check("A45 金額の表記を読む（万・億・千・円・カンマ・小数）",
+      [parse_amount(x) for x in ("1,400万", "3,200万円", "180万", "1.5億", "75000円", "900万")]
+      == [1.4e7, 3.2e7, 1.8e6, 1.5e8, 75000.0, 9e6],
+      [parse_amount(x) for x in ("1,400万", "3,200万円", "180万", "1.5億", "75000円", "900万")])
+check("A45 値に単位が無ければ申告単位で読む", parse_amount("1400", "万円") == 1.4e7)
+check("A45 数字が無ければ ⊥（0 に落とさない）",
+      parse_amount("【　　　】") is None and parse_amount("未定") is None)
+
+_ITEMS = ({"name": "媒体費", "amount": "800万"}, {"name": "制作費", "amount": "400万"},
+          {"name": "人月単価", "amount": "200万"})
+def _P(**kw):
+    d = dict(s6_price_low="1,400万", s6_price_high="1,400万", s6_price_unit="円",
+             s6_price_items=_ITEMS)
+    d.update(kw); return Declared(**d)
+_f, _j = check_price(_P(s6_price_high="3,200万"))
+check("A45 上限÷下限が 2.3倍なら停止（20/21 が『見積ではなく相場表だ』と拒んだ）",
+      "A45_RANGE_TOO_WIDE" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_price(_P(s6_price_high="2,530万", s6_price_items=(
+    {"name": "媒体費", "amount": "1,500万"}, {"name": "制作費", "amount": "700万"},
+    {"name": "人月単価", "amount": "330万"})))
+check("A45 1.81倍は通る（デモデータがここで落ちない）",
+      "A45_RANGE_TOO_WIDE" not in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_price(_P(s6_price_high="3,200万"), industry="観光・宿泊")
+check("A45 未較正の業界では停止ではなく降格（閾値は較正値）",
+      all(x.level == "demote" for x in _f if x.code == "A45_RANGE_TOO_WIDE")
+      and any(x.code == "UNCALIBRATED" for x in _j), ([x.code for x in _f], [x.code for x in _j]))
+_f, _j = check_price(_P(s6_price_items=None))
+check("A45b 内訳が無ければ停止（21/21）",
+      "A45B_BREAKDOWN_MISSING" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_price(_P(s6_price_items=({"name": "媒体費", "amount": "800万"},)))
+check("A45b 内訳の和が総額に合わなければ停止（Π₁ 無矛盾）",
+      "A45B_BREAKDOWN_MISMATCH" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_price(_P())
+check("A45b 内訳の和が総額に一致すれば通る", not _f, [x.code for x in _f])
+_TIERS = ({"label": "3か月", "qty": 3, "qty_unit": "か月", "amount": "180万"},
+          {"label": "12か月", "qty": 12, "qty_unit": "か月", "amount": "900万"})
+_f, _j = check_price(_P(s6_price_tiers=_TIERS))
+check("A45c 長く頼むほど単価が上がるなら停止（月60万 → 月75万）",
+      "A45C_UNIT_PRICE_NOT_MONOTONE" in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_price(_P(s6_price_tiers=(
+    {"label": "3か月", "qty": 3, "qty_unit": "か月", "amount": "180万"},
+    {"label": "12か月", "qty": 12, "qty_unit": "か月", "amount": "600万"})))
+check("A45c 単価が下がっていれば通る",
+      "A45C_UNIT_PRICE_NOT_MONOTONE" not in [x.code for x in _f], [x.code for x in _f])
+_f, _j = check_price(Declared())
+check("A45 価格そのものが未申告なら、停止せず申し送る（⊥ は値ではない）",
+      not _f and any(x.code == "A45_PRICE_UNDECLARED" for x in _j),
+      ([x.code for x in _f], [x.code for x in _j]))
+
+# 検分：第13.6版の⑥本文に実際に出た金額表記を全部読めるか（読めない＝検査が沈黙する）
+import re as _re45, json as _json45, glob as _glob45
+_AMT = _re45.compile(r"[0-9][0-9,\.]*\s*(?:億円|万円|千円|億|万|千|円)")
+_seen45, _bad45 = set(), []
+for _p in sorted(_glob45.glob("gen136/out_*.json")):
+    _o = _json45.load(open(_p, encoding="utf-8"))
+    for _s in _o["slides"]:
+        for _m in _AMT.findall(_s.get("text", "")):
+            _seen45.add(_m.strip())
+for _m in _seen45:
+    if parse_amount(_m) is None:
+        _bad45.append(_m)
+check(f"A45 第13.6版の⑥に出た金額表記 {len(_seen45)} 種をすべて読めた", not _bad45, _bad45[:8])
+
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")

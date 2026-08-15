@@ -273,6 +273,13 @@ class Declared:
     # 出口が無いから、作るか落とすかの二択になっていた。A28 は三つ目の出口を作る。
     s6_quantity_sources: Optional[Dict[str, str]] = None   # 座席名 → その座席へ置いた量の出所
     s6_to_sales: Optional[Tuple[str, ...]] = None          # 営業に算出・判断を仰ぐ項目
+    # A45／A45b／A45c（第13.8版）：層(i) の算術。**売り手の数字だけで閉じる。**
+    # 25業界21件で 20〜21/21 が挙げた三つで、買い手は現に検算して落としている。
+    s6_price_low: Optional[str] = None            # 提示金額の下限
+    s6_price_high: Optional[str] = None           # 提示金額の上限（単一なら下限と同値）
+    s6_price_unit: Optional[str] = None           # 円／万円 など
+    s6_price_items: Optional[Tuple[Dict[str, object], ...]] = None   # 内訳 ⟨name, amount, unit⟩
+    s6_price_tiers: Optional[Tuple[Dict[str, object], ...]] = None   # 階層 ⟨label, qty, qty_unit, amount⟩
     # N₄′（第13.5b版）：**量は〈単位〉だけでなく〈比較の相手〉を持つ。**
     # N₄ は「量は単位を持つ」としか言っていない。だから s6_kappa_by_seat は
     # 〈座席 → 基準〉の二つ組で足りているように見えた。ところが座席は基準を読むのではなく、
@@ -605,6 +612,9 @@ CALIBRATED_CODES: Dict[str, str] = {
     "R6b_LT_SHORT": "ACQUIRE",            # 買い手データの取得月数。POS のある業界では過剰
     "A8_BINDER_EMPTY": "BINDER_SRC",      # 拘束者の同定が要る出典。規制当局は法令由来で漏れる
     "A8_BINDER_NOT_ABOVE": "BINDER_SRC",
+    # A45（第13.8版）：幅の比の閾値。**実測は二点しかない**（2.3倍で 20/21 が拒否／1.8倍は未検証）。
+    # 内訳の欠落（A45b）と単価の逆行（A45c）は算術なので降格しない ―― 較正値を含まない。
+    "A45_RANGE_TOO_WIDE": "PRICE_RATIO_MAX",
     "A2_C_NOT_SINGLETON": "ISO_KEYS",     # 所轄庁・系列は規制産業の語。非規制業界では常に空
 }
 
@@ -1777,6 +1787,103 @@ def _q_seat(q: Dict[str, object]) -> str:
     return str(q.get("seat", "")).strip()
 
 
+# ══════════════════════════════════════════════════════════ A45／A45b／A45c 層(i) の算術
+# 25業界21件で、買い手が挙げた理由の上位に並んだ三つ。**どれも売り手の数字だけで閉じる。**
+#   「1,400万から3,200万は2.3倍の開き、これは見積ではなく相場表だ」            20/21
+#   「媒体費・制作費・人月単価の内訳が無い。予算科目に立てられない」            21/21
+#   「180万÷3か月＝月60万、900万÷12か月＝月75万。長く頼むほど月額が上がる」     実測
+# 買い手が現に**検算して**落としている。機械で落とせるのに落としていなかった。
+_SCALE = (("億円", 1e8), ("万円", 1e4), ("千円", 1e3), ("億", 1e8), ("万", 1e4),
+          ("千", 1e3), ("円", 1.0))
+AMOUNT_RE = re.compile(r"(\d[\d,]*(?:\.\d+)?)\s*(億円|万円|千円|億|万|千|円)?")
+
+
+def parse_amount(v, declared_unit: str = "") -> Optional[float]:
+    """「1,400万」「3,200万円」「1.5億」を円に直す。**読めなければ ⊥ を返す（0 にしない）。**
+
+    N₂ ―― ⊥ を 0 に落とすと、内訳の和も幅の比も黙って成立してしまう。
+    値の中に単位が無ければ、申告された単位の倍率を使う（`R20_UNIT_IN_VALUE` と対になる）。
+    """
+    if v is None:
+        return None
+    s = str(v).strip()
+    if is_bottom(s):
+        return None
+    m = AMOUNT_RE.search(s)
+    if not m:
+        return None
+    try:
+        num = float(m.group(1).replace(",", ""))
+    except ValueError:
+        return None
+    tok = m.group(2)
+    if not tok:
+        for u, k in _SCALE:
+            if u in (declared_unit or ""):
+                return num * k
+        return num
+    return num * dict(_SCALE)[tok]
+
+
+# 較正値。**実測は二点しかない** ―― 2.3倍で 20/21 が拒否、1.8倍は未検証。
+# したがってこれは導出ではなく較正であり、未較正の業界では降格する（`CALIBRATED_CODES`）。
+PRICE_RATIO_MAX = 2.0
+
+
+def check_price(dec: Declared, industry: Optional[str] = None
+                ) -> Tuple[List[Finding], List[Judgment]]:
+    """A45 幅の比／A45b 内訳／A45c 単価の単調性。**層(i)＝算術の層。**
+
+    層(ii) 構造（式の形）と層(iii) 係数（効果量）は別。ここは**四則演算だけ**で閉じる。
+    だから最も安く、最も確実で、しかも買い手が必ず検算する。
+    """
+    f, j = [], []
+    lo = parse_amount(dec.s6_price_low, dec.s6_price_unit or "")
+    hi = parse_amount(dec.s6_price_high, dec.s6_price_unit or "")
+    if lo is None and hi is None:
+        j.append(Judgment("A45_PRICE_UNDECLARED"))
+        return f, j
+    if lo is None or hi is None:
+        j.append(Judgment("A45_RANGE_HALF_MISSING", f"下限={dec.s6_price_low} 上限={dec.s6_price_high}"))
+    elif lo > 0 and hi / lo > PRICE_RATIO_MAX:
+        f.append(Finding("A45_RANGE_TOO_WIDE", "stop", f"{hi/lo:.2f}倍 > {PRICE_RATIO_MAX}倍"))
+    # A45b：内訳
+    items = dec.s6_price_items
+    if not items:
+        f.append(Finding("A45B_BREAKDOWN_MISSING", "stop", "価格の内訳が ⊥"))
+    else:
+        vals = [parse_amount(it.get("amount"), str(it.get("unit", dec.s6_price_unit or "")))
+                for it in items]
+        if any(v is None for v in vals):
+            j.append(Judgment("A45B_ITEM_UNPARSED",
+                              "／".join(str(it.get("name")) for it, v in zip(items, vals)
+                                        if v is None)))
+        else:
+            tot = sum(vals)
+            base_lo, base_hi = (lo if lo is not None else hi), (hi if hi is not None else lo)
+            if base_lo is not None and not (base_lo * 0.995 <= tot <= base_hi * 1.005):
+                f.append(Finding("A45B_BREAKDOWN_MISMATCH", "stop",
+                                 f"内訳の和={tot:.0f} 総額={base_lo:.0f}〜{base_hi:.0f}"))
+    # A45c：単価の単調性
+    tiers = dec.s6_price_tiers or ()
+    pts = []
+    for t in tiers:
+        q = t.get("qty")
+        a = parse_amount(t.get("amount"), str(t.get("unit", dec.s6_price_unit or "")))
+        try:
+            qv = float(q)
+        except (TypeError, ValueError):
+            qv = None
+        if qv and a is not None and qv > 0:
+            pts.append((qv, a / qv, str(t.get("label", ""))))
+    pts.sort()
+    for (q0, u0, l0), (q1, u1, l1) in zip(pts, pts[1:]):
+        if u1 > u0 * 1.005:
+            f.append(Finding("A45C_UNIT_PRICE_NOT_MONOTONE", "stop",
+                             f"{l0}={u0:.0f}/単位 → {l1}={u1:.0f}/単位"))
+    return apply_calibration(f, j, industry, sigma_note=False)
+
+
 def quantities_by_seat(dec: Declared) -> Dict[str, str]:
     """N₄′ の新欄から、旧 `s6_kappa_by_seat`（座席→基準）を作る。
 
@@ -1825,7 +1932,28 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
         if is_bottom(pay):
             f.append(Finding("R20_PAY_MISSING", "stop", f"{s}={str(pay).strip()[:20]}"))
         if is_bottom(ret):
-            f.append(Finding("R20_RETURN_MISSING", "stop", f"{s}={str(ret).strip()[:20]}"))
+            # A44 の出口（第13.8版）：**戻る額は、値でなくても〈式〉なら決められる。**
+            # 25業界 21/21 が「営業へ回した空欄が資料を殺す」と言い、機械側も 8/8 で停止した。
+            # だが 17行のうち13行は記入欄で、これは生成器の出来ではなく
+            # **売り手が買い手の数字を持っていない**という入力側の欠落だった。
+            # 買い手の側で決定可能であるために、値そのものは要らない ――
+            # 〈買い手の量 × 売り手の係数〉と**係数の出所**が在れば、買い手が自分で埋められる。
+            # 係数に出所を要求するのは A28 と同型（出所のない量は置けない）。
+            basis = q.get("ret_basis")
+            coef = q.get("ret_coef")
+            csrc = q.get("coef_source")
+            if all(is_bottom(x) for x in (q.get("ret_expr"), basis, coef, csrc)):
+                f.append(Finding("R20_RETURN_MISSING", "stop", f"{s}={str(ret).strip()[:20]}"))
+            else:
+                if is_bottom(basis):
+                    f.append(Finding("R20_EXPR_NO_BASIS", "stop", f"{s} 掛ける相手が ⊥"))
+                if is_bottom(coef):
+                    f.append(Finding("R20_EXPR_NO_COEF", "stop", f"{s} 係数が ⊥"))
+                if is_bottom(csrc):
+                    f.append(Finding("R20_EXPR_COEF_UNSOURCED", "stop", f"{s} 係数の出所が ⊥"))
+                if not any(is_bottom(x) for x in (basis, coef, csrc)):
+                    j.append(Judgment("R20_RETURN_AS_EXPR",
+                                      f"{s} {str(basis).strip()} × {str(coef).strip()}"))
         if pu in UNIT_UNKNOWN or ru in UNIT_UNKNOWN:
             j.append(Judgment("R20_UNIT_UNDECLARED", f"{s} 払う={pu or '⊥'} 戻る={ru or '⊥'}"))
         elif pu != ru:
@@ -2126,6 +2254,7 @@ def validate_copy(copy: Dict[str, str], dec: Declared,
     fs, js = check_s4_dates(copy, tau_ok_dates, decide_deadline_tau)             # A41b
     f += fs; j += js
     fq, jq = check_decidable(dec, chain); f += fq; j += jq                       # R20 / N₄′
+    fp, jp = check_price(dec, industry); f += fp; j += jp                        # A45/A45b/A45c
     f5, j5 = check_insult(dec, gamma_own or {}); f += f5; j += j5
     f6, j6 = check_chain(dec, chain, kept, ex); f += f6; j += j6
     f += check_seat_words(copy, dec, chain)      # A23 の紙側（申告だけで通さない）
@@ -2250,6 +2379,26 @@ REQS: Tuple[Req, ...] = (
     Req("s6_table_rows", "形式", "⑥に置いた表", "1",
         "表の行数は一つの数である（表そのものは列で分かれているので連結が起きない）",
         "-", "字数の判定から表を外すための数。表を使わなければ 0（第13.4版）", "較正"),
+    # A45／A45b／A45c（第13.8版）：層(i) の算術。担体は〈価格〉で、量とは別に立てる ――
+    # 量（s6_quantities）は**座席ごと**に走るが、価格は提案に一つしかない。
+    Req("s6_price_low", "価格", "本提案", "1",
+        "一つの提案が提示する金額の下限は一つ（複数あるなら提案が複数）",
+        "-", "金額として読める文字列。⊥ なら A45_PRICE_UNDECLARED", "導出"),
+    Req("s6_price_high", "価格", "本提案", "1",
+        "同上。単一価格なら下限と同値を置く", "-",
+        "上限÷下限が閾値以内（A45）。閾値は較正値なので未較正業界では降格", "較正",
+        "下限が先に決まる。上限は下限との比でしか判定されない"),
+    Req("s6_price_unit", "価格", "本提案", "1",
+        "金額の単位は提案に一つ（内訳が別単位なら内訳側で申告する）",
+        "-", "値の中に単位が混ざっていないこと（N₄′・R20_UNIT_IN_VALUE と同型）", "導出",
+        "単位は下限・上限の読み方を決めるので、両者より先に効く"),
+    Req("s6_price_items", "価格", "価格を構成する費目", "n", "", "-",
+        "内訳が在り、和が総額に一致する（A45b。一致しないのは Π₁ の無矛盾に反する）", "導出＋"),
+    Req("s6_price_tiers", "価格", "価格の階層（期間・数量）", "n", "", "-",
+        "単位あたり価格が数量に対して単調非増加（A45c）。逆行は買い手が必ず検算する", "導出",
+        "本提案の金額（s6_price_low/high）とは衝突しない。**階層は選択肢の一覧であって "
+        "本提案の金額ではない** ―― 提示するのは階層のうち一つで、その一つが下限・上限になる。"
+        "監査が同順位の対として拾ったので、衝突しない理由をここに書く（第13.8版）"),
 )
 
 # 廃止した欄（A24 で三つ組へ畳んだ。監査の対象外）
