@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第13.4版）</title>
+<title>営業メッセージ生成モデル ― 公理から文章までの流れ（第13.9版）</title>
 <style>
 :root{
   --ink:#1a1c22; --sub:#5d6470; --line:#d8dbe2; --bg:#fbfbfc;
@@ -1523,6 +1523,61 @@ A39     ②の問い返しが決めつけとして着弾する    R17 の紙側<
 <p>留保：「業界差が無い」ことを積極的に示せてはいません。n=21・各条件 n=1・IT 14／コンサル 7 と偏っており、<b>差が無いのか、差を見る力が無いのかを区別できません</b>。飽和したのが算術と欄の話、分散が残ったのが礼儀と語り口の話であることだけは、仮説として置いておきます。</p>
 </div>
 
+<div class="callout warn" id="v139">
+<p><b>第13.7〜13.9版 ―― 逆方向 oracle が、残存誤差の重心を確定させた。</b></p>
+<pre class="tight" style="margin:10px 0">          ②    ③    ④    ⑤    ⑥
+A／入試広報課長  通過  揺らぐ 揺らぐ  通過  棄却   ← 生成された⑥
+A／学部長会    揺らぐ  通過  揺らぐ  通過  棄却
+B／入試広報課長  通過   通過  揺らぐ 揺らぐ  棄却   ← 手で組んだ⑥（⑥由来の停止0・要判断0）
+B／学部長会     通過  揺らぐ 揺らぐ  通過  棄却</pre>
+<p><b>機械を完全に通した⑥でも、2/2 が棄却しました。</b>
+これで第13版の「⑥ 0/16」が<b>⑥の生成品質の問題ではなかった</b>ことが確定します。
+φ=+0.055 が単一ケースでも再現しました ―― <b>⑦の停止0・要判断0 は、通過の十分条件から遠い。</b></p>
+<pre class="tight" style="margin:10px 0">decisive な理由   A → B
+空欄            1 → 0   ← 唯一減った。R20〈式〉と値埋めが効いている
+日程            2 → 2   ← 減らない（A50）
+量の裏づけ        1 → 2   ← 増えた（A50b）</pre>
+<p><b>B で新しく出た二つは、どちらも機械が見ていません。</b></p>
+<p><b>A50</b>：④で「なぜ今か」に据えた 2027-06-30 の三か月後に着手 2027-09-01 が置かれている。
+<b>A/B 両版・2/2 座席が decisive に挙げた</b>――「急ぐ理由に据えた日に、提案自身が間に合っていない」。
+<code>start_deadline</code> は τ の <b>A/C 形からしか逆算しない</b>ので、E1 の境界日は<b>何も縛っていなかった</b>。
+A41b は〈窓〉を締めたが、<b>境界日と⑥の日程の関係は誰も見ていない</b>。</p>
+<p><b>A50b</b>：手で組んだ⑥に<b>私が算術の誤りを入れた</b>――「回収年数＝600万÷780万で1年未満」。
+事例で実際に減ったのは差し引き180万なので<b>3年以上</b>。<b>買い手 2/2 が独立に検算して指摘</b>した。
+<code>R20</code> と <code>A45</code> は<b>申告欄の整合しか見ていない</b>。本文の言い直しを見ていない。
+第13.3版の4欠陥と同じ形が、範囲を狭めて再発した。</p>
+</div>
+
+<div class="callout ok">
+<p><b>この三版で入れたもの（すべて実装済み・8セル走行は未了）</b></p>
+<table>
+<tr><th style="width:96px">版</th><th style="width:250px">中身</th><th>実測</th></tr>
+<tr><td><b>13.7</b></td><td><b>A41b</b> 窓は着手日も縛る／決定期限を実効値 <code>min(逆算, 窓)</code> に一本化／④に出してよい日付の列挙</td><td><b>的中。</b>第13.6版 as-run に実在した2件（<code>A41B_START_BEFORE_GATE</code>／<code>A41B_S4_FOREIGN_DATE</code>）が <b>0/0</b> に。生成器が作った偽の期限 2026-12-30 は<b>一度も出ない</b></td></tr>
+<tr><td><b>13.8</b></td><td><b>R20〈式〉</b>（値／式／⊥ の三状態）＋ <b>A45</b> 幅の比／<b>A45b</b> 内訳／<b>A45c</b> 単価の単調性</td><td>E1-P1 で <b>停止 0</b>。幅 1.20倍・内訳の和が総額に一致・単価は月60万→月50万で単調。<code>R20_RETURN_AS_EXPR</code> が 3座席で立った</td></tr>
+<tr><td><b>13.9</b></td><td><b>A47</b> ②の問いの向き（申告＋<b>紙側</b>）／<b>A46</b> 断りの回数（対象の重複＝停止・段あたり3件超＝要判断）</td><td>実データ17件で停止 <b>1件だけ</b>（E2-P1 の実在の一文）。<b>誤検出 0</b>。断りの文は段あたり 0〜7件で、13.7版 E1-P1 の⑥が7件で最多</td></tr>
+</table>
+<p>回帰 <b>285項目 全通過</b>／理由コード <b>200</b>（停止134・要判断66）／N₆監査 <b>8</b>／
+<code>sales_logic.py</code> sha256[:12] <code>0bf8b1c58106</code>。
+<b>as-run（<code>decisions8_v12.json</code>・<code>prompts8_v12_arm*.json</code>）は無変更。</b></p>
+</div>
+
+<div class="callout warn">
+<p><b>この三版で、同じ二つの型がまた出ました。数えるのをやめてはいけない箇所です。</b></p>
+<pre class="tight" style="margin:10px 0">浅い一致（6件目）  R20 の状態を is_bottom の二分で書いていた
+                 生成器が式を ret の欄に直接書き、「値が在る」と読まれて
+                 式の検査が一度も走らなかった。状態は三つ（値／式／⊥）
+
+配管（三度連続）   decide_deadline_tau が cells8_v10 の白名簿から落ちた（13.7）
+                 s6_price_* が to_declared から落ちた（13.8）。A45 が一度も走らなかった
+                 s2_asks_possession / s5_disclaimers が to_declared から落ちた（13.9）</pre>
+<p><b>浅い一致は、走行前に置いた規律で出ました</b>――「M1 が減って M2 が立たなければ、まず検査を疑う」。
+<b>配管は、手で直し続けている限り四度目が来ます。</b><code>V3</code> の回帰（<code>compile_deal</code> の鍵と
+<code>cells8_v10.run()</code> の白名簿と <code>to_declared()</code> の三者を突き合わせる）が、もう待てません。</p>
+<p>番号の払い出しは <code>アノマリー台帳.md</code> 一箇所。<b>払い出し済みの最大は <code>A50</code></b>
+（枝番 <code>A45d</code>・<code>A50b</code> まで）、依存規則は <code>R20</code>。
+この三版で <b>A48・A48b・A49・A45d・A50・A50b</b> の6件を新しく採番しました。</p>
+</div>
+
 <h3>次の一手（この順に）</h3>
 <p style="margin:6px 0 10px"><span class="sf sf-cw">CW</span>Cowork（走行・版付け・意味論の変更）　<span class="sf sf-vs">VS</span>VS Code（検証・回帰・物差しの検分・仕様の債務）　<span class="sf sf-both">CW＋VS</span>両方（Cowork が実装し、VS Code が実データで検分して回帰にする）</p>
 
@@ -1549,47 +1604,49 @@ A39     ②の問い返しが決めつけとして着弾する    R17 の紙側<
 
 <tr style="background:#e9f5ee"><td>済</td><td><span class="sf sf-cw">CW</span><b>25業界走行を取り込み、第13.x と突合した</b><br><small>第12.8版・14業界 × 2商材＝21件。<code>25業界走行との突合.md</code>／<code>アノマリー台帳.md</code></small></td><td><b>⑦の検査は買い手の判定を予測していない（φ=+0.055、無条件通過 0/21）。</b>買い手側 21/21 と機械側 8/8 が同じ一点を指した。A44〜A47 を採番。<b>番号の払い出しを台帳へ一元化</b></td></tr>
 
-<tr style="background:#e9f5ee"><td>済</td><td><span class="sf sf-cw">CW</span><b>A41b を実装した（走行はこれから）</b><br><small>第13.7版・<code>A41B_START_BEFORE_GATE</code>／<code>A41B_S4_FOREIGN_DATE</code>（停止）・<code>A41B_S4_DATES_UNCHECKED</code>（要判断）。決定期限を実効値 <code>min(逆算, 窓)</code> に一本化。回帰 254項目・充足可能性 8/8・<code>decisions8_v13.json</code>／<code>prompts8_v13_arm*.json</code></small></td><td><b>真因は規制ではなく欠落だった。</b>E1 は逆算が ⊥ で<b>決定期限が一つも渡っていなかった</b>ので、生成器が自分で 2026-12-30 を作っていた。走行前の検分で<b>指示文の嘘を2箇所</b>（逆算が無いのに「すでに引いてある」＝A37b と同型）と<b>配管1件</b>（生成後検査が旧鍵 <code>start_deadline</code> を読んだまま）を捕まえた。<code>check_s4_dates</code> は本文全体だと 8/8 誤検出、④限定で 0/8 ―― <b>浅い一致の6件目を踏む寸前</b></td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><span class="sf sf-cw">CW</span><b>A41b を実装して1ケース走らせた</b><br><small>第13.7版・E1-P1（学校法人×広告）1体／10分18秒／3.8万トークン</small></td><td><b>的中。</b>買い手が名指しした二つ（着手が窓より前／期限が二つ）が両方消えた。<b>走行が検査1件（R20 の三状態）と配管1件（価格欄が届いていない）を暴いた</b>ほうが重い</td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><span class="sf sf-cw">CW</span><b><code>R20</code>〈式〉と層(i) の算術を実装した</b><br><small>第13.8版・A45／A45b／A45c。閾値 <code>PRICE_RATIO_MAX=2.0</code> は較正値として <code>CALIBRATED_CODES</code> に登録</small></td><td><b>N₆監査が新欄5つと同順位の衝突を検出した。</b>金額の表記は買い手に渡した本文＋25業界データの <b>26種すべて</b>読める。<code>parse_amount</code> は ⊥ を 0 に落とさない</td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><span class="sf sf-cw">CW</span><b>A47 ②の問いの向き／A46 断りの回数を実装した</b><br><small>第13.9版・紙側の照合つき（A23紙側と同型）</small></td><td>実データ17件で停止 <b>1件だけ</b>（実在の一文）。<b>A46 は回数で数えるので版をまたげる。</b>A47 は現在の8セルではほぼ出ない ―― <b>今回の走行では効果を測れない（対照が無い）</b></td></tr>
+<tr style="background:#e9f5ee"><td>済</td><td><span class="sf sf-both">CW＋VS</span><b>逆方向 oracle を走らせた</b><br><small>第13.9版・E1-P1 の2座席 × 2版＝4体／11分47秒／14.0万トークン。<code>oracle137.py</code></small></td><td><b>これがこの三版で最も重い結果。</b>⑥由来の停止0・要判断0 の⑥でも <b>2/2 棄却</b>。⑦は必要条件であって十分条件ではないと、単一ケースで確定した。<b>A50・A50b が出た</b></td></tr>
 
-<tr style="background:#fbf2e2"><td><b>1</b></td><td><span class="sf sf-cw">CW</span><b><code>R20</code> に〈式〉の状態を入れる</b><br><small>値が在る／<b>式が在る（買い手の量 × 売り手の係数、係数の出所つき）＝買い手の側で決定可能</b>／⊥ の三状態。判定条件：<code>R20_RETURN_MISSING</code> 8/8 → 2〜5、decisive な〈空欄〉13/14 → 6〜11</small></td><td><b>空欄 21/21 の唯一の出口であり、上司デモが 8/8 赤のままである唯一の原因。</b>生成器は既にその形で書いており、<b>いまの検査が正しい振る舞いを罰している</b>。減らなければ「戻る額は売り手が確定して出すもの」が確定し、問題は入力側（聞き取り）へ移る</td></tr>
+<tr style="background:#fbf2e2"><td><b>1</b></td><td><span class="sf sf-cw">CW</span><b>A50 ―― ④の境界日を、⑥の着手・実現の上限として掛ける</b><br><small>τ の A/C 形以外からも逆算する。<b>充足可能性を総当たりで先に確かめる</b>（A37b の教訓）</small></td><td><b>A/B 両版・2/2 座席が decisive に挙げた唯一の項目。</b>「急ぐ理由に据えた日に、提案自身が間に合っていない」。A41b で窓は締まったが、<b>境界日との関係が空いている</b></td></tr>
 
-<tr style="background:#fbf2e2"><td><b>2</b></td><td><span class="sf sf-both">CW＋VS</span><b>層(i) の算術検査</b> ―― A45 幅の比／A45b 内訳／単価の単調性<br><small>上限÷下限が閾値超で停止（閾値は<b>較正値</b>。台帳に載せ未較正業界では降格）。価格の内訳が本文に無ければ停止。期間・数量の階層で単位あたり価格が逆行していないか</small></td><td><b>20〜21/21 が挙げ、しかも売り手の数字だけで閉じる。</b>買い手が現に検算して落としている（「1,400万から3,200万は2.3倍、これは見積ではなく相場表だ」「180万÷3か月＝月60万、900万÷12か月＝月75万で長く頼むほど月額が上がっている」）。<b>最も安く、最も確実</b></td></tr>
+<tr style="background:#fbf2e2"><td><b>2</b></td><td><span class="sf sf-cw">CW</span><b>A50b ―― 本文の算術を、申告欄の値と突き合わせる</b><br><small>回収年数・差引・按分。⑥の散文に現れる数を <code>s6_price_*</code> と <code>s6_quantities</code> で検算する</small></td><td><b>買い手 2/2 が独立に検算して指摘した。</b><code>R20</code>・<code>A45</code> は申告欄の整合しか見ていない。<b>oracle の品質保証は、まだ半分しか機械化されていない</b></td></tr>
 
-<tr style="background:#fbf2e2"><td><b>3</b></td><td><span class="sf sf-cw">CW</span><b>第13.7版を走らせる（A41b ＋ R20〈式〉をまとめて）</b><br><small>生成8＋盲検買い手16。<b><code>predict_v13_7.md</code> は置いてある</b>（B4「⑥の通過は増えない」が最重要の予測）。R20〈式〉を足すなら予測を追記してから</small></td><td><b>A41b は実装済みで未走行。</b>単独で回すか R20〈式〉と束ねるかは費用の判断 ―― 束ねると効果の切り分けが弱くなるが、A41b は<b>日付の文字列そのもの</b>で数えるので分離できる。<b>R2-P2 の店長・社長が第13.6版で欠けたまま</b>なので、ここで 16体を揃える</td></tr>
+<tr style="background:#eef2fb"><td><b>3</b></td><td><span class="sf sf-vs">VS</span><b><code>V3</code> 決定表の白名簿の穴を回帰にする ―― もう待てない</b><br><small><code>compile_deal</code> の鍵と <code>cells8_v10.run()</code> の白名簿と <code>to_declared()</code> の<b>三者</b>を突き合わせる</small></td><td><b>三版連続で落ちた</b>（<code>decide_deadline_tau</code>／<code>s6_price_*</code>／<code>s2_asks_possession</code>）。とくに <code>s6_price_*</code> は<b>A45 が一度も走らないまま「価格未申告」と出ていた</b>。手で直し続ける限り四度目が来る</td></tr>
 
-<tr style="background:#fbf2e2"><td><b>4</b></td><td><span class="sf sf-vs">VS</span><b>21件を v13.7 のコードで採点し直す</b><br><small>走行不要。<b>VS Code 側</b></small></td><td><code>R12b</code> の誤停止の疑い（停止9件中3件・うち2件は買い手が進めた）を<b>機械で確定できる</b>。A37b・A41b で担体を直した効果を、既存の走行物に対して測れる</td></tr>
+<tr style="background:#fbf2e2"><td><b>4</b></td><td><span class="sf sf-cw">CW</span><b>A49 ―― 〈出所〉の欄を <code>pay_source</code> / <code>ret_source</code> に割る</b></td><td>生成器が「払う＝試算／戻る＝式（係数は…）」と<b>連結して</b>申告し、<code>A28_SOURCE_UNKNOWN</code> が <b>3/3 座席</b>で立った。<b>6件目の〈一つの語／欄が二つの担体〉</b></td></tr>
 
-<tr style="background:#fbf2e2"><td><b>5</b></td><td><span class="sf sf-cw">CW</span><b>A47 ②の問いの向き／A46 断りの回数</b><br><small>②の担体を〈買い手の保有〉から〈単位〉へ。同じ断りは1回まで。<b>検査ではなく生成の指示側の制約</b></small></td><td><b>②の設計そのものへの反証</b>（8/21）。「三十年そうやって回してきた宿に向かって、どなたの手元にあるでしょうか、はない」。τ は既に <code>known ∈ {既知,未知}</code> を持つので、<b>既知の量に「持っていますか」と問うのは規則違反であるはず</b>。A46 は R17 への過剰適応（7/21）―― <b>二度言うと否定になる</b></td></tr>
+<tr style="background:#fbf2e2"><td><b>5</b></td><td><span class="sf sf-cw">CW</span><b>8セル・盲検16体で測り直す</b><br><small>いまは <b>n=1</b>（1業界1商材1ケース）。<code>predict_v13_8.md</code> の B1〜B5 は未検証のまま</small></td><td>E1-P1 は<b>窓を持つ唯一の系統</b>で、A41b が効くように選んだ。<b>ここで見えたことを一般化できない。</b>R2-P2 の店長・社長は第13.6版から欠けたまま</td></tr>
 
-<tr style="background:#fbf2e2"><td><b>6</b></td><td><span class="sf sf-both">CW＋VS</span><b>逆方向 oracle ―― ⑤⑥を経由せず⑦へ直接</b><br><small>停止0・要判断0 の⑥を手で組み、①〜⑤は生成物のまま⑥だけ差し替えて盲検買い手へ</small></td><td>「⑦の検査基準の粗さ」と「⑥の生成品質」が完全分離できる。第13.3版で一度失敗している（手で書いた改善版に4欠陥）が、<b><code>R20</code> が入って oracle 側の品質保証が機械化された</b></td></tr>
+<tr style="background:#fbf2e2"><td><b>6</b></td><td><span class="sf sf-cw">CW</span><b>A48 ―― λ・ε・商材座標に型検査が無い</b><br><small>この二つ＋商材座標7成分は<b>記法を通らず、原理／文献が値域を直接与えている</b></small></td><td>「軸」という一語が二種類の対象を指していた。<b>新しい λ を足したくなったとき、それが本当に所在なのかを機械は言えない。</b>人の承認が要る箇所として明示する</td></tr>
 
-<tr style="background:#fbf2e2"><td><b>7</b></td><td><span class="sf sf-cw">CW</span><b>R2 8体をもう一度走らせて振れ幅を測る</b><br><small>引き継ぎ書 §4 の宿題。8体・20分</small></td><td>第13.5版で、<u>触っていない</u>⑤の棄却が 9 → 2、<code>own_retracted</code> が 12 → 2 へ動いた。<b>振れ幅を持つまで、段ごとの通過数の比較は全部使えない</b></td></tr>
+<tr style="background:#fbf2e2"><td><b>7</b></td><td><span class="sf sf-cw">CW</span><b>A48b ―― <code>ν</code> の語の重なりを解く</b><br><small>〈入力の記録 <code>class Nu</code>〉と〈検証時点 <code>Product.nu</code>〉が同じ字</small></td><td><b>既に実害が出ている。</b>R1-P1・R2-P1 で <code>blocks_on</code> が古い側を引き「数字入りの導入事例」が落ちていた</td></tr>
 
-<tr style="background:#fbf2e2"><td><b>8</b></td><td><span class="sf sf-cw">CW</span><b>A48 ―― λ・ε・商材座標に型検査が無い</b><br><small>この四つ＋商材座標7成分は<b>記法を通らず、原理／文献が値域を直接与えている</b>。見ているのは <code>check_axis_values</code> の列挙照合だけ</small></td><td><b>本日出た。</b>「軸」という一語が二種類の対象を指していた（型経由 入力ν・τ・J・Σ ／ 直列挙 λ・ε＋商材座標）。<b>新しい λ を足したくなったとき、それが本当に所在なのかを機械は言えない。</b>人の承認が要る箇所として明示する</td></tr>
+<tr style="background:#fbf2e2"><td><b>8</b></td><td><span class="sf sf-cw">CW</span><b>A45d ―― 幅を持つ金額を三状態で扱う</b><br><small><code>parse_amount</code> は最初の数しか取らない（「240万〜360万円」→ 240万）</small></td><td>第13.7版ではたまたま下限の和＝総額の下限で一致した。<b>幅も値ではない</b>（式と同じ形）。<b>7件目の浅い一致・未然</b></td></tr>
 
-<tr style="background:#fbf2e2"><td><b>9</b></td><td><span class="sf sf-cw">CW</span><b>A48b ―― <code>ν</code> の語の重なりを解く</b><br><small>〈入力の記録 <code>class Nu</code>〉と〈検証時点 <code>Product.nu</code>〉が同じ字。<code>Nu.A</code> を廃止するか、乖離を検査で捕まえる</small></td><td><b>既に実害が出ている。</b>第10版が <code>Product.nu</code> を足した際に旧 <code>Nu.A</code> を残して照合を置かず、R1-P1・R2-P1 で食い違って <code>blocks_on</code> が古い側を引き「数字入りの導入事例」が落ちていた。処置は入っているが<b>語の重なりは未処置</b>。A37／A37b／A41／A48 に続く<b>5件目の〈一つの語が二つの担体〉</b></td></tr>
+<tr style="background:#fbf2e2"><td><b>9</b></td><td><span class="sf sf-cw">CW</span><b>R2 8体をもう一度走らせて振れ幅を測る</b><br><small>引き継ぎ書 §4 の宿題。8体・20分</small></td><td>第13.5版で、<u>触っていない</u>⑤の棄却が 9 → 2 へ動いた。<b>振れ幅を持つまで、段ごとの通過数の比較は全部使えない</b></td></tr>
 
-<tr style="background:#fbf2e2"><td><b>10</b></td><td><span class="sf sf-cw">CW</span><b>A42 の処置（D → 〈段・再来〉）</b><br><small>検出は済んだ。型変更は消去力の順序に触るので単独で</small></td><td><b>25業界の 23/25 が同じ型ずれ</b>だった（<code>audit_td.py</code>）。「T-D 漸増」という欄名そのものが、年次の段を書かせている。落としているのは D ではない</td></tr>
+<tr style="background:#fbf2e2"><td><b>10</b></td><td><span class="sf sf-cw">CW</span><b>A42 の処置（D → 〈段・再来〉）</b><br><small>検出は済んだ。型変更は消去力の順序に触るので単独で</small></td><td><b>25業界の 23/25 が同じ型ずれ</b>。「T-D 漸増」という欄名そのものが、年次の段を書かせている</td></tr>
 
-<tr style="background:#eef2fb"><td><b>V1</b></td><td><span class="sf sf-vs">VS</span><b>物差しの検分（全数）</b><br><small><code>sales_logic.py</code> の文字列に触っている全箇所（粗い数えで229行）を実データに当て直す。第12.1版の全数走査（178箇所）の再演</small></td><td><b>本モデルで最も多い欠陥は、モデルの誤りではなく検査の誤り。1日で5件出た</b>（<code>own_retracted</code>／「タダ」／<code>SLOT_RE</code>／散文の物差し／<code>R20</code> の記入欄）。<b>⊥ を値として扱っている箇所</b>と<b>境界を取らない部分一致</b>を疑う。<b>第13.7版で6件目を踏みかけた</b>（本文全体に日付照合を当てると 8/8 誤検出）</td></tr>
-<tr style="background:#eef2fb"><td><b>V2</b></td><td><span class="sf sf-vs">VS</span><b>発火していない検査の棚卸し</b><br><small>辞書<b>181</b>コード（停止115・要判断66）／8セルで一度でも発火 26／回帰で名指し 103。(a)出るはずがない (b)出るはずなのに出ていない (c)配線されていない に仕分ける</small></td><td>(b) は第12版の <code>R10a</code> と同型で<b>最も高くつく</b>（規則を足したのに指示文へ一度も載らなかった）。(b) が出たら<b>走行の前提が崩れている</b>ので Cowork へ即返し</td></tr>
-<tr style="background:#eef2fb"><td><b>V3</b></td><td><span class="sf sf-vs">VS</span><b>決定表の白名簿の穴を回帰にする</b><br><small><code>compile_deal</code> が返す鍵と <code>cells8_v10.run()</code> の白名簿を突き合わせる。<b>第13.7版で <code>decide_deadline_tau</code> を足すとき、また手で直した</b></small></td><td>一度これで詰まった ―― <code>lt_months</code>／<code>today</code>／<code>decide_deadline</code>／<code>decision_gates</code>／<code>omega</code>／<code>busy_months</code> が白名簿に無く、<b>計算しているのに指示文にも検査にも渡っていなかった</b>。<b>手で直し続けている限り必ず再発する</b></td></tr>
-<tr style="background:#eef2fb"><td><b>V4</b></td><td><span class="sf sf-vs">VS</span><b><code>SPEC8.md</code> の債務返済</b><br><small>A24〜<b>A48b</b>・N₄′・R20。<b>記法（N）と原理（Π）の側から書く</b>。番号の羅列にしない</small></td><td>同じ形が<b>5件</b>になった ―― <b>一つの語／欄／規則が二つの担体を持つ</b>（A37 / A37b / A41 / A48 / A48b）。<code>N₆</code> に「担体は一つ」を書けるかを検討する。<b>これが書ければ、5件が1つの型に畳める</b></td></tr>
-<tr style="background:#eef2fb"><td><b>V5</b></td><td><span class="sf sf-vs">VS</span><b>導出と較正の棚卸し</b><br><small><code>CALIBRATED_CODES</code> と、実際に較正由来の表を引いている検査の集合を機械で突き合わせる</small></td><td>較正値を足したばかり（<code>busy_months</code>＝買い手16体の言葉・8セル分のみ）。<b>未較正の業界で効いてはいけない。</b>A45 の閾値（幅の比）も同じ扱いが要る</td></tr>
+<tr style="background:#eef2fb"><td><b>V1</b></td><td><span class="sf sf-vs">VS</span><b>物差しの検分（全数）</b><br><small><code>sales_logic.py</code> の文字列に触っている全箇所を実データに当て直す</small></td><td><b>浅い一致は6件目まで来た</b>（<code>own_retracted</code>／「タダ」／<code>SLOT_RE</code>／散文の物差し／<code>R20</code> の記入欄／<b><code>R20</code> の三状態</b>）。7件目の候補（A45d）も既に見えている</td></tr>
+<tr style="background:#eef2fb"><td><b>V2</b></td><td><span class="sf sf-vs">VS</span><b>発火していない検査の棚卸し</b><br><small>辞書<b>200</b>コード（停止134・要判断66）。(a)出るはずがない (b)出るはずなのに出ていない (c)配線されていない に仕分ける</small></td><td>(c) が三版連続で出た。<b>(b)(c) は走行の前提を崩す</b>ので、出たら Cowork へ即返し</td></tr>
+<tr style="background:#eef2fb"><td><b>V4</b></td><td><span class="sf sf-vs">VS</span><b><code>SPEC8.md</code> の債務返済</b><br><small>A24〜<b>A50b</b>・N₄′・R20。<b>記法（N）と原理（Π）の側から書く</b></small></td><td>同じ形が<b>6件</b>になった ―― <b>一つの語／欄／規則が二つの担体を持つ</b>（A37 / A37b / A41 / A48 / A48b / A49）。<code>N₆</code> に「担体は一つ」を書ければ<b>6件が1つの型に畳める</b></td></tr>
+<tr style="background:#eef2fb"><td><b>V5</b></td><td><span class="sf sf-vs">VS</span><b>導出と較正の棚卸し</b><br><small><code>CALIBRATED_CODES</code> と、実際に較正由来の表を引いている検査の集合を機械で突き合わせる</small></td><td>較正値が二つ増えた（<code>PRICE_RATIO_MAX=2.0</code>・A46 の <code>DISCLAIM_MAX=3</code>）。<b>どちらも実測が2点前後しかない。</b>未較正の業界で効いてはいけない</td></tr>
 
-<tr style="background:#f6f0fb"><td><b>M1</b></td><td><span class="sf sf-cw">CW</span><b>上司デモ ―― <code>R20</code>〈式〉</b>（＝上の #1）</td><td><b>これを入れないと、他を何本作ってもデモは赤いまま。</b>画面が停止21件で埋まると「動いていない」と読まれる</td></tr>
-<tr style="background:#f6f0fb"><td><b>M2</b></td><td><span class="sf sf-both">CW＋VS</span><b>上司デモ ―― 層(i) の算術検査</b>（＝上の #2）</td><td>デモデータ自身が満たしていること。今日作った2業界は 1.81倍／1.79倍で通してある</td></tr>
-<tr style="background:#f6f0fb"><td><b>M3</b></td><td><span class="sf sf-vs">VS</span><b>決定的レンダラ <code>render_slides.py</code></b><br><small>決定表 → ⑥の表3つ＋定型文＋記入欄。散文はプレースホルダ。<b>LLM を呼ばない</b></small></td><td>⑥の必須要素16のうち<b>13は決定的に出せる</b>。散文 1862字 → 600〜900字 を狙う。<b>AI 臭さは散文に集中している</b></td></tr>
-<tr style="background:#f6f0fb"><td><b>M4</b></td><td><span class="sf sf-vs">VS</span><b>一本の道（CLI 1本）</b><br><small><code>python3 demo.py --buyer MFG --product P1</code> で 入力→決定表→指示文→生成→検査→HTML</small></td><td><b>中身は揃っている。足りないのは〈一本の道〉と〈見せ方〉。</b>新しい理論は要らない</td></tr>
-<tr style="background:#f6f0fb"><td><b>M5</b></td><td><span class="sf sf-vs">VS</span><b>検査結果の見せ方</b><br><small>停止／要判断を<b>日本語で・座席ごとに</b>。<code>messages.json</code> は既にある。<b>赤の羅列にしない</b></small></td><td>座席ごとに畳んで、<b>決定的な2〜3件だけ前に出す</b></td></tr>
-<tr style="background:#f6f0fb"><td><b>M6</b></td><td><span class="sf sf-vs">VS</span><b>画面遷移を確定する</b><br><small>H 案件一覧 → V 検査結果 → J 判定 → F 記入 → P → G/X。<b>先に3つ決める</b>（状態6種／02を割るか／保存の単位）</small></td><td>入力3画面は盲検で通過0。<b>デモは「入力済みの状態」から始める</b>と決めてあるので、作り込みは MVP の後</td></tr>
+<tr style="background:#f6f0fb"><td><b>M1</b></td><td><span class="sf sf-cw">CW</span><b>上司デモ ―― <code>R20</code>〈式〉</b><br><small><b>済</b>（第13.8版）。E1-P1 で停止 0</small></td><td><b>デモが赤いままだった唯一の原因は消えた。</b>ただし 1ケースでの確認</td></tr>
+<tr style="background:#f6f0fb"><td><b>M2</b></td><td><span class="sf sf-both">CW＋VS</span><b>上司デモ ―― 層(i) の算術検査</b><br><small><b>済</b>（第13.8版）</small></td><td>デモデータ自身が満たしていること。2業界のデータは 1.81倍／1.79倍で通してある</td></tr>
+<tr style="background:#f6f0fb"><td><b>M3</b></td><td><span class="sf sf-vs">VS</span><b>決定的レンダラ <code>render_slides.py</code></b><br><small>決定表 → ⑥の表3つ＋定型文＋記入欄。<b>LLM を呼ばない</b></small></td><td>⑥の必須要素16のうち<b>13は決定的に出せる</b>。<b>手で組んだ oracle の⑥が、その原型になっている</b>（1,981字。生成物は 2,886字）</td></tr>
+<tr style="background:#f6f0fb"><td><b>M4</b></td><td><span class="sf sf-vs">VS</span><b>一本の道（CLI 1本）</b><br><small><code>python3 demo.py --buyer MFG --product P1</code></small></td><td><b>中身は揃っている。足りないのは〈一本の道〉と〈見せ方〉</b></td></tr>
+<tr style="background:#f6f0fb"><td><b>M5</b></td><td><span class="sf sf-vs">VS</span><b>検査結果の見せ方</b><br><small>停止／要判断を<b>日本語で・座席ごとに</b>。<code>messages.json</code> は200コード分ある</small></td><td>座席ごとに畳んで、<b>決定的な2〜3件だけ前に出す</b></td></tr>
+<tr style="background:#f6f0fb"><td><b>M6</b></td><td><span class="sf sf-vs">VS</span><b>画面遷移を確定する</b><br><small>H 案件一覧 → V 検査結果 → J 判定 → F 記入 → P → G/X</small></td><td>入力3画面は盲検で通過0。<b>デモは「入力済みの状態」から始める</b></td></tr>
 
-<tr><td>11</td><td><span class="sf sf-cw">CW</span><b>多業界を再走行する</b><br><small>層(i) を潰してから。いま回すと同じ3つが 100% で返る</small></td><td><b>床が上がって初めて、業界差の測定になる。</b>いまの多業界走行は〈差が無いこと〉の証明にしか使えていない（それ自体は較正→導出の昇格に必要だった）</td></tr>
+<tr><td>11</td><td><span class="sf sf-cw">CW</span><b>多業界を再走行する</b><br><small>層(i) を潰してから</small></td><td><b>床が上がって初めて、業界差の測定になる。</b>A45／A45b は入ったので、次は測れる側へ回りうる</td></tr>
 <tr><td>12</td><td><span class="sf sf-cw">CW</span><b>N₃′ 様相</b><br><small><code>s6_realize</code> に第4成分 ⟨w,d,o,m⟩</small></td><td>10/15。A21 が初めて生成に効く<em>A38</em></td></tr>
 <tr><td>13</td><td><span class="sf sf-cw">CW</span><b>R17 の紙側</b>／<b>A40 戻りの因果</b></td><td>6/16。ただし A47・A46 の後で減っているはず<em>A39・A40</em></td></tr>
 <tr><td>14</td><td><span class="sf sf-cw">CW</span><b>入力側 ―― <code>d</code> に精度と確度／定義域は必ず ⊥ を含む／<code>cost_to_buyer</code> に単位</b></td><td>16業界の256件。<b>25業界の記入がどこまで通るか</b>で測る</td></tr>
-<tr><td>15</td><td><span class="sf sf-cw">CW</span><b>入力側 ―― <code>LT_months</code>・<code>E_*</code>・<code>seats</code> を〈買い手×商材〉へ</b></td><td>型1 だが直し方は「配列にする」ではない。<b>ν・σp・β2 の置き場所問題と同じ形</b>なので、商材の6因子束と一緒に決める</td></tr>
-<tr><td>16</td><td><span class="sf sf-cw">CW</span><b>閲覧ログとモデルを接続する</b><br><small>カスタム資料に軸の値をメタデータで持たせる</small></td><td><b>ここで初めて帰納の場ができる。</b>モデルは「どのページがどれだけ読まれるか」を予測しており、アプリはそれを実測する。両者がまだ繋がっていない</td></tr>
+<tr><td>15</td><td><span class="sf sf-cw">CW</span><b>入力側 ―― <code>LT_months</code>・<code>E_*</code>・<code>seats</code> を〈買い手×商材〉へ</b></td><td>型1 だが直し方は「配列にする」ではない。<b>ν・σp・β2 の置き場所問題と同じ形</b></td></tr>
+<tr><td>16</td><td><span class="sf sf-cw">CW</span><b>閲覧ログとモデルを接続する</b><br><small>カスタム資料に軸の値をメタデータで持たせる</small></td><td><b>ここで初めて帰納の場ができる。</b>モデルは「どのページがどれだけ読まれるか」を予測しており、アプリはそれを実測する</td></tr>
 </table>
 
 <h2><span class="n">SCALE</span>規模と実測</h2>
@@ -1599,11 +1656,11 @@ A39     ②の問い返しが決めつけとして着弾する    R17 の紙側<
 <tr><td>仕様書</td><td><code>SPEC8.md</code> 624行（第11版まで。<b>A24〜A43・N₄′・R20 が未記載＝債務</b>）</td></tr>
 <tr><td>決定的コア</td><td><code>sales_logic.py</code> <b>2,227行</b>・標準ライブラリのみ・<code>check_*</code> 関数 <b>28本</b></td></tr>
 <tr><td>理由コード</td><td>停止・降格など <b>113種</b>／営業に聞き直す項目 <b>65種</b>／必須ブロック 34種／書き方の制約 32種</td></tr>
-<tr><td>回帰テスト</td><td><b>239項目 全通過</b>（第12版 97 → 第13.6版 239）。各アノマリーが買い手の逐語と対応づけられている。<b>N₆ 監査は走らせずに型1 を8件見つけている</b></td></tr>
+<tr><td>回帰テスト</td><td><b>285項目 全通過</b>（第12版 97 → 第13.6版 239）。各アノマリーが買い手の逐語と対応づけられている。<b>N₆ 監査は走らせずに型1 を8件見つけている</b></td></tr>
 <tr><td>速度</td><td><b>109マイクロ秒/セル</b>（生成前の確定。LLM呼び出しゼロ）</td></tr>
 <tr><td>生成の指示</td><td><code>prompts8_v11.py</code>・判定 0行・指示文 約5,500字/セル（Arm 1・A26/A27/A28 込み）</td></tr>
 <tr><td>1走行の規模</td><td>8セル × 3アーム＝24エージェント／1時間47分・158万トークン（第12版）<br>生成8＋盲検買い手16＝24エージェント／59分・78.0万トークン（第13.5版）<br>同構成（第13.6版）＝<b>22/24</b>／利用上限で R2-P2 の買い手2体が欠落<br>25業界走行（第12.8版・別系統）＝14業界 × 2商材の<b>21件</b>／1体1資料</td></tr>
-<tr><td>アノマリー累計</td><td><b>A1–A47</b>／依存規則 <b>R1–R20</b>／記法 <b>N₁–N₆ ＋ N₄′</b>。番号は <code>アノマリー台帳.md</code> で一元管理（<b>払い出しが二箇所にあって A36〜A39 が衝突した</b>）。効果を実測したのは A26–A28・A34・A37・A41・A43・R20。<b>未着手：A38 様相／A39 R17の紙側／A40 戻りの因果／A41b／A42の処置／A44の〈式〉／A45 幅の比／A45b 内訳／A46／A47</b></td></tr>
+<tr><td>アノマリー累計</td><td><b>A1–A50</b>（枝番 A45b–A45d・A48b・A50b）／依存規則 <b>R1–R20</b>／記法 <b>N₁–N₆ ＋ N₄′</b>。番号は <code>アノマリー台帳.md</code> で一元管理（<b>払い出しが二箇所にあって A36〜A39 が衝突した</b>）。実装済みは A26–A28・A34・A37/A37b・A41/A41b・A43・A44の〈式〉・A45/A45b/A45c・A46・A47・R20。<b>未着手：A38 様相／A39 R17の紙側／A40 戻りの因果／A42の処置／A45d 幅の三状態／A48 軸の型検査／A48b ν の重なり／A49 出所の分割／A50 境界日の上限／A50b 本文の算術</b></td></tr>
 <tr><td>設計語の漏洩</td><td><b>0/36枚（6走行連続）</b>。ただし D1〜D7 の記号については <code>\b</code> の書き方のせいで<b>検査自体が走っていなかった</b>（第12.1版で修正。緩い正規表現で再走査しても漏洩 0件）</td></tr>
 <tr><td>アーム実験の採点</td><td>arm0 <b>6</b> ／ arm1 <b>4</b> ／ arm2 <b>7</b>（第12.1版の物差し。第12版の報告は 10／4／7）<br>Arm 1 の再走行（第12.2版・R10a の一行あり）→ stop <b>2</b>／pass <b>5/8</b></td></tr>
 <tr><td>版</td><td>git tag <b>v13.6</b>／<code>sales_logic.py</code> sha256[:12] = <code>a6d1c8416305</code>／回帰 <b>239項目</b></td></tr>
