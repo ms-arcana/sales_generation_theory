@@ -23,6 +23,11 @@ const Q = {
     ret_basis: { type: ['string', 'null'], description: '買い手が既に持っている量の名前' },
     ret_coef: { type: ['string', 'null'], description: '売り手の係数（単位つき）' },
     coef_source: { type: ['string', 'null'], description: '係数の出所' },
+    // A49（第13.10版）：〈出所〉は払う側と戻る側で別の担体を持つ
+    pay_source: { type: ['string', 'null'],
+      description: '払う側の出所。買い手データ／公開統計／売り手の実績／試算／営業記入 のいずれか一つ' },
+    ret_source: { type: ['string', 'null'],
+      description: '戻る側の出所。同上。**一つの欄に二つ分を連結しないこと**' },
   },
 }
 
@@ -44,7 +49,8 @@ const GEN_SCHEMA = {
       type: 'object',
       required: ['s5_is_constraint_disclosure', 's6_ends_imperative', 's6_contains_promise',
                  's6_kappa', 's6_kappa_type', 's5_denies_own', 's6_quantities',
-                 's6_decide_date', 's6_start_date'],
+                 's6_decide_date', 's6_start_date',
+                 's2_asks_possession', 's5_disclaimers'],
       properties: {
         s2_unit: { type: ['string', 'null'] },
         s2_from_unit: { type: ['string', 'null'] },
@@ -76,6 +82,14 @@ const GEN_SCHEMA = {
         s6_start_date: { type: ['string', 'null'], description: '実際に動き出す日 YYYY-MM-DD' },
         s6_self_check: { type: ['boolean', 'null'] },
         s5_denies_own: { type: ['string', 'null'] },
+        // A53b（第14.2版）：**指示文は 3/3 arm で頼んでいたのに、答える欄が無かった。**
+        // 36件の生成物すべてで鍵すら現れず（0/36）、A46・A47 の申告側は原理的に出られなかった。
+        // 第12版の R10a と同型で、向きが逆（規則→指示 ではなく 指示→答える欄）。
+        s2_asks_possession: { type: ['boolean', 'null'],
+          description: '②が買い手の保有を問う形になっているか。**False であること**' },
+        s5_disclaimers: { type: ['array', 'null'],
+          description: '断った対象（文言ではなく対象）。同じ対象を二度書かない',
+          items: { type: 'string' } },
         s6_price_low: { type: ['string', 'null'] },
         s6_price_high: { type: ['string', 'null'] },
         s6_price_unit: { type: ['string', 'null'] },

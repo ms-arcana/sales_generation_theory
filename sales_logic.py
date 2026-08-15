@@ -1076,8 +1076,12 @@ def check_gates(dec: Declared, gates: Sequence[Tuple[str, str, int]],
     f, j = [], []
     if not gates:
         return f, j
-    dcd = dec.s6_decide_date or dec.s6_start_date
-    d0 = iso_date(dcd) if dcd else None
+    # A55（第14.3版）：**⊥ を別の欄で代用しない。**ここは以前
+    # `dcd = dec.s6_decide_date or dec.s6_start_date` と書いてあった ――
+    # 決定日が ⊥ のとき着手日を読み替える形で、**一つの記号が二つの担体を指す**（型5）。
+    # 窓を越えたかは〈決定日〉についての述語であって、着手日はその代理にならない。
+    # 決定日が ⊥ なら比べない（N₂）。受け皿は A41_GATE_UNCHECKED。
+    d0 = None if is_bottom(dec.s6_decide_date) else iso_date(dec.s6_decide_date)
     first = min(iso_date(g[0]) for g in gates if iso_date(g[0]))
     if d0 is None:
         j.append(Judgment("A41_GATE_UNCHECKED", f"窓{first} 決定日の申告なし"))
@@ -1736,29 +1740,43 @@ def check_quantity_sources(copy: Dict[str, str], dec: Declared,
     seats = list(quantities_by_seat(dec))   # N₄′：同上
     if not chain or not seats:
         return f, j                      # A23 側で既に要判断へ積まれている
-    src = dec.s6_quantity_sources
-    if src is None and dec.s6_quantities:      # N₄′：五つ組が出所を持っている
-        src = {_q_seat(q): str(q.get('source', '')) for q in dec.s6_quantities if _q_seat(q)}
-        src = {k: v for k, v in src.items() if v}
-    if src is None:
+    # 第14.2版：**A49 で `source` を割ったとき、この橋を直し忘れていた。**
+    # 旧 `source` しか見ていないので、`pay_source`/`ret_source` で申告されると
+    # 出所が一つも読めず `A28_SOURCE_UNDECLARED` が出る。**A49 の実装漏れ。**
+    # 座席あたりの出所は**集合**である（払う側と戻る側で別々でよい）。
+    srcs: Dict[str, List[str]] = {}
+    if dec.s6_quantity_sources:                # 旧欄（走行データとの突合のため残す）
+        for k, v in dec.s6_quantity_sources.items():
+            if str(v).strip():
+                srcs.setdefault(k, []).append(str(v).strip())
+    for q in (dec.s6_quantities or ()):        # N₄′ の五つ組（A49 で割った二欄を含む）
+        nm = _q_seat(q)
+        if not nm:
+            continue
+        for key in ("pay_source", "ret_source", "source"):
+            v = str(q.get(key, "")).strip()
+            if v and v not in srcs.get(nm, []):
+                srcs.setdefault(nm, []).append(v)
+    if not srcs:
         j.append(Judgment("A28_SOURCE_UNDECLARED", ",".join(seats)))
         return f, j
     needs_sales = []
     for name in seats:
-        s = src.get(name)
-        if s is None:
+        vals = srcs.get(name)
+        if not vals:
             j.append(Judgment("A28_SOURCE_MISSING", name)); continue
-        if s not in Q_SRC:
-            j.append(Judgment("A28_SOURCE_UNKNOWN", f"{name}={s}")); continue
-        if s == "試算":
-            needs_sales.append(name)
-            if not any(w in body for w in EST_MARKS):
-                f.append(Finding("A28_ESTIMATE_UNMARKED", "stop", f"{name}:{s}"))
-        elif s == "営業記入":
-            needs_sales.append(name)
-            if not re.search(SLOT_RE, body):
-                f.append(Finding("A28_SLOT_ABSENT", "stop", f"{name}:{s}"))
-    grounded = [n for n in seats if src.get(n) in Q_SRC_GROUNDED]
+        for s in vals:
+            if s not in Q_SRC:
+                j.append(Judgment("A28_SOURCE_UNKNOWN", f"{name}={s}")); continue
+            if s == "試算":
+                needs_sales.append(name)
+                if not any(w in body for w in EST_MARKS):
+                    f.append(Finding("A28_ESTIMATE_UNMARKED", "stop", f"{name}:{s}"))
+            elif s == "営業記入":
+                needs_sales.append(name)
+                if not re.search(SLOT_RE, body):
+                    f.append(Finding("A28_SLOT_ABSENT", "stop", f"{name}:{s}"))
+    grounded = [n for n in seats if any(v in Q_SRC_GROUNDED for v in srcs.get(n, []))]
     if grounded:
         f.append(Finding("A28_GROUNDED", "info", ",".join(grounded)))
 
@@ -1887,6 +1905,8 @@ def check_realize(dec: Declared, executors: Sequence[Tuple[str, Sequence[str]]],
     return f, j
 
 
+# A55（第14.3版）：**この表を直接引かないこと。**⊥ かどうかを決める述語は `is_bottom` 一つ。
+# この表は語の一覧にすぎず、記入欄【　　　】を含まない。生で引くと記入欄が漏れる。
 UNIT_UNKNOWN = ("", "―", "-", "未定", "不明", "⊥", "None", "null")
 # A28／A49：量の出所の列挙。**払うと戻るは別の出所を持つ**（A49・第13.10版）
 SOURCE_KINDS = ("買い手データ", "公開統計", "売り手の実績", "試算", "営業記入")
@@ -2125,7 +2145,11 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
                                       f"{s} {str(basis).strip()[:28]} × {str(coef).strip()[:16]}"))
         elif is_bottom(ret):
             f.append(Finding("R20_RETURN_MISSING", "stop", f"{s}={str(ret).strip()[:20]}"))
-        if pu in UNIT_UNKNOWN or ru in UNIT_UNKNOWN:
+        # A55（第14.3版）：**⊥ を決める述語は一つ。**ここは `pu in UNIT_UNKNOWN` と
+        # 生で書いてあり、`is_bottom` が見る記入欄【　　　】を落としていた。
+        # 単位欄が記入欄のとき、片方だけなら R20_UNIT_MISMATCH（停止）が誤って立ち、
+        # 両方なら**何も出ずに素通り**していた。R20 の値側で一度直した型を、単位側で再発させた形。
+        if is_bottom(pu) or is_bottom(ru):
             j.append(Judgment("R20_UNIT_UNDECLARED", f"{s} 払う={pu or '⊥'} 戻る={ru or '⊥'}"))
         elif pu != ru:
             f.append(Finding("R20_UNIT_MISMATCH", "stop", f"{s} {pu} vs {ru}"))
@@ -2137,7 +2161,7 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
             bad = unit_in_value(v, u) if not is_bottom(v) else None
             if bad:
                 f.append(Finding("R20_UNIT_IN_VALUE", "stop", f"{s} {lab}「{bad}」≠単位欄「{u}」"))
-        if den in UNIT_UNKNOWN:
+        if is_bottom(den):          # A55：分母が記入欄でも「在る」と読んでいた
             j.append(Judgment("R20_DENOMINATOR_MISSING", s))
         # A49（第13.10版）：**〈出所〉の欄が二つの担体を持っていた。**
         # 第13.7版の走行で、生成器が「払う＝自社の運用手順に基づく試算／戻る＝式（係数は…）」と
@@ -2147,14 +2171,14 @@ def check_decidable(dec: Declared, chain: Sequence[Tuple[str, Sequence[str], Seq
         rsrc = str(q.get("ret_source", "")).strip()
         legacy = str(q.get("source", "")).strip()
         if not psrc and not rsrc:
-            if legacy in UNIT_UNKNOWN:
+            if is_bottom(legacy):   # A55：出所欄が記入欄なら〈連結〉ではなく〈未申告〉
                 j.append(Judgment("R20_SOURCE_UNDECLARED", s))
             elif legacy not in SOURCE_KINDS:
                 # 旧欄に二つ分を連結して書いた形。**これが A49 の現れ方そのもの**
                 j.append(Judgment("A49_SOURCE_MERGED", f"{s}={legacy[:40]}"))
         else:
             for lab, v in (("払う", psrc), ("戻る", rsrc)):
-                if v in UNIT_UNKNOWN:
+                if is_bottom(v):    # A55
                     j.append(Judgment("R20_SOURCE_UNDECLARED", f"{s}／{lab}"))
                 elif v not in SOURCE_KINDS:
                     j.append(Judgment("A28_SOURCE_UNKNOWN", f"{s}／{lab}={v[:30]}"))
@@ -2330,9 +2354,15 @@ def check_dates_v7(dec: Declared, deadline: Optional[str],
       実現日  s6_realize の各〈いつ〉 ≥ start     （→ check_realize）
     """
     f, j = [], []
-    dcd = dec.s6_decide_date or dec.s6_start_date   # 旧走行は欄が一つしかない
-    if dec.s6_decide_date is None and dec.s6_start_date is not None:
-        j.append(Judgment("A37_DECIDE_UNDECLARED", dec.s6_start_date))
+    # A55（第14.3版）：**⊥ は ⊥ のまま。代用しない。**（N₂／型5 の述語版）
+    # ここは `dcd = dec.s6_decide_date or dec.s6_start_date` と書いてあった。
+    # 旧走行に欄が一つしかなかったことへの手当てだったが、その結果 R12b が
+    # **決定日の代わりに着手日**を④の期限と比べていた。25業界の採点で停止 9 件のうち 3 件が
+    # この形で、うち 2 件は買い手が「進める」と答えた紙だった（＝誤停止）。
+    # 欄が無いことは「別の欄で埋める」ことではない。受け皿は R12b_START_UNDECLARED。
+    dcd = None if is_bottom(dec.s6_decide_date) else dec.s6_decide_date
+    if is_bottom(dec.s6_decide_date) and not is_bottom(dec.s6_start_date):
+        j.append(Judgment("A37_DECIDE_UNDECLARED", str(dec.s6_start_date)))
     if deadline and dcd:
         # 第12.1版：文字列のまま比べていた。"2027-4-1"（ゼロ詰めなし）や "2027/4/1" で
         # 辞書順が暦順と食い違う。日付として読めないなら、比較せず要判断へ（N2）。

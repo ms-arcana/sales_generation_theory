@@ -188,9 +188,19 @@ v = val7(s4_period_months=0, s6_kappa_type="flow")
 check("R14 単発の④に回収年数（流量）は立たない",
       "R14_FLOW_ON_ONESHOT" in [f.code for f in v["findings"]])
 
+v = val7(s6_decide_date="2027-01-20")
+check("R12b ⑥の決定日が④の期限より後なら停止",
+      "R12b_START_AFTER_DEADLINE" in [f.code for f in v["findings"]],
+      [f.code for f in v["findings"]])
+
+# A55（第14.3版）：ここは `s6_start_date` だけを置いて停止を期待していた。
+# `dcd = s6_decide_date or s6_start_date` があったので、**着手日が決定日の代理**にされていた。
+# 25業界の採点で停止9件のうち3件がこの形で、うち2件は買い手が「進める」と答えた紙。
 v = val7(s6_start_date="2027-01-20")
-check("R12b ⑥の着手日が④の着手期限より後なら停止",
-      "R12b_START_AFTER_DEADLINE" in [f.code for f in v["findings"]])
+check("A55 決定日が ⊥ なら着手日で代用しない（停止ではなく申し送り）",
+      "R12b_START_AFTER_DEADLINE" not in [f.code for f in v["findings"]]
+      and any(j.code == "R12b_START_UNDECLARED" for j in v["needs_judgment"]),
+      ([f.code for f in v["findings"]], [j.code for j in v["needs_judgment"]]))
 
 v = val7(s6_self_check=False)
 check("R16 ⑤の根拠が自社案に当たらなければ停止",
@@ -812,11 +822,11 @@ check("G3 Γ^own のどれとも照合できなければ要判断",
 print("\n── 第12.1版 日付：文字列のまま比べない／〈いつ〉を検査する")
 check("日付 ゼロ詰めなしを暦順で比べる（辞書順なら誤判定した）",
       iso_date("2027-4-1") is None and iso_date("2027-04-01") is not None)
-_f, _j = check_dates_v7(Declared(s6_start_date="2027-4-1", s6_self_check=True), "2027-12-28")
+_f, _j = check_dates_v7(Declared(s6_decide_date="2027-4-1", s6_self_check=True), "2027-12-28")
 check("日付 読めない書式は比較せず要判断へ",
       not [x for x in _f if x.code == "R12b_START_AFTER_DEADLINE"]
       and any(x.code == "R12b_DATE_UNPARSED" for x in _j), ([x.code for x in _f], [x.code for x in _j]))
-_f, _j = check_dates_v7(Declared(s6_start_date="2027-01-20", s6_self_check=True), "2026-12-28")
+_f, _j = check_dates_v7(Declared(s6_decide_date="2027-01-20", s6_self_check=True), "2026-12-28")
 check("日付 読める書式なら従来どおり停止",
       "R12b_START_AFTER_DEADLINE" in [x.code for x in _f], [x.code for x in _f])
 _f, _j = check_realize(Declared(s6_realize=(("入試広報課長", "来期", "媒体費"),)), EX2)
