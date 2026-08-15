@@ -103,15 +103,17 @@ hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 
 <div class="box key">
 <p><b>読み方は二方向あります。</b></p>
-<p><b>↓ 上から下は〈導出〉。</b>上の層が下の層を決めます。下の層に何かを足したくなったら、
+<p><b>↓ 上から下は〈導出〉。</b>上の階が下の階を決めます。下の階に何かを足したくなったら、
 まず「上のどれから出るか」を言えなければなりません。出ないなら、それは<b>較正</b>であって導出ではなく、
 別の業界へ持ち出せません（規律：<b>〈導出 &gt; 較正〉</b>）。</p>
-<p><b>↑ 下から上は〈反証〉。</b>実測が合わないとき、直すのは<b>いちばん下の層から順に疑う</b>のが規律です。
+<p><b>↑ 下から上は〈反証〉。</b>実測が合わないとき、直すのは<b>いちばん下の階から順に疑う</b>のが規律です。
 本モデルで最も多い欠陥は原理の誤りではなく<b>検査の誤り</b>で、1日に5件出たことがあります。
-実測が上の層まで登り切った例は少なく、登り切ったときだけ記法や原理が変わります（A29 → N₄′）。</p>
+実測が上の階まで登り切った例は少なく、登り切ったときだけ記法や原理が変わります（A29 → N₄′）。</p>
 </div>
 
-<h2><span class="n">全体像</span>七つの層</h2>
+<h2><span class="n">全体像</span>七つの階</h2>
+<p class="lead"><b>これは導出の順です。工程の順ではありません。</b>
+「どの順に作るか・どこで壊れるか」は <code>モデル-流れの図解</code> の <b>層 LAYER 1–7</b> が別に持っています。二つは並びが違います（§突合）。</p>
 
 <div class="pyr">
  <div class="row"><div class="bar p0"><b>中央命題</b><span>1本</span></div></div>
@@ -131,22 +133,32 @@ hr{border:0;border-top:1px solid var(--line);margin:34px 0}
 </div>
 
 <div class="box">
-<p><b>層のあいだの関係は一方向ではありません。</b>上から下へは<b>決定</b>が流れ、下から上へは<b>反証</b>が流れます。
+<p><b>階のあいだの関係は一方向ではありません。</b>上から下へは<b>決定</b>が流れ、下から上へは<b>反証</b>が流れます。
 そして<b>横</b>には流れません ―― 検査を直しても規則は直りませんし、規則を足しても記法の穴は塞がりません。
 「同じ誤りが4回出たものは規則ではなく型である」（N₂ の由来）というのは、この横に流れないという性質のことです。</p>
 </div>
 
-<h2><span class="n">辺</span>層のあいだの関係 ― 何が何を決めているか</h2>
-<p class="lead">層を並べただけでは体系になりません。<b>辺</b>―― 上の層が下の層の何を決め、下の層が上の層の何を返すのか ―― を書いておきます。</p>
+<div class="box warn">
+<p><b>語の断り。この資料の「階」と、<code>モデル-流れの図解</code>（flow.html）の「層 LAYER」は、別のものです。</b></p>
+<div class="tv">
+ <div><b>階（この資料）＝ 導出の順</b>何が何の<b>型と定義域</b>を決めるか。頂点は中央命題、底は実測。</div>
+ <div><b>層 LAYER（flow.html）＝ 工程の順</b>情報が<b>どの順に流れ、どこで壊れる</b>か。ν が入口、検査が出口。</div>
+</div>
+<p>同じものを別の順に並べているので、<b>記法と軸の前後が入れ替わって見えます。</b>
+どちらが正しいかは §「二つの順序の突き合わせ」に書きました。<b>結論だけ言うと、両方正しく、しかも軸は一枚岩ではありませんでした。</b></p>
+</div>
+
+<h2><span class="n">辺</span>階のあいだの関係 ― 何が何を決めているか</h2>
+<p class="lead">階を並べただけでは体系になりません。<b>辺</b>―― 上の階が下の階の何を決め、下の階が上の階の何を返すのか ―― を書いておきます。</p>
 
 <div class="box key">
 <p><b>辺の種類は、全部で一つです。</b></p>
 <div class="tv">
- <div><b>上の層</b>〈型〉を与える。<br>「その主張は、どんな形でなら書けるか」</div>
- <div><b>下の層</b>〈値〉を与える。<br>「その形に、実際に何が入るか」</div>
+ <div><b>上の階</b>〈型〉を与える。<br>「その主張は、どんな形でなら書けるか」</div>
+ <div><b>下の階</b>〈値〉を与える。<br>「その形に、実際に何が入るか」</div>
 </div>
-<p>だから<b>上の層を足しても内容は増えません</b>（書ける形が変わるだけ）。
-逆に<b>下の層を足しても上の穴は塞がりません</b>（型が無いものは、値をいくつ並べても書けない）。
+<p>だから<b>上の階を足しても内容は増えません</b>（書ける形が変わるだけ）。
+逆に<b>下の階を足しても上の穴は塞がりません</b>（型が無いものは、値をいくつ並べても書けない）。
 本モデルで最も高くついた誤りは、この向きを逆に扱ったとき ―― <b>規則を足して型の穴を塞ごうとした</b>ときに出ています。</p>
 </div>
 
@@ -204,7 +216,8 @@ A1・A5・A11・A12 が Π₂ の同一原理の別セルで 4/4。<b>四本目�
 <p><b>ただし、記法を通らない軸が四つあります。</b>λ・ε・θ・β₁ は、<b>Π₃ が値そのものを列挙しています</b>（λ は8値、ε は2値）。
 ここだけ<b>原理 → 軸の直接の辺</b>で、記法を経由しません。<br>
 <b>帰結：この四つには型検査が効きません。</b>妥当性を見ているのは <code>check_axis_values</code> の列挙照合だけです。
-新しい λ を足したくなったとき、それが本当に所在なのかを機械は言えません。</p>
+新しい λ を足したくなったとき、それが本当に所在なのかを機械は言えません。<br>
+<b>これが <code>A48</code> です</b> ―― 「軸」という一つの語が二種類の対象を指していた（§二つの順序の突き合わせ）。</p>
 </div>
 </div>
 
@@ -258,12 +271,78 @@ A1・A5・A11・A12 が Π₂ の同一原理の別セルで 4/4。<b>四本目�
 <tr><td>1</td><td><b>Π₂ の担体〈命題〉に記法が無い</b>（valid(φ, χ_j) 未実装）</td><td>4担体のうち1つは、通関を検査できない</td><td>X5・未実装</td></tr>
 <tr><td>2</td><td><b>N₃′ 様相が未実装</b>（⟨w,d,o,m⟩）</td><td>執行連言に〈できる／しなければならない〉の区別が入らない</td><td>A38・設計のみ</td></tr>
 <tr><td>3</td><td><b>N₁ → Σ の辺が、②の担体を決めていない</b></td><td>②を〈保有〉で書くか〈単位〉で書くかが未規定 → 決めつけとして着弾</td><td><b>A47・8/21</b></td></tr>
-<tr><td>4</td><td><b>λ・ε・θ・β₁ が記法を通らない</b></td><td>この四つに型検査が効かない。列挙照合のみ</td><td>X3</td></tr>
+<tr><td>4</td><td><b>λ・ε・θ・β₁ が記法を通らない</b></td><td>この四つに型検査が効かない。列挙照合のみ。<b>「軸」が二種類の対象を指していた</b></td><td><b>A48</b>・本日登録</td></tr>
 <tr><td>5</td><td><b>検査 → 実測が全体水準で φ≈0</b></td><td>合否は予測できない。型の水準でしか主張できない</td><td>実測済み・仕様どおり</td></tr>
 <tr><td>6</td><td><b>Π₁ の cost 単調性は独立の対象を持たない</b></td><td>第1式の系なので、実質は Σ の接尾辞条件に吸収済み</td><td>第12.5版で訂正済み</td></tr>
 </table>
 
-<div class="hd"><span class="lv">LEVEL 0</span><h2 style="margin:0;border:0;padding:0">頂点 ― 中央命題</h2></div>
+<h2><span class="n">突合</span>二つの順序の突き合わせ ― 記法と軸はどちらが上か</h2>
+<p class="lead"><code>モデル-流れの図解</code>（flow.html）は <b>公理 → 軸 → 形式論理（3-1 に記法）</b>。
+この資料は <b>原理 → 記法 → 軸 → 規則</b>。<b>記法と軸が入れ替わっています。</b>放置できないので決着をつけます。</p>
+
+<table>
+<tr><th>flow.html の 層 LAYER（工程の順）</th><th>この資料の 階 TIER（導出の順）</th></tr>
+<tr><td>（入口）入力 ν <span class="small">― ν は7層の一番上</span></td><td>TIER 3 軸の一部</td></tr>
+<tr><td>LAYER 1 公理</td><td>TIER 1 三つの原理</td></tr>
+<tr><td>LAYER 2 軸</td><td>TIER 3 軸</td></tr>
+<tr><td>LAYER 3 形式論理（<b>3-1 記法</b>・3-2 規則）</td><td><b>TIER 2 記法</b>／TIER 4 規則</td></tr>
+<tr><td>LAYER 4 Python <code>compile_deal</code></td><td rowspan="2">TIER 5 検査</td></tr>
+<tr><td>LAYER 5 プロンプト／LAYER 6 LLM</td></tr>
+<tr><td>LAYER 7 検査 <code>validate_copy</code></td><td>TIER 5 検査 → TIER 6 実測</td></tr>
+</table>
+
+<h3>1. なぜ入れ替わって見えるのか</h3>
+<div class="tv">
+ <div><b>工程の順では、軸が先。</b>目の前の買い手を座標に落とさなければ、規則を当てる相手がいない。だから <b>公理 → 軸 → 形式論理</b>。flow.html はこれを書いている。</div>
+ <div><b>導出の順では、記法が先。</b>座標を作るには、その座標が何型かが決まっていなければならない。だから <b>原理 → 記法 → 軸</b>。この資料はこれを書いている。</div>
+</div>
+
+<h3>2. 決着のつけ方 ―― 片方を変えたとき、もう片方が変わるか</h3>
+<p class="q">順序の主張は、<b>依存の向き</b>で検算できます。上にあるものを変えれば下が変わり、下を変えても上は変わらない ―― これが成り立つ側が上です。</p>
+<table>
+<tr><th>変えるもの</th><th>何が起きるか</th><th>逆向きは</th><th>判定</th></tr>
+<tr><td><b>N₃</b> を ⟨w,d,o⟩ → ⟨w,d,o,m⟩（N₃′）</td><td><b>τ の各項に第4成分が増える。</b>⑥の実現も三つ組から四つ組へ</td><td>τ に新しい形を足しても N₃ は変わらない</td><td><b>N₃ が上</b></td></tr>
+<tr><td><b>N₂</b> の ⊥ の定義（記入欄を ⊥ に含める）</td><td><b>ν の全欄の読み方が変わった。</b>実際に停止 0 → 21件</td><td>ν に欄を足しても N₂ は変わらない</td><td><b>N₂ が上</b></td></tr>
+<tr><td><b>N₅</b> 座席の型に成分を足す</td><td>J の各要素が変わる</td><td>J に座席を足しても N₅ は変わらない</td><td><b>N₅ が上</b></td></tr>
+<tr><td><b>N₁</b> 承認演算子</td><td>Σ の各段が「何を作るか」の意味が変わる</td><td>Σ から段を落としても N₁ は変わらない</td><td><b>N₁ が上</b></td></tr>
+</table>
+<div class="box">
+<p><b>四つとも一方向でした。導出の順では、記法が軸の上で確定です。</b>
+そして歴史の順とは違うことに注意 ―― τ は第5版、N₃ は第8版です。<b>先に見つけたものが上とは限りません。</b>
+第8版で7本を3本に畳めたのは、まさに「後から見つけた型が、先に書いた規則の上にあった」からです。</p>
+</div>
+
+<h3>3. ところが、例外が出ました ―― <b>軸は一枚岩ではありません</b></h3>
+<p class="q">この検算を全部の軸に当てたら、四つだけ通りませんでした。</p>
+<table>
+<tr><th>軸</th><th>上にあるもの</th><th>型検査</th><th>変えたときに何が起きるか</th></tr>
+<tr><td><b>ν・τ・J・Σ</b></td><td><b>記法</b>（N₂・N₃・N₅・N₁）</td><td><b>効く</b></td><td>記法を変えると軸が変わる（上の4件）</td></tr>
+<tr><td><b>λ・ε・θ・β₁</b></td><td><b>原理が直接</b>（Π₃ が λ を8値、ε を2値と列挙）</td><td class="cut">効かない</td><td>記法を変えても何も起きない。<b>記法を経由していない</b></td></tr>
+</table>
+<div class="box key">
+<p><b>だからこの問いの答えは「どちらかが誤り」ではありませんでした。</b></p>
+<ul>
+<li><b>λ・ε・θ・β₁ については flow.html が正しい。</b>公理 → 軸で、記法を通りません。D軸が λ×ε に畳めたのは Π₃ から直接で、記法は関与していない。</li>
+<li><b>ν・τ・J・Σ については、この資料が正しい。</b>記法 → 軸で、依存は一方向です。</li>
+<li><b>つまり「軸」という一つの語が、二種類の対象を指していました。</b></li>
+</ul>
+<p><b>これは本モデルが最も嫌う型の誤りです</b> ―― <b>一つの語が二つの担体を持つ</b>。
+A37（日付欄が決定と着手の二つ）・A37b（<code>LT_months</code> の担体が二つ）・A41 と同じ形。
+今回それが<b>モデルの中ではなく、モデルを説明する資料の側</b>で起きていました。
+<b>A48 として台帳に登録します。</b></p>
+</div>
+
+<h3>4. 帰結（実務）</h3>
+<ol>
+<li><b>語を分けました。</b>この資料の縦の並びは<b>「階 TIER」</b>（導出）、flow.html の縦の並びは<b>「層 LAYER」</b>（工程）。以後この二語を混ぜません。</li>
+<li><b>λ・ε・θ・β₁ には型検査が効きません。</b>見ているのは <code>check_axis_values</code> の列挙照合だけ。
+新しい λ を足したくなったとき、それが本当に所在なのかを機械は言えません。<b>ここは人の承認が要る箇所として明示すべきです。</b></li>
+<li><b>どちらの資料を、いつ見るか。</b>
+「なぜその規則があるのか」＝<b>この資料</b>（説明可能性・上司や外部への説明）。
+「どこで壊れたのか」＝<b>flow.html</b>（工程・失敗の所在・次の一手）。</li>
+</ol>
+
+<div class="hd"><span class="lv">TIER 0</span><h2 style="margin:0;border:0;padding:0">頂点 ― 中央命題</h2></div>
 
 <div class="box key">
 <p style="font-size:16px;margin:2px 0"><b>営業資料は、説得の技術ではない。<br>
@@ -279,8 +358,8 @@ A1・A5・A11・A12 が Π₂ の同一原理の別セルで 4/4。<b>四本目�
 <p class="conn"><span class="ar">↓ 下へ</span>命題の三つの述語が、そのまま三つの原理になる（辺 0→1）。
 <b>四本目の原理を要求した実測は、まだ一件も出ていない。</b></p>
 
-<div class="hd"><span class="lv">LEVEL 1</span><h2 style="margin:0;border:0;padding:0">三つの原理</h2></div>
-<p class="q"><b>この層が答える問い：</b>承認とは何か。運ばれるとはどういうことか。効くとはどういうことか。</p>
+<div class="hd"><span class="lv">TIER 1</span><h2 style="margin:0;border:0;padding:0">三つの原理</h2></div>
+<p class="q"><b>この階が答える問い：</b>承認とは何か。運ばれるとはどういうことか。効くとはどういうことか。</p>
 <p class="conn"><span class="ar">↑ 上へ</span>中央命題の三つの述語〈資本〉〈運ばれる〉〈座席で効く〉の分解。
 <span class="ar" style="margin-left:14px">↓ 下へ</span><b>記法に〈型〉を要求する</b>（Π₁→N₁・N₂・N₆／Π₂→N₃・N₄′・N₅・N₆／Π₃→N₃・N₅）。
 ただし <b>λ・ε は記法を飛ばして軸へ直接</b>値を渡す。</p>
@@ -339,13 +418,13 @@ effective(e,c) ⟺ λ(e) = λ(c) ∧ ε(e) = ε(c)</span>
 </ul></div>
 
 <div class="box">
-<p><b>この層で「3本」であることの意味。</b>第7版までは中心命題7本・依存規則16本・条件15本ありました。
+<p><b>この階で「3本」であることの意味。</b>第7版までは中心命題7本・依存規則16本・条件15本ありました。
 A1・A5・A11・A12 は<b>同じ一つの原理の別のセル</b>で、原理に名前が無かったので四度別々に発見されていました。
 R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したものでした。<b>畳んだのは表現であって、内容ではありません。</b></p>
 </div>
 
-<div class="hd"><span class="lv">LEVEL 2</span><h2 style="margin:0;border:0;padding:0">七つの記法</h2></div>
-<p class="q"><b>この層が答える問い：</b>その主張は、そもそも<b>書けるのか</b>。
+<div class="hd"><span class="lv">TIER 2</span><h2 style="margin:0;border:0;padding:0">七つの記法</h2></div>
+<p class="q"><b>この階が答える問い：</b>その主張は、そもそも<b>書けるのか</b>。
 <b>由来：</b>第7版の内部検査が見つけた12件のうち9件は型・束縛・定義域の誤りだった。<b>命題を足しても再発する。記法で書けなくするのが正しい。</b></p>
 <p class="conn"><span class="ar">↑ 上へ</span>原理を<b>書くために</b>必要な型。導出された内容ではないので、記法を足しても主張は増えない。
 <span class="ar" style="margin-left:14px">↓ 下へ</span><b>軸に〈値の入れ物〉を与える</b> ―― N₁→Σ／N₂→ν の全欄／N₃→τ と ⑥の実現／N₄′→量欄と表1／N₅→J／N₆→Σ×J の各マス。</p>
@@ -379,15 +458,18 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
   <ul><li><span class="node"><span class="tag g6">実測</span><span class="ttl">監査そのものが集合単位で書かれていた</span><span class="dsc">3件目を別の強さで足すと同順位の衝突が黙る。<b>対単位に書き直して 3件の隠れた衝突が出た</b></span></span></li></ul></li>
 </ul></div>
 
-<div class="hd"><span class="lv">LEVEL 3</span><h2 style="margin:0;border:0;padding:0">軸と座標</h2></div>
-<p class="q"><b>この層が答える問い：</b>その形に、<b>どんな中身が入るのか</b>。原理は形を与えるだけで、中身は与えません（X3）。</p>
-<p class="conn"><span class="ar">↑ 上へ</span>各軸は記法の<b>インスタンス</b>（Σ←N₁／ν←N₂・N₄′／τ←N₃／J←N₅／必須要素←N₆）。別立ての概念ではない。
+<div class="hd"><span class="lv">TIER 3</span><h2 style="margin:0;border:0;padding:0">軸と座標</h2></div>
+<p class="q"><b>この階が答える問い：</b>その形に、<b>どんな中身が入るのか</b>。原理は形を与えるだけで、中身は与えません（X3）。</p>
+<p class="conn"><span class="ar">↑ 上へ</span><b>軸は二種に割れます（A48）。</b>
+〈型経由〉ν←N₂・N₄′／τ←N₃／J←N₅／Σ←N₁／必須要素←N₆ は記法のインスタンス。
+〈原理直列挙〉<b>λ・ε・θ・β₁ は記法を通らず Π₃ から直接</b>で、型検査が効きません。
 <span class="ar" style="margin-left:14px">↓ 下へ</span><b>規則の定義域になる。</b>規則はここに挙がった軸のどれかの上の述語としてしか書けない。</p>
 
 <div class="tree"><ul>
-<li><span class="node"><span class="tag g3">ν</span><span class="ttl">入力 ― 買い手・売り手・商材</span><span class="dsc">この層に嘘が入ると、下の全部が正しく動いても出力は誤る（失敗の所在①）</span></span>
+<li><span class="node"><span class="tag g3">ν</span><span class="ttl">入力 ― 買い手・売り手・商材</span><span class="dsc">この階に嘘が入ると、下の全部が正しく動いても出力は誤る（失敗の所在①）</span></span>
  <ul>
  <li><span class="node"><span class="tag g3">導出</span><span class="ttl">商材座標</span><span class="dsc">λ×ε・θ・β₁・ISO_KEYS。<b>ISO_KEYS は導出</b>で、業界をまたいで持ち出せる</span></span></li>
+ <li><span class="node"><span class="tag g6">A48</span><span class="ttl">ただし λ・ε・θ・β₁ は記法を通っていない</span><span class="dsc">Π₃ が値そのものを列挙している。<b>この四つには型検査が効かず、<code>check_axis_values</code> の列挙照合だけ</b>。軸という語が二種類の対象を指していた</span></span></li>
  <li><span class="node"><span class="tag g4">較正</span><span class="ttl">busy_months（買い手の繁忙期）</span><span class="dsc">買い手の逐語から取った。<b>較正なので他業界へ持ち出さない</b></span> <span class="impl">→ A43</span></span></li>
  <li><span class="node"><span class="tag g3">導出</span><span class="ttl">ω（効果が数字に出るまで）</span><span class="dsc">実現日の下限を決める</span> <span class="impl">→ <code>check_realize</code></span></span></li>
  </ul></li>
@@ -415,9 +497,9 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
  </ul></li>
 </ul></div>
 
-<div class="hd"><span class="lv">LEVEL 4</span><h2 style="margin:0;border:0;padding:0">依存規則 R1–R20</h2></div>
-<p class="q"><b>この層が答える問い：</b>何が満たされていなければ、その主張を紙に載せてはいけないか。<br>
-<b>重要：</b>ほぼ全部が上の層からの<b>導出</b>です。独立に立てたのは第8版の R17 一本だけでした。以後 R18・R20 が追加されています。</p>
+<div class="hd"><span class="lv">TIER 4</span><h2 style="margin:0;border:0;padding:0">依存規則 R1–R20</h2></div>
+<p class="q"><b>この階が答える問い：</b>何が満たされていなければ、その主張を紙に載せてはいけないか。<br>
+<b>重要：</b>ほぼ全部が上の階からの<b>導出</b>です。独立に立てたのは第8版の R17 一本だけでした。以後 R18・R20 が追加されています。</p>
 <p class="conn"><span class="ar">↑ 上へ</span>規則 ＝ 〈原理が言う条件〉を〈軸の値〉に当てはめた述語。<b>だから定義域の無い規則は書けない</b>（N₆ の〈定義域〉成分が強制）。
 <span class="ar" style="margin-left:14px">↓ 下へ</span>検査に<b>走査の対象と順序</b>を渡す。重さ（停止／要判断／記入欄）はここでは決まらず、実測が決める（X4）。</p>
 
@@ -450,10 +532,10 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 <li><span class="node"><span class="tag gx">払い出し</span><span class="ttl">最大は R20。次は R21</span><span class="dsc">番号は<code>アノマリー台帳.md</code>一箇所でだけ払い出す（A36〜A39 が二箇所で衝突した反省）</span></span></li>
 </ul></div>
 
-<div class="hd"><span class="lv">LEVEL 5</span><h2 style="margin:0;border:0;padding:0">検査</h2></div>
-<p class="q"><b>この層が答える問い：</b>その規則を、機械はどう読むか。<br>
-<b>本モデルで最も欠陥が多い層です。</b>誤りの型はほぼ一つ ―― <b>浅い一致</b>と <b>⊥ を値として扱うこと</b>。</p>
-<p class="conn"><span class="ar">↑ 上へ</span>検査 ＝ 規則 ＋ 定義域の走査 ＋ 重さ ＋ 表示文。<b>上の三層が正しくても、ここで壊れる。</b>
+<div class="hd"><span class="lv">TIER 5</span><h2 style="margin:0;border:0;padding:0">検査</h2></div>
+<p class="q"><b>この階が答える問い：</b>その規則を、機械はどう読むか。<br>
+<b>本モデルで最も欠陥が多い階です。</b>誤りの型はほぼ一つ ―― <b>浅い一致</b>と <b>⊥ を値として扱うこと</b>。</p>
+<p class="conn"><span class="ar">↑ 上へ</span>検査 ＝ 規則 ＋ 定義域の走査 ＋ 重さ ＋ 表示文。<b>上の三階が正しくても、ここで壊れる。</b>
 <span class="ar" style="margin-left:14px">↓ 下へ</span>実測に<b>停止と要判断の一覧</b>を渡す。渡した先で買い手の指摘と突き合わせたものが φ。</p>
 
 <div class="tree"><ul>
@@ -472,7 +554,7 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
  <li><span class="node"><span class="tag gx">生成後</span><span class="ttl"><code>validate_copy</code></span><span class="dsc">停止／要判断／記入欄の3段の重さ。この割当だけは実測（X4）</span></span></li>
  </ul></li>
 
-<li><span class="node"><span class="tag g6">この層の欠陥</span><span class="ttl">1日で5件出た「浅い一致」</span></span>
+<li><span class="node"><span class="tag g6">この階の欠陥</span><span class="ttl">1日で5件出た「浅い一致」</span></span>
  <ul>
  <li><span class="node"><span class="tag gx">1</span><span class="ttl"><code>own_retracted</code></span><span class="dsc">散文の否定を非 null と数えた　12→6</span></span></li>
  <li><span class="node"><span class="tag gx">2</span><span class="ttl">「タダ」の照合</span><span class="dsc">接続詞の「ただ、」に当たった　16→2</span></span></li>
@@ -483,17 +565,17 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
  </ul></li>
 </ul></div>
 
-<div class="hd"><span class="lv">LEVEL 6</span><h2 style="margin:0;border:0;padding:0">実測 ― 唯一の外部入力</h2></div>
-<p class="q"><b>この層が答える問い：</b>上の六層は、実際に当たっているのか。<br>
-<b>ここだけが理論の外にあります。</b>ここが動かないなら、上の層は何を足しても意味を持ちません。</p>
+<div class="hd"><span class="lv">TIER 6</span><h2 style="margin:0;border:0;padding:0">実測 ― 唯一の外部入力</h2></div>
+<p class="q"><b>この階が答える問い：</b>上の六階は、実際に当たっているのか。<br>
+<b>ここだけが理論の外にあります。</b>ここが動かないなら、上の階は何を足しても意味を持ちません。</p>
 <p class="conn"><span class="ar">↑ 上へ</span><b>唯一の上向きの辺。</b>ただし全体の合否では φ≈0 で辺が立っておらず、
 辺が在るのは<b>個別の不備の型</b>の水準だけ（21/21 の三つ）。
-<span class="ar" style="margin-left:14px">↓ 下へ</span>無し。ここが最下層。</p>
+<span class="ar" style="margin-left:14px">↓ 下へ</span>無し。ここが最下階。</p>
 
 <div class="tree"><ul>
 <li><span class="node"><span class="tag g6">A1–A23</span><span class="ttl">第5〜11版</span><span class="dsc">SPEC8.md に記載済み・実装済み</span></span></li>
 <li><span class="node"><span class="tag g6">A24–A35</span><span class="ttl">第12版系</span><span class="dsc">行為は集合／単位・基準の連結（型1）／残余の周期／必須要素と字数の衝突順序／⑥の量の出所／記入欄の照合が浅い</span></span></li>
-<li><span class="node"><span class="tag g3">A29</span><span class="ttl">担体＝量の同順位対</span><span class="dsc"><b>N₄′ が解いた。</b>実測が記法の層まで登り切った唯一の例</span></span></li>
+<li><span class="node"><span class="tag g3">A29</span><span class="ttl">担体＝量の同順位対</span><span class="dsc"><b>N₄′ が解いた。</b>実測が記法の階まで登り切った唯一の例</span></span></li>
 <li><span class="node"><span class="tag g3">A37 / A37b</span><span class="ttl">LT を⑥の日付へ（決定／着手／実現の三段）</span><span class="dsc">狙った苦情 <b>7/16 → 0/16</b>。走らせる前に指示文を読んで A37b が出た（<b>担体が二つ</b>）。読まずに走らせていたら8セル中6セルが充足不能な指示だった</span></span></li>
 <li><span class="node"><span class="tag g3">A41 / A43</span><span class="ttl">決定の窓／実現日の季節</span><span class="dsc">実装・走行済み。A43 は停止0でω も繁忙期も 8/8 で守られた</span></span></li>
 <li><span class="node"><span class="tag g6">A41b</span><span class="ttl">窓は着手日も縛る</span><span class="dsc"><b>未着手・次の一手。</b>B6 の数は動かなかったが<b>苦情の中身が変わった</b>のが今回いちばん重要な発見</span></span></li>
@@ -517,7 +599,7 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 <hr>
 
 <h2><span class="n">直交</span>ピラミッドを横切るもの ― 失敗の所在（5つ）</h2>
-<p class="q">層の上下とは別に、<b>「壊れたのはどこか」</b>を指す座標が要ります。これが無いと、検査の欠陥をモデルの誤りと読み違えます。</p>
+<p class="q">階の上下とは別に、<b>「壊れたのはどこか」</b>を指す座標が要ります。これが無いと、検査の欠陥をモデルの誤りと読み違えます。</p>
 <table>
 <tr><th>#</th><th>所在</th><th>症状の見え方</th><th>直す面</th></tr>
 <tr><td>1</td><td><b>入力 ν</b></td><td>全部正しく動いて、出力だけ誤る</td><td>聞き取り・既定値（Cowork）</td></tr>
@@ -541,7 +623,7 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 <tr><td>X2</td><td>A2 の発火条件</td><td>原理は「何が正しいか」を言うが「買い手がいつ検算するか」は言わない</td></tr>
 <tr><td>X3</td><td>各所在の<b>内容</b>（scope の粒度・rk の順序と例外1マス）</td><td>原理は形を与えるだけ</td></tr>
 <tr><td>X4</td><td>失敗の重さ（停止／記入欄／降格）の割当</td><td>実測</td></tr>
-<tr><td>X5</td><td>層の割当（生成前／生成後）</td><td>情報がいつ手に入るかという工学的事実</td></tr>
+<tr><td>X5</td><td>検査を<b>工程</b>のどこに置くか（生成前／生成後）</td><td>情報がいつ手に入るかという工学的事実。<b>導出の階ではなく工程の話</b></td></tr>
 <tr><td>X6</td><td>θ_auto・α・h／「予測は生成器に出させない」</td><td>決定理論とメタ規則。Γ の理論と直交</td></tr>
 <tr><td><b>X7</b></td><td><b>効果量（何%減るか・何名増えるか）</b></td><td>決定的にも LLM でも出せない。<b>測るしかない。</b>出せるのは〈買い手の量 × 売り手の係数〉の<b>式</b>まで</td></tr>
 </table>
@@ -566,8 +648,8 @@ R7 と R16 は二版を隔てて<b>同じ規則を二度発見</b>したもの�
 
 <h2><span class="n">要約</span>一枚で言うと</h2>
 <div class="box key">
-<p><b>上の三層（原理・記法・軸）は、この一年でほとんど動いていません。</b>畳めたし、畳んでも何も落ちませんでした。</p>
-<p><b>下の三層（規則・検査・実測）は、毎日動いています。</b>そして動いた原因の大半は
+<p><b>上の三階（原理・記法・軸）は、この一年でほとんど動いていません。</b>畳めたし、畳んでも何も落ちませんでした。</p>
+<p><b>下の三階（規則・検査・実測）は、毎日動いています。</b>そして動いた原因の大半は
 <b>モデルの誤りではなく検査の誤り</b>でした。</p>
 <p><b>そして辺の側で言えば</b> ―― 上から下へは<b>型 → 値</b>の一本しかありません。
 原理は記法に型を要求し、記法は軸に入れ物を与え、軸は規則に定義域を与え、規則は検査に走査を渡す。
