@@ -22,6 +22,8 @@ import json
 import re
 from collections import Counter
 
+import stamp
+
 SRC = open("sales_logic.py", encoding="utf-8").read()
 MSG = json.load(open("messages.json", encoding="utf-8"))
 LEDGER = open("アノマリー台帳.md", encoding="utf-8").read()
@@ -29,12 +31,53 @@ LEDGER = open("アノマリー台帳.md", encoding="utf-8").read()
 # **この正規表現そのものが、浅い一致を踏みかけた（8件目・未然）。**
 # `[A-Z][A-Z0-9]*` は `R6b` の小文字 b を拾えず、`R6b_LT_SHORT` を「実在しないコード」と
 # 報告しかけた。**監査の道具にも同じ型の誤りが出る。**
-CODE_RE = re.compile(r'"([A-Z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+)"')
+#
+# 第14.1版：**その正規表現を捨てた。**同じ型の誤りをあと三つ踏んでいた（A54・9〜11件目）。
+#   ① 文字列の形しか見ないので、`Sym("LT_months", …)` の記号名、`B_deadline` のような
+#      ブロック名、`fire_rules` が返す `R1_OK` まで「理由コード」と数えた（59件の水増し）。
+#   ② `_` を必須にしたので、下線の無い `UNCALIBRATED` を見落とした。
+#   ③ literal しか見ないので、`f"R7_{d}_OK"` で組む9件を取りこぼした。
+# **理由コードとは「Finding／Judgment の第1引数に渡る文字列」である。**構文木で取る。
+CODE_RE = re.compile(r'"([A-Z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+)"')   # 台帳・散文の走査用に残す
 NUM_RE = re.compile(r"\bA(\d+)([a-z]?)\b")
+
+# 判定を載せる欄。**ここ以外に現れた文字列は、発火ではない。**
+VERDICT_KEYS = ("findings", "needs_judgment", "post_findings", "post_judgments")
+
+
+def _emitted_codes():
+    """Finding / Judgment に渡る第1引数を構文木で集める。
+
+    返り値は (確定したコード, 展開できなかった f-string の雛形)。
+    **展開できなかったものを黙って捨てない** ―― 捨てると③をもう一度踏む。
+    """
+    codes, unexpanded = set(), []
+    from sales_logic import R7_DIMS
+    for node in ast.walk(ast.parse(SRC)):
+        if not isinstance(node, ast.Call):
+            continue
+        fn = node.func
+        name = fn.id if isinstance(fn, ast.Name) else (
+            fn.attr if isinstance(fn, ast.Attribute) else None)
+        if name not in ("Finding", "Judgment") or not node.args:
+            continue
+        a = node.args[0]
+        if isinstance(a, ast.Constant) and isinstance(a.value, str):
+            codes.add(a.value)
+        elif isinstance(a, ast.JoinedStr):
+            tmpl = ast.unparse(a)
+            got = {re.sub(r"^f['\"]|['\"]$", "", tmpl).replace("{d}", d) for d in sorted(R7_DIMS)}
+            if all(re.fullmatch(r"[A-Za-z0-9_]+", g) for g in got):
+                codes |= got
+            else:
+                unexpanded.append(tmpl)
+        # 第1引数が変数のものは既存 Finding の付け替え（apply_calibration / check_tau）で、
+        # 新しいコードを作らない。
+    return codes, unexpanded
 
 
 def codes_in_source():
-    return sorted(set(CODE_RE.findall(SRC)))
+    return sorted(_emitted_codes()[0])
 
 
 def ledger_numbers():
@@ -110,16 +153,50 @@ def req_fields():
 
 
 def fired_codes():
-    """8セルの決定表と、手元の走行物で一度でも出たコード"""
+    """8セルの決定表と、手元の走行物で一度でも出たコード。
+
+    第14.1版：**生テキストを正規表現で舐めていた**（A54・12件目）。走行 JSON には
+    判定欄のほかに `blocks`（⑥に置く塊の名）と `rules`（`fire_rules` の返り値）が入る。
+    旧実装はそれを発火と数え、**90件のうち44件がブロック名・規則名**だった。
+    さらに自己申告の集計ブロックの鍵まで拾い、`"KAPPA_MERGED": 0` ―― **値が 0 のもの** ――
+    を「出た」と数えていた。**判定欄からだけ数える。**
+    """
     seen = Counter()
-    for f in glob.glob("decisions8_v1*.json") + glob.glob("verified*.json"):
+    for f in sorted(glob.glob("decisions8_v1*.json") + glob.glob("verified*.json")):
         try:
-            txt = open(f, encoding="utf-8").read()
+            doc = stamp.load(f)
         except Exception:
             continue
-        for c in CODE_RE.findall(txt):
-            seen[c] += 1
+        for rec in (doc if isinstance(doc, list) else [doc]):
+            if not isinstance(rec, dict):
+                continue
+            for k in VERDICT_KEYS:
+                for e in (rec.get(k) or []):
+                    if isinstance(e, dict) and isinstance(e.get("code"), str):
+                        seen[e["code"]] += 1
     return seen
+
+
+def gen_schema_fields(wf="wf_gen137.js"):
+    """生成ワークフローの構造化出力スキーマが持つ `declared` の欄"""
+    try:
+        js = open(wf, encoding="utf-8").read()
+    except Exception:
+        return set()
+    m = re.search(r"declared:\s*\{(.*?)\n      \},", js, re.S)
+    return set(re.findall(r"^\s{8}([a-z0-9_]+):", m.group(1), re.M)) if m else set()
+
+
+def reqs_not_in_gen_schema(wf="wf_gen137.js"):
+    """★申告を要求しているのに、モデルが答える欄がスキーマに無いもの。
+
+    指示文は日本語で頼む。だが構造化出力のスキーマに欄が無ければ**モデルは答えられない**。
+    結果、`*_UNDECLARED` が8セルで永久に出続け、本来の停止条件は一度も出ない。
+    **第12版の `R10a` と同型**（規則は足りたのに、渡る先が無かった）。
+    """
+    from sales_logic import REQ_RETIRED
+    props = gen_schema_fields(wf)
+    return [r for r in req_fields() if r not in props and r not in REQ_RETIRED]
 
 
 def main():
@@ -169,12 +246,29 @@ def main():
     # (6) 発火していない検査
     fired = fired_codes()
     never = sorted(set(codes) - set(fired))
+    retired = sorted(set(fired) - set(codes))
     print(f"(6) 一度でも出たコード {len(set(codes) & set(fired))} ／ 一度も出ていない {len(never)}")
-    print(f"    （出るはずがない・出るはずなのに出ていない・配線されていない の仕分けが要る）")
-    for c in never[:24]:
+    print(f"    仕分けは `python3 triage_codes.py`（実行トレースで (a)(b)(c) を分ける）")
+    print(f"    古い走行にしか無い退役コード: {retired or 'なし'}")
+    for c in never[:12]:
         print(f"      {c}")
-    if len(never) > 24:
-        print(f"      … 他 {len(never)-24} 件")
+    if len(never) > 12:
+        print(f"      … 他 {len(never)-12} 件")
+
+    # (7) 生成スキーマの配管 ―― **申告を要求しているのに、答える欄が無い**
+    print()
+    miss = reqs_not_in_gen_schema("wf_gen137.js")
+    print(f"(7) 生成スキーマ（wf_gen137.js）の declared 欄 {len(gen_schema_fields())} ／ REQS {len(req_fields())}")
+    print(f"    ★要求しているのにスキーマに欄が無い: {miss or 'なし'}")
+    for r in miss:
+        asked = sum(1 for p in sorted(glob.glob("prompts8_v13_arm*.json"))
+                    if r in open(p, encoding="utf-8").read())
+        print(f"      {r:24} 指示文は {asked}/3 arm で要求している")
+
+    # 展開できなかった動的コードが在れば、必ず見せる（黙って捨てない）
+    _, unexpanded = _emitted_codes()
+    if unexpanded:
+        print(f"\n    ★展開できなかった動的コードの雛形: {unexpanded}")
 
 
 if __name__ == "__main__":

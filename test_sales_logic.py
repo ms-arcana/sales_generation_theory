@@ -1513,4 +1513,54 @@ for _sym in ("s6_decide_date", "s6_start_date", "LT_months", "decide_deadline",
              "decide_deadline_tau", "decision_gates", "pay_source", "ret_source", "ν", "軸"):
     check(f"N₆ {_sym} の書き分けが記号表に残っている", _sym in _res)
 
+print("\n── 第14.1版 A54（浅い一致）：**監査の道具の物差し** ―― 数えていたものが理由コードではなかった")
+# 第14版の (6)「一度も出ていない 167／257」は、両側とも誤って数えていた。
+#   出す側：`"([A-Z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+)"` が、GLOSSARY の記号名・ブロック名・
+#           規則発火名まで拾った。`LT_months` は Sym(...) の第1引数であって理由コードではない。
+#   出す側：同じ正規表現が `_` を必須にしていたので、`UNCALIBRATED`（下線なし）を見落とした。
+#   出す側：f-string で組む `R7_{d}_OK` 系9件を、literal しか見ないので取りこぼした。
+#   出た側：走行 JSON を**生テキスト**で照合したので、`blocks` 欄の `B_deadline` や
+#           `rules` 欄の `R1_OK` を「発火した理由コード」と数えた（44件が水増し）。
+import audit_model as _AM
+
+_codes = set(_AM.codes_in_source())
+check("A54 記号表の記号名を理由コードと数えない（LT_months は Sym の第1引数）",
+      "LT_months" not in _codes, sorted(x for x in _codes if x.startswith("LT_")))
+check("A54 ブロック名を理由コードと数えない（B_deadline は⑥に置く塊の名）",
+      not [x for x in _codes if x.startswith("B_")], sorted(x for x in _codes if x.startswith("B_"))[:5])
+check("A54 規則の発火名を理由コードと数えない（R1_OK は fire_rules が返す文字列）",
+      "R1_OK" not in _codes and "R1_VIOLATION" not in _codes)
+check("A54 下線の無い理由コードを見落とさない（UNCALIBRATED）",
+      "UNCALIBRATED" in _codes)
+check("A54 f-string で組む理由コードを取りこぼさない（R7_D6a_OK 系9件）",
+      all(f"R7_{_d}_{_s}" in _codes for _d in ("D6a", "D6b", "D6c")
+          for _s in ("OK", "HALF", "MISSING")))
+check("A54 理由コードは Finding/Judgment に渡るものだけ（内部定数 EXPR_OK は入らない）",
+      "EXPR_OK" not in _codes and "BINDER_SRC" not in _codes and "ISO_KEYS" not in _codes)
+
+_fired = set(_AM.fired_codes())
+check("A54 発火は判定欄からだけ数える（blocks 欄の B_* を発火と数えない）",
+      not [x for x in _fired if x.startswith("B_")], sorted(x for x in _fired if x.startswith("B_"))[:5])
+check("A54 発火は判定欄からだけ数える（rules 欄の R1_OK を発火と数えない）",
+      "R1_OK" not in _fired and "A21_WILLING" not in _fired)
+check("A54 発火は判定欄からだけ数える（as-run に実在する判定は残る）",
+      {"A8_BINDER_NOT_ABOVE", "A22_SCOPE_UNSOURCED"} <= _fired, sorted(_fired)[:6])
+check("A54 発火したコードは、必ず理由コードの集合に入っている",
+      _fired <= _codes, sorted(_fired - _codes))
+
+# (2) は物差しを直すとほぼ消える。残る1件ずつだけが本物の欠落。
+_msg = set(_AM.MSG["findings"]) | set(_AM.MSG["judgments"])
+check("A54 表示文が無い理由コードは A19_ORG_COST_POSITIVE の1件だけ（旧計測は60件）",
+      _codes - _msg == {"A19_ORG_COST_POSITIVE"}, sorted(_codes - _msg))
+check("A54 コードに無い表示文は R10b_UNIT_REVERTED の1件だけ（旧計測は11件）",
+      _msg - _codes == {"R10b_UNIT_REVERTED"}, sorted(_msg - _codes))
+
+print("\n── 第14.1版 A53（配管）：**要求している申告欄が、生成スキーマに無い**")
+# 指示文は日本語で頼んでいる（3/3 arm）。だが構造化出力のスキーマに欄が無いので、
+# モデルは答えられない。→ `*_UNDECLARED` が8セルで永久に出続け、本来の停止条件は出ない。
+# **A47 は紙側では 1件検出されている**（verified136 の E2-P1）。申告側だけが測れていない。
+check("A53 生成スキーマに欠けている申告欄を機械が名指しできる（A46・A47）",
+      {"s2_asks_possession", "s5_disclaimers"} <= set(_AM.reqs_not_in_gen_schema("wf_gen137.js")),
+      _AM.reqs_not_in_gen_schema("wf_gen137.js"))
+
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
