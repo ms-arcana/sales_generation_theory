@@ -1693,13 +1693,21 @@ def check_seat_words(copy: Dict[str, str], dec: Declared,
     その座席の基準で読める量を⑥に置いたと申告したなら、
     **その座席の様式語のどれかが⑥の本文に出現していなければならない。**
     様式語が未登録の座席は照合対象を持たないので飛ばす（N2：⊥ は比較できない）。
+
+    **A57（第14.4版）――ここは旧欄 `s6_kappa_by_seat` を生で読んでいた。**
+    第13.7版に `wf_gen137.js` のスキーマを縮めたとき、その欄を落としている。
+    隣の `check_chain`・`check_quantity_sources` は橋 `quantities_by_seat()` を通っていたが、
+    **この関数だけ移し忘れていた。**結果、gen137 の走行物13件すべてで欄が不在になり、
+    `A23_SEAT_WORD_ABSENT` が**構造的に出なくなっていた**（同じ紙で 旧スキーマ→1件／新スキーマ→0件）。
+    第14.2版に直した A49（A28 の橋が旧 `source` しか読んでいなかった）と同型で、隣の関数の取りこぼし。
     """
     f: List[Finding] = []
-    if not chain or not dec.s6_kappa_by_seat:
+    by_seat = quantities_by_seat(dec)          # A57：橋を通す（新旧どちらの形でも立つ）
+    if not chain or not by_seat:
         return f
     body = copy.get("⑥", "")
     for name, _kappa, form, _origin in chain:
-        if name not in dec.s6_kappa_by_seat or not form:
+        if name not in by_seat or not form:
             continue
         if not any(w and w in body for w in form):
             f.append(Finding("A23_SEAT_WORD_ABSENT", "stop", f"{name}:{'/'.join(form)}"))
@@ -2660,14 +2668,14 @@ REQS: Tuple[Req, ...] = (
         "衝突しない（定義域が交わらない。第13.5b版に対で見るようにして出てきた三つ）"),
     Req("s5_denies_own", "買い手の既承認", "Γ^own", "n", "", "-",
         "⑤が否定してしまっている既承認を挙げる。無ければ空（R17 の ∃）", "導出"),
-    Req("s6_kappa_by_seat", "量", "資料を読む座席", "n", "", "n",
-        "座席ごとに、その座席の様式語で読める量を置く（A23）。一座席に量が複数なら複数",
-        "導出", "s6_quantities に譲る（五つ組が基準を含む。旧走行との突合のために残す）"),
+    # 第14.3版：`s6_kappa_by_seat` と `s6_quantity_sources` の Req をここから外した。
+    # **欄は消していない**（`Declared` に残り、旧走行の突合で現に読む）。外したのは
+    # 「生成器に要求する」という位置づけだけで、`s6_quantities` の五つ組が両方を含む。
+    # 残していたために (a) `N6_VALUE_SCALAR` が2件出続け、(b) `reqs_not_in_gen_schema` が
+    # 「スキーマに無い」と名指しし続けていた ―― どちらも**吸収済みの欄への誤報**である。
+    # → `REQ_RETIRED` へ。VS Code 第14.1版 §17 #4 の答え。
     Req("s6_omitted_blocks", "必須要素", "⑥に点灯した必須要素", "n", "", "-",
         "書けなかった要素を挙げる。空なら全部書いた（A27）", "導出"),
-    Req("s6_quantity_sources", "量", "⑥に置いた量のすべて（読む座席の分だけではない）", "n", "", "n",
-        "量ごとに出所を挙げる。裏づけの無い出所には本文側の要求が付く（A28）", "導出",
-        "s6_quantities に譲る（五つ組が出所を含む。A29 の同順位対はここで解けた）"),
     Req("s6_to_sales", "申し送り", "自分で確定できなかった数字と判断", "n", "", "-",
         "営業が読んで動ける言葉で列挙。無ければ空（A28）", "導出"),
     # N₄′（第13.5b版）。s6_kappa_by_seat の担体を広げたもの。両方が同じ担体に掛かるので、
@@ -2782,9 +2790,71 @@ def audit_symbols() -> List[Judgment]:
     return out
 
 
-REQ_RETIRED = ("s6_realize_actor", "s6_realize_date", "s6_realize_account")
+# 退役した申告欄 ―― **欄は `Declared` に残す**（旧走行を読むため）が、要求としては挙げない。
+# 生成器に求めないので、生成スキーマ（`wf_gen*.js`）に無くても配管の欠落ではない。
+#   s6_realize_*        → s6_realize（三つ組）が吸収（A24）
+#   s6_kappa_by_seat    → s6_quantities の五つ組が基準を含む（N₄′・第13.5b版）
+#   s6_quantity_sources → 同・出所を含む（A28／A49 で pay_source・ret_source に割った）
+REQ_RETIRED = ("s6_realize_actor", "s6_realize_date", "s6_realize_account",
+               "s6_kappa_by_seat", "s6_quantity_sources")
+
+# A57（第14.4版）：**退役には前提条件がある。**
+# 退役した欄の〈読み手〉が一つでも橋を通らずに残っていると、その検査は
+# 新しい形の申告で**構造的に出なくなる**。欄の意味が吸収済みであることと、
+# コードの読み手が全部移っていることは、別の事実である。
+#   退役した欄 → その欄の代わりに読むべきもの（橋の関数名か、新しい欄名）
+RETIRED_BRIDGE: Dict[str, Tuple[str, ...]] = {
+    "s6_kappa_by_seat":    ("quantities_by_seat", "s6_quantities"),
+    "s6_quantity_sources": ("quantities_by_seat", "s6_quantities"),
+    "s6_realize_actor":    ("s6_realize",),
+    "s6_realize_date":     ("s6_realize",),
+    "s6_realize_account":  ("s6_realize",),
+}
+# 橋そのもの。ここは旧欄を生で読んでよい（読むのが仕事）
+BRIDGE_FUNCS = ("quantities_by_seat", "audit_retired_reads")
 
 SEQ_HINTS = ("Tuple", "Dict", "List", "Sequence", "object")
+
+
+def audit_retired_reads(src: Optional[str] = None) -> List[Judgment]:
+    """退役した欄を、橋を通さずに読んでいる関数を名指しする。**A57。**
+
+    第14.3版で `s6_kappa_by_seat`／`s6_quantity_sources` を `REQ_RETIRED` へ移したとき、
+    「欄の意味は `s6_quantities` に吸収済みか」だけを見て、**読み手を数えなかった。**
+    3つの読み手のうち2つ（`check_chain`・`check_quantity_sources`）は橋を通っていたが、
+    `check_seat_words` だけが旧欄を生で読んでいて、`A23_SEAT_WORD_ABSENT` が死んでいた。
+
+    **見つけたのは VS Code で、二つの計器のどちらにも映らない位置にあった** ――
+    `audit_model.py` (6) では旧走行で発火済みなので「出たコード」の側に入り、
+    `triage_codes.py` では関数が呼ばれているので (c) にも (b) にも載らない。
+    第14.3版に書いた「**その検査を通す入力を1件でも作れるか**」を当てて初めて出た。
+
+    規律：**退役させる前に、この監査を 0 にすること。**順序は
+    「読み手を全部橋へ移す → `REQ_RETIRED` へ入れる」であって、逆ではない。
+
+    `src` に原文を渡せば、その原文を見る（**0 を返す監査は、0 を返さない入力を
+    1件見せるまで閉じたと言えない** ―― 回帰で対照を作るための口）。
+    """
+    import ast
+    import inspect
+    import sys
+    out: List[Judgment] = []
+    try:
+        tree = ast.parse(src if src is not None else inspect.getsource(sys.modules[__name__]))
+    except (OSError, TypeError, SyntaxError):   # 対話環境などで原文が取れないとき
+        return out
+    for fn in [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]:
+        if fn.name in BRIDGE_FUNCS:
+            continue
+        names = {n.attr for n in ast.walk(fn) if isinstance(n, ast.Attribute)}
+        names |= {n.id for n in ast.walk(fn) if isinstance(n, ast.Name)}
+        for field in REQ_RETIRED:
+            if field not in names:
+                continue
+            if any(b in names for b in RETIRED_BRIDGE.get(field, ())):
+                continue                # 旧欄も見るが、新しい側も見ている＝正しく畳めている
+            out.append(Judgment("A57_RETIRED_READ_UNBRIDGED", f"{fn.name} が {field} を生で読む"))
+    return out
 
 
 def audit_requirements() -> List[Judgment]:

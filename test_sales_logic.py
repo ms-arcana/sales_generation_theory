@@ -989,9 +989,15 @@ check("N₆ 濃度1と置いた要求には理由が書かれている", "N6_CAR
       [x.ref for x in _a if x.code == "N6_CARD_UNJUSTIFIED"])
 check("N₆ 申告欄はすべて要求として書かれている（漏れが無い）", "N6_REQ_MISSING" not in _codes,
       [x.ref for x in _a if x.code == "N6_REQ_MISSING"])
-check("N₆ 監査は現に型1 を見つける（走らせずに8件）",
-      _codes.count("N6_FIELD_SCALAR") + _codes.count("N6_VALUE_SCALAR") == 8,
+# 第14.3版：8→6。`N6_VALUE_SCALAR` の2件（s6_kappa_by_seat／s6_quantity_sources）は
+# **欠陥ではなく、吸収済みの旧欄への誤報**だった。REQ_RETIRED へ移して消した（VS Code §17 #4）。
+# 残る6件は全部 `N6_FIELD_SCALAR`＝本物の型1 の債務である。
+check("N₆ 監査は現に型1 を見つける（走らせずに6件・すべて FIELD_SCALAR）",
+      _codes.count("N6_FIELD_SCALAR") == 6 and _codes.count("N6_VALUE_SCALAR") == 0,
       [x.ref for x in _a if x.code in ("N6_FIELD_SCALAR", "N6_VALUE_SCALAR")])
+check("N₆ 退役した欄は Declared に残る（旧走行を読むため。要求からだけ外す）",
+      all(hasattr(Declared(), f) for f in ("s6_kappa_by_seat", "s6_quantity_sources",
+                                           "s6_realize_actor")))
 # 第13.5b版：A29（担体＝量の同順位対）は N₄′ の五つ組が解いた ―― 旧2欄が新欄に譲る。
 # 同時に、監査自身の型3 が出た。強さの衝突を**集合全体**で見ていたので、担体に3件目を足して
 # 強さを1段変えるだけで判定が消えた。**対で見る**ように直したら、隠れていた3件が出た（担体＝書き方）。
@@ -1000,7 +1006,7 @@ check("N₆ 未解決の順序はもう無い（A29 は N₄′ が解いた）"
       [x.ref for x in _a if x.code == "N6_ENTRENCH_TIE"])
 check("N₆ s3_form_mapping は座席ごとなのに単数（実測でも3座席を連結していた）",
       any("s3_form_mapping" in x.ref for x in _a if x.code == "N6_FIELD_SCALAR"))
-check("N₆ 監査の総件数を固定する（新しい欄を黙って足せない）", len(_a) == 8, len(_a))
+check("N₆ 監査の総件数を固定する（新しい欄を黙って足せない）", len(_a) == 6, len(_a))
 
 print("\n── 第12.8版 A34：記入欄の照合が浅かった（型2・A25 と同型）")
 import re as _re2
@@ -1560,18 +1566,33 @@ check("A54 発火したコードは、必ず理由コードの集合に入って
 
 # (2) は物差しを直すとほぼ消える。残る1件ずつだけが本物の欠落。
 _msg = set(_AM.MSG["findings"]) | set(_AM.MSG["judgments"])
-check("A54 表示文が無い理由コードは A19_ORG_COST_POSITIVE の1件だけ（旧計測は60件）",
-      _codes - _msg == {"A19_ORG_COST_POSITIVE"}, sorted(_codes - _msg))
-check("A54 コードに無い表示文は R10b_UNIT_REVERTED の1件だけ（旧計測は11件）",
-      _msg - _codes == {"R10b_UNIT_REVERTED"}, sorted(_msg - _codes))
+# 第14.3版：**残っていた1件ずつも消えた。**A19_ORG_COST_POSITIVE に表示文を足し、
+# R10b_UNIT_REVERTED を退役させた（第14.2版）。物差しを直した60/11 とは別の、本物の欠落2件。
+# **ここは 208 = 208 の完全一致で固定する。**債務は返済済みなので、片側だけ増やせば落ちる。
+check("A54 表示文が無い理由コードは無い（旧計測60件 → 物差しを直して1件 → 返済して0件）",
+      not _codes - _msg, sorted(_codes - _msg))
+check("A54 コードに無い表示文は無い（旧計測11件 → 1件 → 0件）",
+      not _msg - _codes, sorted(_msg - _codes))
+# 第14.4版：208 → 209（`A57_RETIRED_READ_UNBRIDGED` を足した）。**この数は動いてよい。**
+# 動かせないのは**等号のほう**で、コードを足したら表示文も書け、という強制になっている。
+check("A54 理由コードと表示文は同数（いま209）", len(_codes) == len(_msg) == 209, (len(_codes), len(_msg)))
 
 print("\n── 第14.1版 A53（配管）：**要求している申告欄が、生成スキーマに無い**")
 # 指示文は日本語で頼んでいる（3/3 arm）。だが構造化出力のスキーマに欄が無いので、
 # モデルは答えられない。→ `*_UNDECLARED` が8セルで永久に出続け、本来の停止条件は出ない。
 # **A47 は紙側では 1件検出されている**（verified136 の E2-P1）。申告側だけが測れていない。
-check("A53 生成スキーマに欠けている申告欄を機械が名指しできる（A46・A47）",
-      {"s2_asks_possession", "s5_disclaimers"} <= set(_AM.reqs_not_in_gen_schema("wf_gen137.js")),
+# 第14.3版：**この検査は現に効いて、直った。**第14.2版で s2_asks_possession・s5_disclaimers・
+# pay_source・ret_source をスキーマに足し、第14.3版で吸収済みの旧2欄を REQ_RETIRED へ移した。
+# **いまは空である。**空を固定するのが正しい ―― 欄を足してスキーマに書き忘れれば、また名前が出る。
+check("A53 要求している申告欄は、すべて生成スキーマに在る（第14.1版は2件欠けていた）",
+      not _AM.reqs_not_in_gen_schema("wf_gen137.js"),
       _AM.reqs_not_in_gen_schema("wf_gen137.js"))
+# 対照：一つ前の版のスキーマ（`wf_gen136.js`）は現に7件を名指しできる。
+# **空が「検査が壊れて何も出ない」ではないことを、ここで区別する。**
+check("A53 検査そのものは生きている（旧スキーマなら7件を名指しできる）",
+      {"s2_asks_possession", "s5_disclaimers", "s6_price_low"}
+      <= set(_AM.reqs_not_in_gen_schema("wf_gen136.js")),
+      _AM.reqs_not_in_gen_schema("wf_gen136.js"))
 
 print("\n── 第14.1版 V1 物差しの全数検分（`audit_matchers.py`）―― 表の不変量を固定する")
 # 本文290件・業界資料に全部当て直して出たもの。**当たり方ではなく、表の性質を固定する。**
@@ -1649,7 +1670,25 @@ for _r in _RECS:
         _, _, _v = _V12.score(_r, {"cell_id": _r["id"], "declared": _d,
                                    "slides": [{"stage": s, "text": t} for s, t in _c.items()]})
     _codes |= {f.code for f in _v["findings"] if f.level == "stop"}
-check("レンダラ 8セルで残る停止は R20 の二つだけ（入力側の欠落・設計メモ §4 の三つ目）",
-      _codes == {"R20_PAY_MISSING", "R20_RETURN_MISSING"}, sorted(_codes))
+check("レンダラ 残る停止のうち R20 の二つは入力側の欠落（設計メモ §4 の三つ目）",
+      {"R20_PAY_MISSING", "R20_RETURN_MISSING"} <= _codes, sorted(_codes))
+# 第14.4版：**A57 を直した直後に、3件目が出ました。**
+# `A23_SEAT_WORD_ABSENT` は第14.3版まで構造的に立てなかったので、レンダラは
+# 「⑥に座席の様式語を出す」を一度も検められていませんでした。8セル中2セルで欠けます。
+#   E1-P2  入試広報課長・学部長会  6語すべて本文に無い
+#   R1-P2  商品本部バイヤー        原価率／取引条件／粗利率 が本文に無い（店長側は「作業時間」で通る）
+# **レンダラ側の欠陥で、Cowork へ返してあります。**ここは 2セルで固定し、3セル目を許さない。
+_a23 = set()
+for _r in _RECS:
+    _c, _d, _, _ = _RS.build(_r)
+    with _cl.redirect_stdout(_io.StringIO()):
+        _, _, _v = _V12.score(_r, {"cell_id": _r["id"], "declared": _d,
+                                   "slides": [{"stage": s, "text": t} for s, t in _c.items()]})
+    if any(f.code == "A23_SEAT_WORD_ABSENT" for f in _v["findings"]):
+        _a23.add(_r["id"])
+check("レンダラ A23（座席の様式語）が欠けるのは E1-P2 と R1-P2 の2セル（第14.4版の新しい所見）",
+      _a23 == {"E1-P2", "R1-P2"}, sorted(_a23))
+check("レンダラ 残る停止は R20 二つと A23 だけ（他の型は出ていない）",
+      _codes <= {"R20_PAY_MISSING", "R20_RETURN_MISSING", "A23_SEAT_WORD_ABSENT"}, sorted(_codes))
 
 print(f"\n{'すべて通過' if not FAIL else '失敗: ' + str(FAIL)}")
